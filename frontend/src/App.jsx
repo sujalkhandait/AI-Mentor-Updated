@@ -49,7 +49,7 @@ const App = () => {
       </Route>
 
       {/* Other public routes */}
-      <Route path="/course-preview/:id" element={<CoursePreview />} />
+      <Route path="/course-preview/:courseId" element={<CoursePreview />} />
     </Routes>
   )
 }

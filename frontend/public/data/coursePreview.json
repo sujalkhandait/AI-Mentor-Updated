@@ -1,0 +1,104 @@
+{
+  "course": {
+    "id": 1,
+    "title": "Generative AI & Machine Learning Fundamentals",
+    "subtitle": "Master UX Pilot, GPT-4, Midjourney, and 50+ AI tools to boost productivity and creativity",
+    "instructor": "Dr. Sarah Chen",
+    "tags": ["Bestseller", "Beginner-Friendly", "AI-Generated Content"],
+    "lastUpdated": "12/2024",
+    "language": "English",
+    "subtitles": true,
+    "rating": 4.8,
+    "reviews": 12847,
+    "students": 89234,
+    "duration": "15.5h",
+    "thumbnail": "AI_Tutor_New_UI/Course_Preview/thumbnail_img.png",
+    "price": {
+      "current": 4999,
+      "original": 7000,
+      "discount": "75% OFF - Limited Time"
+    },
+    "countdown": {
+      "hours": 23,
+      "minutes": 45,
+      "seconds": 10
+    },
+    "features": [
+      {
+        "icon": "AI_Tutor_New_UI/Course_Preview/lifetimeaccess_icon.svg",
+        "text": "Lifetime access"
+      },
+      {
+        "icon": "AI_Tutor_New_UI/Course_Preview/mobile.svg",
+        "text": "Access on mobile and desktop"
+      },
+      {
+        "icon": "AI_Tutor_New_UI/Course_Preview/certificate.svg",
+        "text": "Certificate of completion"
+      },
+      {
+        "icon": "AI_Tutor_New_UI/Course_Preview/moneyback.svg",
+        "text": "30-day money-back guarantee"
+      }
+    ],
+    "whatYouLearn": [
+      "Master UX Pilot for content creation and automation",
+      "Create stunning visuals with Midjourney and DALL-E",
+      "Build AI-powered workflows and automations",
+      "Understand prompt engineering best practices",
+      "Explore 50+ AI tools for different industries",
+      "Implement AI in business and personal projects"
+    ],
+    "curriculum": [
+      {
+        "title": "Module 1: Foundations of UX Design",
+        "goal": "Understand the core principles, history, and value of UX design.",
+        "topics": [
+          "What is UX? History and evolution",
+          "Difference between UX and UI",
+          "UX vs CX vs Service Design",
+          "Design Thinking & Human-Centered Design",
+          "UX Roles & Career Paths"
+        ],
+        "activities": [
+          "Industry case study breakdown",
+          "Quiz: UX vs UI vs Product Design",
+          "Assignment: Identify good vs bad UX examples"
+        ]
+      },
+      {
+        "title": "🎨 Module 2: UX Research & Empathy",
+        "goal": "Build the skill of understanding users through qualitative and quantitative research.",
+        "topics": [
+          "User Research Methods (interviews, surveys, analytics)",
+          "Empathy Mapping",
+          "Creating Personas",
+          "User Journey Mapping",
+          "Problem Statements and How Might We"
+        ],
+        "tools": [
+          "Google Forms / Typeform",
+          "Useberry",
+          "AI Persona generators (UXPin, Userforge AI)"
+        ],
+        "assignment": "Create personas from real/fictional user interviews"
+      },
+      {
+        "title": "🧪 Module 3: Information Architecture & Wireframing",
+        "goal": "Learn how to structure content and create low-fidelity designs.",
+        "topics": [
+          "Card Sorting & Sitemap Design",
+          "Wireframes: Low vs High Fidelity",
+          "Navigation Patterns & Interaction Models",
+          "Sketching Techniques"
+        ],
+        "tools": [
+          "Figma",
+          "Miro",
+          "Whimsical (AI for quick flows)"
+        ],
+        "activity": "Build a wireframe using Figma & AI plugin"
+      }
+    ]
+  }
+}

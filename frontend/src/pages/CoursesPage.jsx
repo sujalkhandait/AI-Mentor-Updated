@@ -1,134 +1,33 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import { Link } from 'react-router-dom'
 import Header from '../components/Header'
 import Sidebar from '../components/Sidebar'
-import { PlayCircle, CheckCircle, Clock, Star, Bookmark } from 'lucide-react'
+import { Star, Bookmark } from 'lucide-react'
 
 const CoursesPage = () => {
   const [sidebarOpen, setSidebarOpen] = useState(false)
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false)
   const [activeTab, setActiveTab] = useState('my-courses')
+  const [coursesData, setCoursesData] = useState(null)
 
-  const statsCards = [
-    {
-      icon: <PlayCircle className="w-5 h-5 text-purple-600" />,
-      value: "4",
-      label: "Courses in Progress",
-      bgColor: "bg-purple-50",
-      iconBg: "bg-purple-100"
-    },
-    {
-      icon: <CheckCircle className="w-5 h-5 text-green-600" />,
-      value: "12",
-      label: "Completed",
-      bgColor: "bg-green-50",
-      iconBg: "bg-green-100"
-    },
-    {
-      icon: <Clock className="w-5 h-5 text-blue-600" />,
-      value: "87h",
-      label: "Learning Hours",
-      bgColor: "bg-blue-50",
-      iconBg: "bg-blue-100"
+  useEffect(() => {
+    const fetchCoursesData = async () => {
+      try {
+        const response = await fetch('/data/courses.json')
+        const data = await response.json()
+        setCoursesData(data)
+      } catch (error) {
+        console.error('Error fetching courses data:', error)
+      }
     }
-  ]
+    fetchCoursesData()
+  }, [])
 
-  const courseCards = [
-    {
-      id: 1,
-      title: "React Fundamentals",
-      status: "In Progress",
-      progress: 75,
-      lessons: "18 of 24 lessons",
-      level: "Intermediate",
-      levelColor: "bg-purple-100 text-purple-600",
-      backgroundGradient: "from-slate-700 to-slate-900",
-      backgroundImage: "/ui/course-bg-1.png",
-      buttonStyle: "bg-gradient-to-r from-teal-500 to-teal-600 text-white",
-      buttonText: "Continue Learning"
-    },
-    {
-      id: 2,
-      title: "Python For AI",
-      status: "In Progress",
-      progress: 50,
-      lessons: "9 of 20 lessons",
-      level: "Advanced",
-      levelColor: "bg-red-100 text-red-600",
-      backgroundGradient: "from-blue-400 to-cyan-500",
-      backgroundImage: null,
-      buttonStyle: "bg-gradient-to-r from-blue-500 to-cyan-500 text-white",
-      buttonText: "Continue Learning"
-    },
-    {
-      id: 3,
-      title: "AI Ethics & Bias",
-      status: "Completed",
-      progress: 100,
-      lessons: "6 of 6 lessons",
-      level: "Beginner",
-      levelColor: "bg-green-100 text-green-600",
-      backgroundGradient: "from-green-400 to-emerald-500",
-      backgroundImage: null,
-      buttonStyle: "bg-gray-100 text-gray-600",
-      buttonText: "Review Course"
-    }
-  ]
+  if (!coursesData) {
+    return <div>Loading...</div>
+  }
 
-  const popularCourses = [
-    {
-      id: 1,
-      title: "Generative AI & Machine Learning Fundamentals",
-      category: "AI & ML",
-      categoryColor: "bg-indigo-100 text-indigo-600",
-      lessons: "24 lessons",
-      level: "Intermediate",
-      price: "₹1999",
-      rating: "4.8",
-      students: "2.5k students",
-      image: "AI_Tutor_New_UI/Dashboard/python_for_ai_logo.png",
-      isBookmarked: true
-    },
-    {
-      id: 2,
-      title: "Full Stack Web Development",
-      category: "Development",
-      categoryColor: "bg-purple-100 text-purple-600",
-      lessons: "36 lessons",
-      level: "Beginner",
-      price: "₹1299",
-      rating: "4.9",
-      students: "2.5k students",
-      image: "AI_Tutor_New_UI/Dashboard/full_stack_web_dev.png",
-      isBookmarked: false
-    },
-    {
-      id: 3,
-      title: "Data Analytics Masterclass",
-      category: "Data Science",
-      categoryColor: "bg-cyan-100 text-cyan-600",
-      lessons: "28 lessons",
-      level: "Advanced",
-      price: "₹1499",
-      rating: "4.7",
-      students: "2.5k students",
-      image: "AI_Tutor_New_UI/Dashboard/data_analytics.png",
-      isBookmarked: false
-    },
-    {
-      id: 4,
-      title: "Machine Learning Fundamentals",
-      category: "AI & ML",
-      categoryColor: "bg-indigo-100 text-indigo-600",
-      lessons: "24 lessons",
-      level: "Intermediate",
-      price: "₹1999",
-      rating: "4.8",
-      students: "2.5k students",
-      image: "AI_Tutor_New_UI/Dashboard/ML_fundamentals.png",
-      isBookmarked: true
-    }
-  ]
+  const { statsCards, courseCards, popularCourses } = coursesData
 
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col">
@@ -189,7 +88,7 @@ const CoursesPage = () => {
                       <p className="text-2xl font-bold text-gray-900">{card.value}</p>
                     </div>
                     <div className={`p-3 rounded-xl ${card.iconBg}`}>
-                      {card.icon}
+                      <img src={card.icon} alt={card.label} className="w-5 h-5" />
                     </div>
                   </div>
                 </div>

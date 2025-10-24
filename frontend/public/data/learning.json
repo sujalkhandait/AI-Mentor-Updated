@@ -1,0 +1,83 @@
+{
+  "modules": [
+    {
+      "id": "module-1",
+      "title": "Module 1: Introduction",
+      "lessons": [
+        {
+          "id": "what-is-react",
+          "title": "What is React?",
+          "duration": "12 min",
+          "completed": false,
+          "playing": true,
+          "type": "video"
+        },
+        {
+          "id": "history-of-react",
+          "title": "History of React",
+          "duration": "15 min",
+          "completed": true,
+          "playing": false,
+          "type": "video"
+        },
+        {
+          "id": "setup-react",
+          "title": "Setup React",
+          "duration": "8 min",
+          "completed": false,
+          "playing": false,
+          "type": "document"
+        }
+      ]
+    },
+    {
+      "id": "module-2",
+      "title": "Module 2: Machine Learning",
+      "lessons": []
+    },
+    {
+      "id": "module-3",
+      "title": "Module 3: Neural Networks",
+      "lessons": []
+    }
+  ],
+  "course": {
+    "title": "React Fundamentals",
+    "subtitle": "Complete Course",
+    "logo": "/AI_Tutor_New_UI/Dashboard/logo.png",
+    "progress": 25
+  },
+  "currentLesson": {
+    "id": "what-is-react",
+    "title": "What is React?",
+    "module": "Module 1: Introduction",
+    "videoUrl": "http://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4",
+    "content": {
+      "introduction": "Artificial Intelligence (AI) refers to the simulation of human intelligence in machines that are programmed to think and learn like humans. This foundational lesson explores the core concepts, definitions, and basic principles that form the building blocks of AI technology.",
+      "keyConcepts": [
+        {
+          "title": "Machine Intelligence",
+          "description": "The ability of machines to perform tasks that typically require human intelligence.",
+          "borderColor": "border-[#60A5FA]",
+          "bgColor": "bg-white",
+          "textColor": "text-black"
+        },
+        {
+          "title": "Learning Algorithms",
+          "description": "Mathematical models that enable computers to learn from data without explicit programming.",
+          "borderColor": "border-[#C084FC]",
+          "bgColor": "bg-white",
+          "textColor": "text-black"
+        },
+        {
+          "title": "Pattern Recognition",
+          "description": "The ability to identify regularities and patterns in data to make predictions.",
+          "borderColor": "border-[#22D3EE]",
+          "bgColor": "bg-[#1F2937]",
+          "textColor": "text-white",
+          "descriptionColor": "text-[#D1D5DB]"
+        }
+      ]
+    }
+  }
+}

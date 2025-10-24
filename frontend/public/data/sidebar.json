@@ -1,0 +1,38 @@
+[
+  {
+    "id": "dashboard",
+    "icon": "/AI_Tutor_New_UI/Icons/dashboard.svg",
+    "label": "Dashboard",
+    "path": "/dashboard"
+  },
+  {
+    "id": "courses",
+    "icon": "/AI_Tutor_New_UI/Icons/my_courses.svg",
+    "label": "My Courses",
+    "path": "/courses"
+  },
+  {
+    "id": "discussions",
+    "icon": "/AI_Tutor_New_UI/Icons/discussion.svg",
+    "label": "Discussion",
+    "path": "/discussions"
+  },
+  {
+    "id": "analytics",
+    "icon": "/AI_Tutor_New_UI/Icons/analytics.svg",
+    "label": "Analytics",
+    "path": "/analytics"
+  },
+  {
+    "id": "settings",
+    "icon": "/AI_Tutor_New_UI/Icons/settings.svg",
+    "label": "Settings",
+    "path": "/settings"
+  },
+  {
+    "id": "watched",
+    "icon": "/AI_Tutor_New_UI/Icons/watched_vids.svg",
+    "label": "Watched Videos",
+    "path": "/watchedvideos"
+  }
+]

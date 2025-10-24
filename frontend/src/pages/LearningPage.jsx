@@ -19,7 +19,7 @@ import {
 export default function Learning() {
   const navigate = useNavigate();
   const [sidebarOpen, setSidebarOpen] = useState(false);
-  const [currentLesson] = useState("what-is-react");
+  const [learningData, setLearningData] = useState(null);
   const [expandedModule, setExpandedModule] = useState("module-1");
 
   const [isPlaying, setIsPlaying] = useState(false);
@@ -33,27 +33,24 @@ export default function Learning() {
   const videoRef = useRef(null);
   const playerContainerRef = useRef(null);
 
-  const modules = [
-    {
-      id: "module-1",
-      title: "Module 1: Introduction",
-      lessons: [
-        { id: "what-is-react", title: "What is React?", duration: "12 min", completed: false, playing: true },
-        { id: "history-of-react", title: "History of React", duration: "15 min", completed: true, playing: false },
-        { id: "setup-react", title: "Setup React", duration: "8 min", completed: false, playing: false, type: "document" }
-      ]
-    },
-    {
-      id: "module-2",
-      title: "Module 2: Machine Learning",
-      lessons: []
-    },
-    {
-      id: "module-3",
-      title: "Module 3: Neural Networks",
-      lessons: []
-    }
-  ];
+  useEffect(() => {
+    const fetchLearningData = async () => {
+      try {
+        const response = await fetch('/data/learning.json');
+        const data = await response.json();
+        setLearningData(data);
+      } catch (error) {
+        console.error('Error fetching learning data:', error);
+      }
+    };
+    fetchLearningData();
+  }, []);
+
+  const { modules, currentLesson } = learningData || {};
+
+  if (!learningData) {
+    return <div>Loading...</div>;
+  }
 
   const toggleModule = (moduleId) => {
     setExpandedModule(expandedModule === moduleId ? "" : moduleId);
@@ -166,14 +163,14 @@ export default function Learning() {
           {/* Course Header */}
           <div className="p-6 border-b border-[#646971]">
             <div className="flex gap-3 items-center mb-2">
-              <img 
-                src="/AI_Tutor_New_UI/Dashboard/logo.png" 
-                alt="Course" 
+              <img
+                src={learningData.course.logo}
+                alt="Course"
                 className="w-[55px] h-[55px] rounded-full border border-[#766F6F]"
               />
               <div>
-                <h2 className="text-2xl font-bold text-black">React Fundamentals</h2>
-                <p className="text-sm text-[#9CA3AF]">Complete Course</p>
+                <h2 className="text-2xl font-bold text-black">{learningData.course.title}</h2>
+                <p className="text-sm text-[#9CA3AF]">{learningData.course.subtitle}</p>
               </div>
             </div>
           </div>
@@ -245,10 +242,10 @@ export default function Learning() {
           <div className="p-4 border-t border-[#A5A5A5] mt-auto">
             <div className="flex items-center justify-between mb-2">
               <span className="text-sm font-bold">Progress</span>
-              <span className="text-sm font-bold">25%</span>
+              <span className="text-sm font-bold">{learningData.course.progress}%</span>
             </div>
             <div className="w-full h-2 bg-[#374151] rounded-full overflow-hidden">
-              <div className="h-full w-1/4 bg-gradient-to-r from-[#60A5FA] to-[#3B82F6] rounded-full"></div>
+              <div className="h-full bg-gradient-to-r from-[#60A5FA] to-[#3B82F6] rounded-full" style={{ width: `${learningData.course.progress}%` }}></div>
             </div>
           </div>
         </aside>
@@ -268,7 +265,7 @@ export default function Learning() {
             <video
               ref={videoRef}
               className="w-full h-full"
-              src="http://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4"
+              src={currentLesson.videoUrl}
               onTimeUpdate={handleProgress}
               onLoadedMetadata={handleProgress}
               onPlay={() => setIsPlaying(true)}
@@ -276,7 +273,7 @@ export default function Learning() {
               onClick={togglePlay}
             />
             <div className="absolute top-4 left-5 text-white/70 text-xl">
-              Module 1: Introduction What is React?
+              {currentLesson.module} {currentLesson.title}
             </div>
 
             {/* Video Controls */}
@@ -326,28 +323,20 @@ export default function Learning() {
             {/* Introduction Card */}
             <div className="rounded-2xl border-l-4 border-black bg-white shadow-[0_4px_6px_rgba(0,0,0,0.1),0_10px_15px_rgba(0,0,0,0.1)] p-6">
               <p className="text-xl text-black text-justify leading-normal">
-                Artificial Intelligence (AI) refers to the simulation of human intelligence in machines that are programmed to think and learn like humans. This foundational lesson explores the core concepts, definitions, and basic principles that form the building blocks of AI technology.
+                {currentLesson.content.introduction}
               </p>
             </div>
 
             {/* Key Concepts */}
             <div className="space-y-4">
               <h3 className="text-xl font-bold text-black">Key Concepts</h3>
-              
-              <div className="rounded-lg border-l-4 border-[#60A5FA] bg-white shadow-[0_4px_4px_rgba(0,0,0,0.25)] p-5 space-y-2">
-                <h4 className="font-['Space_Grotesk'] text-black">Machine Intelligence</h4>
-                <p className="font-['Space_Grotesk'] text-black">The ability of machines to perform tasks that typically require human intelligence.</p>
-              </div>
 
-              <div className="rounded-lg border-l-4 border-[#C084FC] bg-white shadow-[0_4px_4px_rgba(0,0,0,0.25)] p-5 space-y-2">
-                <h4 className="font-['Space_Grotesk'] text-black">Learning Algorithms</h4>
-                <p className="font-['Space_Grotesk'] text-black">Mathematical models that enable computers to learn from data without explicit programming.</p>
-              </div>
-
-              <div className="rounded-lg border-l-4 border-[#22D3EE] bg-[#1F2937] shadow-[0_4px_4px_rgba(0,0,0,0.25)] p-5 space-y-2">
-                <h4 className="font-['Space_Grotesk'] text-white">Pattern Recognition</h4>
-                <p className="font-['Space_Grotesk'] text-[#D1D5DB]">The ability to identify regularities and patterns in data to make predictions.</p>
-              </div>
+              {currentLesson.content.keyConcepts.map((concept, index) => (
+                <div key={index} className={`rounded-lg border-l-4 ${concept.borderColor} ${concept.bgColor} shadow-[0_4px_4px_rgba(0,0,0,0.25)] p-5 space-y-2`}>
+                  <h4 className={`font-['Space_Grotesk'] ${concept.textColor}`}>{concept.title}</h4>
+                  <p className={`font-['Space_Grotesk'] ${concept.descriptionColor || concept.textColor}`}>{concept.description}</p>
+                </div>
+              ))}
             </div>
 
             {/* Navigation Buttons */}
