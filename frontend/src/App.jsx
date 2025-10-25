@@ -2,6 +2,7 @@ import React from 'react'
 import { Routes, Route, Navigate, Outlet } from 'react-router-dom'
 import { useAuth } from './context/AuthContext'
 import ProtectedRoute from './components/ProtectedRoute'
+import AdminRoute from './components/AdminRoute'
 import LoginPage from './pages/LoginPage'
 import SignUpPage from './pages/SignUpPage'
 import Dashboard from './pages/Dashboard'
@@ -12,6 +13,7 @@ import Settings from './pages/Settings'
 import WatchedVideos from './pages/WatchedVideos'
 import CoursePreview from './pages/CoursePreview'
 import LearningPage from './pages/LearningPage'
+import AdminPage from './pages/AdminPage'
 
 // Redirects from the root path based on authentication status.
 const RootRedirect = () => {
@@ -46,6 +48,11 @@ const App = () => {
         <Route path="/settings" element={<Settings />} />
         <Route path="/watchedvideos" element={<WatchedVideos />} />
         <Route path="/learning/:id" element={<LearningPage />} />
+      </Route>
+
+      {/* Admin Routes */}
+      <Route element={<AdminRoute />}>
+        <Route path="/admin" element={<AdminPage />} />
       </Route>
 
       {/* Other public routes */}

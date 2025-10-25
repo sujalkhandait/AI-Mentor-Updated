@@ -9,48 +9,49 @@ const CoursesPage = () => {
   const [sidebarOpen, setSidebarOpen] = useState(false)
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false)
   const [activeTab, setActiveTab] = useState('my-courses')
-  const [coursesData, setCoursesData] = useState(null)
+  const [coursesData, setCoursesData] = useState({
+    statsCards: [],
+    allCourses: [],
+    learningData: {}
+  })
+  const [loading, setLoading] = useState(true)
   const { user } = useAuth()
 
   useEffect(() => {
-    const fetchCoursesData = async () => {
+    const fetchAllData = async () => {
+      setLoading(true);
       try {
-        const response = await fetch('/data/courses.json')
-        const data = await response.json()
-        setCoursesData(data)
-      } catch (error) {
-        console.error('Error fetching courses data:', error)
-      }
-    }
+        const [coursesRes, statsRes] = await Promise.all([
+          fetch('/api/courses'),
+          fetch('/api/courses/stats/cards')
+        ]);
 
-    const fetchLearningData = async () => {
-      try {
-        const response = await fetch('/data/learning.json')
-        const learningData = await response.json()
-        // Store learning data for stats calculation
-        setCoursesData(prev => ({ ...prev, learningData }))
-      } catch (error) {
-        console.error('Error fetching learning data:', error)
-      }
-    }
+        const allCourses = await coursesRes.json();
+        const { statsCards } = await statsRes.json();
 
-    fetchCoursesData()
-    fetchLearningData()
+        setCoursesData({ allCourses, statsCards, learningData: {} });
+      } catch (error) {
+        console.error('Error fetching page data:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchAllData();
   }, [])
 
-  if (!coursesData) {
+  if (loading) {
     return <div>Loading...</div>
   }
 
-  const { statsCards, courseCards, popularCourses } = coursesData
+  const { statsCards, allCourses: courseCards } = coursesData
 
   // Filter courses based on user's purchased courses and add progress info
   const myCourses = courseCards
     .filter(course => user?.purchasedCourses?.some(purchased => purchased.courseId === course.id))
     .map(course => {
       const purchasedCourse = user?.purchasedCourses?.find(p => p.courseId === course.id);
-      const courseData = coursesData?.learningData?.[course.id.toString()];
-      const totalLessons = courseData?.modules?.flatMap(module => module.lessons)?.length || 0;
+      const totalLessons = course.lessons ? parseInt(course.lessons.split(' ')[0]) : 0;
       const completedLessons = purchasedCourse?.progress?.completedLessons?.length || 0;
 
       return {
@@ -64,16 +65,17 @@ const CoursesPage = () => {
 
   // Calculate dynamic stats based on user's actual progress
   const calculateStats = () => {
-    if (!user?.purchasedCourses || !coursesData?.learningData) return statsCards;
+    if (!user?.purchasedCourses || !statsCards || statsCards.length < 3) return [];
 
     let coursesInProgress = 0;
     let completedCourses = 0;
     let totalLearningHours = 0;
 
     user.purchasedCourses.forEach(purchasedCourse => {
-      const courseData = coursesData.learningData[purchasedCourse.courseId.toString()];
-      if (courseData) {
-        const totalLessons = courseData.modules?.flatMap(module => module.lessons)?.length || 0;
+      // Find the course in allCourses to get lesson count
+      const courseInfo = courseCards.find(c => c.id === purchasedCourse.courseId);
+      if (courseInfo) {
+        const totalLessons = courseInfo.lessons ? parseInt(courseInfo.lessons.split(' ')[0]) : 0;
         const completedLessons = purchasedCourse.progress?.completedLessons?.length || 0;
 
         if (completedLessons === totalLessons && totalLessons > 0) {
@@ -104,7 +106,7 @@ const CoursesPage = () => {
   };
 
   const dynamicStatsCards = calculateStats();
-  const allCourses = activeTab === 'my-courses' ? myCourses : popularCourses
+  const coursesToDisplay = activeTab === 'my-courses' ? myCourses : courseCards
 
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col">
@@ -180,7 +182,7 @@ const CoursesPage = () => {
                 {activeTab === 'my-courses' ? 'Continue Learning' : 'Popular Courses'}
               </h2>
 
-              {allCourses.length === 0 ? (
+              {coursesToDisplay.length === 0 ? (
                 <div className="text-center py-12">
                   <p className="text-gray-500 text-lg">
                     {activeTab === 'my-courses'
@@ -191,7 +193,7 @@ const CoursesPage = () => {
                 </div>
               ) : (
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                  {allCourses.map((course) => (
+                  {coursesToDisplay.map((course) => (
                     <Link
                       key={course.id}
                       to={activeTab === 'my-courses' ? `/learning/${course.id}` : `/course-preview/${course.id}`}
@@ -204,6 +206,15 @@ const CoursesPage = () => {
                           alt={course.title}
                           className="w-full h-40 object-cover"
                         />
+                        {/* Progress Bar - Only for My Courses */}
+                        {course.progress !== undefined && (
+                          <div className="absolute bottom-0 left-0 right-0 h-1 bg-gray-300">
+                            <div
+                              className="h-full bg-green-500 transition-all duration-300"
+                              style={{ width: `${course.progress}%` }}
+                            ></div>
+                          </div>
+                        )}
                         {/* Rating Badge */}
                         <div className="absolute bottom-3 right-3 bg-white rounded-full px-2 py-1 flex items-center space-x-1 shadow-sm">
                           <Star className="w-3 h-3 fill-yellow-400 text-yellow-400" />

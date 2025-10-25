@@ -16,23 +16,15 @@ export default function CoursePreview() {
   useEffect(() => {
     const fetchCourseData = async () => {
       try {
-        console.log('Fetching course data for ID:', courseId);
-        console.log('Type of courseId:', typeof courseId);
-        const response = await fetch('/data/coursePreviews.json');
-        console.log('Response status:', response.status);
+        const response = await fetch(`/api/courses/${courseId}`);
         if (!response.ok) {
           throw new Error('Failed to fetch course data');
         }
         const data = await response.json();
-        console.log('Fetched data structure:', Object.keys(data));
-        console.log('Number of courses:', data.courses?.length);
-        console.log('Course IDs in data:', data.courses?.map(c => c.id));
-        const parsedId = parseInt(courseId);
-        console.log('Parsed courseId:', parsedId, 'Type:', typeof parsedId);
-        const course = data.courses.find(c => c.id === parsedId);
-        console.log('Found course:', course);
-        if (course) {
-          setCourseData(course);
+
+        if (data) {
+          // The backend returns the course directly
+          setCourseData(data);
           setError(null);
         } else {
           setError(`Course with ID ${courseId} not found`);
@@ -318,25 +310,27 @@ export default function CoursePreview() {
               {/* Price */}
               <div className="text-center mb-2">
                 <div className="flex items-center justify-center gap-2 mb-2">
-                  <span className="text-[#0D0D0D] text-[30px] font-bold leading-9">₹{courseData.price.current}</span>
-                  <span className="text-[#9CA3AF] text-lg line-through">₹{courseData.price.original}</span>
+                  <span className="text-[#0D0D0D] text-[30px] font-bold leading-9">₹{courseData.priceDetails?.current || 0}</span>
+                  <span className="text-[#9CA3AF] text-lg line-through">₹{courseData.priceDetails?.original || 0}</span>
                 </div>
                 <span className="inline-block bg-[#EF4444] text-white text-sm font-medium px-3 py-1 rounded-full">
-                  {courseData.price.discount}
+                  {courseData.priceDetails?.discount || '0%'}
                 </span>
               </div>
 
               {/* Countdown Timer */}
-              <div className="bg-white rounded-xl p-4 shadow-[0_0_30px_0_rgba(102,126,234,0.3)] mb-4">
-                <p className="text-[#9CA3AF] text-sm text-center mb-2">Sale ends in:</p>
-                <div className="flex items-center justify-center gap-2 text-[#F87171] text-base font-bold">
-                  <span>{courseData.countdown.hours}h</span>
-                  <span>:</span>
-                  <span>{courseData.countdown.minutes}m</span>
-                  <span>:</span>
-                  <span>{courseData.countdown.seconds}s</span>
+              {courseData.countdown && (
+                <div className="bg-white rounded-xl p-4 shadow-[0_0_30px_0_rgba(102,126,234,0.3)] mb-4">
+                  <p className="text-[#9CA3AF] text-sm text-center mb-2">Sale ends in:</p>
+                  <div className="flex items-center justify-center gap-2 text-[#F87171] text-base font-bold" suppressHydrationWarning>
+                    <span>{courseData.countdown.hours}h</span>
+                    <span>:</span>
+                    <span>{courseData.countdown.minutes}m</span>
+                    <span>:</span>
+                    <span>{courseData.countdown.seconds}s</span>
+                  </div>
                 </div>
-              </div>
+              )}
 
               {/* CTA Buttons */}
               <button
@@ -351,14 +345,16 @@ export default function CoursePreview() {
               </button>
 
               {/* Features */}
-              <div className="space-y-3">
-                {courseData.features.map((feature, index) => (
-                  <div key={index} className="flex items-center gap-2 text-[#9CA3AF] text-sm">
-                    <img src={feature.icon} alt="" className="w-4 h-3.5 flex-shrink-0" />
-                    {feature.text}
-                  </div>
-                ))}
-              </div>
+              {courseData.features && courseData.features.length > 0 && (
+                <div className="space-y-3">
+                  {courseData.features.map((feature, index) => (
+                    <div key={index} className="flex items-center gap-2 text-[#9CA3AF] text-sm">
+                      <img src={feature.icon} alt="" className="w-4 h-3.5 flex-shrink-0" />
+                      {feature.text}
+                    </div>
+                  ))}
+                </div>
+              )}
             </div>
           </div>
         </div>

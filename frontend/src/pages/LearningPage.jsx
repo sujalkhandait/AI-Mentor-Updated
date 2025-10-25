@@ -46,10 +46,15 @@ export default function Learning() {
 
     const fetchLearningData = async () => {
       try {
-        const response = await fetch('/data/learning.json');
-        const data = await response.json();
-        const courseData = data[courseId];
-        if (courseData) {
+        const token = localStorage.getItem('token');
+        const response = await fetch(`http://localhost:5000/api/courses/${courseId}/learning`, {
+          headers: {
+            'Authorization': `Bearer ${token}`,
+          },
+        });
+
+        if (response.ok) {
+          const courseData = await response.json();
           setLearningData(courseData);
           // Load user's progress for this course
           const userProgress = user?.purchasedCourses?.find(course => course.courseId === parseInt(courseId))?.progress;
@@ -69,7 +74,7 @@ export default function Learning() {
             }
           }
         } else {
-          console.error('Course data not found');
+          console.error('Failed to fetch course learning data');
         }
       } catch (error) {
         console.error('Error fetching learning data:', error);
@@ -214,7 +219,7 @@ export default function Learning() {
       <div className="fixed left-0 top-16 h-full w-80 bg-white border-r border-gray-200 overflow-y-auto z-10">
         <div className="p-6">
           <div className="flex items-center justify-between mb-6">
-            <h2 className="text-xl font-bold text-gray-900">{learningData.course.title}</h2>
+            <h2 className="text-xl font-bold text-gray-900">{learningData?.course?.title || learningData?.title || 'Course'}</h2>
             <button onClick={() => navigate('/courses')} className="text-gray-400 hover:text-gray-600">
               <ChevronLeft className="w-5 h-5" />
             </button>
