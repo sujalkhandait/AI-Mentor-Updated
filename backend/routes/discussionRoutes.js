@@ -1,26 +1,33 @@
-import express from 'express';
+import express from "express";
 import {
   createDiscussion,
   getDiscussions,
   addReplyToDiscussion,
   likeDiscussion,
-  likeReply
-} from '../controllers/discussionController.js';
-import { protect } from '../middleware/authMiddleware.js';
+  likeReply,
+} from "../controllers/discussionController.js";
+import { protect } from "../middleware/authMiddleware.js";
 
 const router = express.Router();
 
-router.route('/')
-  .get(protect, getDiscussions)
-  .post(protect, createDiscussion);
+/* =======================
+   BASE DISCUSSIONS
+======================= */
+router.route("/").get(protect, getDiscussions).post(protect, createDiscussion);
 
-router.route('/:id/reply')
-  .post(protect, addReplyToDiscussion);
+/* =======================
+   REPLY LIKE (MOST SPECIFIC)
+======================= */
+router.route("/:discussionId/reply/:replyId/like").put(protect, likeReply);
 
-router.route('/:id/like')
-  .put(protect, likeDiscussion);
+/* =======================
+   DISCUSSION REPLIES
+======================= */
+router.route("/:id/reply").post(protect, addReplyToDiscussion);
 
-router.route('/:discussionId/reply/:replyId/like')
-  .put(protect, likeReply);
+/* =======================
+   DISCUSSION LIKE
+======================= */
+router.route("/:id/like").put(protect, likeDiscussion);
 
 export default router;

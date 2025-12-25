@@ -1,4 +1,4 @@
-import express from 'express';
+import express from "express";
 import {
   getCourses,
   getCourseById,
@@ -10,27 +10,43 @@ import {
   updateLessonVideo,
   addSubtopics,
   addLessons,
-  addModules
-} from '../controllers/courseController.js';
-import { protect } from '../middleware/authMiddleware.js';
+  addModules,
+} from "../controllers/courseController.js";
+import { protect } from "../middleware/authMiddleware.js";
 
 const router = express.Router();
 
-// Public routes
-router.route('/').get(getCourses);
-router.route('/:id').get(getCourseById);
-router.route('/stats/cards').get(protect, getStatsCards);
+/* =======================
+   PUBLIC ROUTES
+======================= */
+router.route("/").get(getCourses);
 
-// Protected routes
-router.route('/my-courses').get(protect, getMyCourses);
-router.route('/:id/learning').get(protect, getCourseLearningData);
+/* =======================
+   PROTECTED ROUTES
+======================= */
+router.route("/stats/cards").get(protect, getStatsCards);
+router.route("/my-courses").get(protect, getMyCourses);
 
-// Admin routes
-router.route('/').post(protect, addCourse);
-router.route('/:id').delete(protect, deleteCourse);
-router.route('/:courseId/modules').post(protect, addModules);
-router.route('/:courseId/lessons/:lessonId/video').put(protect, updateLessonVideo);
-router.route('/:courseId/subtopics').post(protect, addSubtopics);
-router.route('/:courseId/modules/:moduleId/lessons').post(protect, addLessons);
+/* =======================
+   COURSE LEARNING
+======================= */
+router.route("/:id/learning").get(protect, getCourseLearningData);
+
+/* =======================
+   ADMIN / MANAGEMENT
+======================= */
+router.route("/").post(protect, addCourse);
+router.route("/:id").delete(protect, deleteCourse);
+router.route("/:courseId/modules").post(protect, addModules);
+router.route("/:courseId/modules/:moduleId/lessons").post(protect, addLessons);
+router
+  .route("/:courseId/lessons/:lessonId/video")
+  .put(protect, updateLessonVideo);
+router.route("/:courseId/subtopics").post(protect, addSubtopics);
+
+/* =======================
+   DYNAMIC (KEEP LAST)
+======================= */
+router.route("/:id").get(getCourseById);
 
 export default router;

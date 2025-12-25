@@ -1,173 +1,128 @@
-import mongoose from 'mongoose';
-import bcrypt from 'bcryptjs';
+import mongoose from "mongoose";
+import bcrypt from "bcryptjs";
 
-const userSchema = mongoose.Schema(
+const userSchema = new mongoose.Schema(
   {
     firstName: {
       type: String,
-      required: false,
     },
     lastName: {
       type: String,
-      required: false,
     },
     name: {
       type: String,
       required: true,
+      trim: true,
     },
     email: {
       type: String,
       required: true,
       unique: true,
+      lowercase: true,
+      trim: true,
     },
     password: {
       type: String,
       required: true,
+      minlength: 6,
     },
     role: {
       type: String,
-      required: true,
-      default: 'user',
+      default: "user",
     },
     bio: {
       type: String,
       default: "",
     },
-    purchasedCourses: [{
-      courseId: {
-        type: Number,
-        required: true
-      },
-      courseTitle: {
-        type: String,
-        required: true
-      },
-      purchaseDate: {
-        type: Date,
-        default: Date.now
-      },
-      progress: {
-        completedLessons: [{
-          lessonId: String,
-          completedAt: {
-            type: Date,
-            default: Date.now
-          }
-        }],
-        currentLesson: {
-          lessonId: String,
-          moduleTitle: String
-        }
-      }
-    }],
-    analytics: {
-      totalHours: {
-        type: Number,
-        default: 0
-      },
-      daysStudied: {
-        type: Number,
-        default: 0
-      },
-      studySessions: [{
-        date: {
+
+    purchasedCourses: [
+      {
+        courseId: Number,
+        courseTitle: String,
+        purchaseDate: {
           type: Date,
-          required: true
+          default: Date.now,
         },
-        hours: {
-          type: Number,
-          required: true
-        }
-      }],
-      lastStudyDate: {
-        type: Date,
-        default: null
+        progress: {
+          completedLessons: [
+            {
+              lessonId: String,
+              completedAt: {
+                type: Date,
+                default: Date.now,
+              },
+            },
+          ],
+          currentLesson: {
+            lessonId: String,
+            moduleTitle: String,
+          },
+        },
       },
-      attendance: {
-        type: Number,
-        default: 0
-      },
-      avgMarks: {
-        type: Number,
-        default: 0
-      },
-      dailyHours: {
-        type: Number,
-        default: 0
-      },
-      totalCourses: {
-        type: Number,
-        default: 0
-      },
-      completedCourses: {
-        type: Number,
-        default: 0
-      },
-      certificates: {
-        type: Number,
-        default: 0
-      },
-    learningHoursChart: [{
-      date: String,
-      hours: Number
-    }]
-  },
-  settings: {
-    notifications: {
-      emailNotifications: {
-        type: Boolean,
-        default: true
-      },
-      pushNotifications: {
-        type: Boolean,
-        default: true
-      },
-      courseUpdates: {
-        type: Boolean,
-        default: true
-      },
-      discussionReplies: {
-        type: Boolean,
-        default: true
-      }
+    ],
+
+    analytics: {
+      totalHours: { type: Number, default: 0 },
+      daysStudied: { type: Number, default: 0 },
+      studySessions: [
+        {
+          date: Date,
+          hours: Number,
+        },
+      ],
+      lastStudyDate: { type: Date, default: null },
+      attendance: { type: Number, default: 0 },
+      avgMarks: { type: Number, default: 0 },
+      dailyHours: { type: Number, default: 0 },
+      totalCourses: { type: Number, default: 0 },
+      completedCourses: { type: Number, default: 0 },
+      certificates: { type: Number, default: 0 },
     },
-    security: {
-      twoFactorAuth: {
-        type: Boolean,
-        default: false
+
+    learningHoursChart: [
+      {
+        date: String,
+        hours: Number,
       },
-      loginAlerts: {
-        type: Boolean,
-        default: true
-      }
+    ],
+
+    // ✅ MOVED INSIDE SCHEMA
+    settings: {
+      notifications: {
+        emailNotifications: { type: Boolean, default: true },
+        pushNotifications: { type: Boolean, default: true },
+        courseUpdates: { type: Boolean, default: true },
+        discussionReplies: { type: Boolean, default: true },
+      },
+      security: {
+        twoFactorAuth: { type: Boolean, default: false },
+        loginAlerts: { type: Boolean, default: true },
+      },
+      appearance: {
+        theme: {
+          type: String,
+          enum: ["light", "dark", "auto"],
+          default: "light",
+        },
+        language: { type: String, default: "en" },
+      },
     },
-    appearance: {
-      theme: {
-        type: String,
-        enum: ['light', 'dark', 'auto'],
-        default: 'light'
-      },
-      language: {
-        type: String,
-        default: 'en'
-      }
-    }
-  },
   },
   {
     timestamps: true,
   }
 );
 
-// Hash password before saving
-userSchema.pre('save', async function (next) {
-  if (!this.isModified('password')) {
-    next();
+// ✅ SAFE password hashing
+userSchema.pre("save", async function (next) {
+  if (!this.isModified("password")) {
+    return next(); // 🔥 VERY IMPORTANT
   }
+
   const salt = await bcrypt.genSalt(10);
   this.password = await bcrypt.hash(this.password, salt);
+  next();
 });
 
-const User = mongoose.model('User', userSchema);
-
+const User = mongoose.model("User", userSchema);
 export default User;

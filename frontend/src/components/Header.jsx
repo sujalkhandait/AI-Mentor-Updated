@@ -1,35 +1,35 @@
-import React, { useState, useRef, useEffect } from 'react'
-import { Search, Bell, Menu, X } from 'lucide-react'
-import { useAuth } from '../context/AuthContext'
-import { useNavigate } from 'react-router-dom'
+import React, { useState, useRef, useEffect } from "react";
+import { Search, Bell, Menu, X } from "lucide-react";
+import { useAuth } from "../context/AuthContext";
+import { useNavigate } from "react-router-dom";
 
 const Header = ({ sidebarOpen, setSidebarOpen }) => {
-  const [dropdownOpen, setDropdownOpen] = useState(false)
-  const { user, logout } = useAuth()
-  const navigate = useNavigate()
-  const dropdownRef = useRef(null)
+  const [dropdownOpen, setDropdownOpen] = useState(false);
+  const { user, logout } = useAuth();
+  const navigate = useNavigate();
+  const dropdownRef = useRef(null);
 
   const handleLogout = () => {
-    logout()
-    navigate('/login')
-  }
+    logout();
+    navigate("/login");
+  };
 
   const toggleDropdown = () => {
-    setDropdownOpen(!dropdownOpen)
-  }
+    setDropdownOpen((prev) => !prev);
+  };
 
   // Close dropdown if clicked outside
   useEffect(() => {
     const handleClickOutside = (event) => {
       if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
-        setDropdownOpen(false)
+        setDropdownOpen(false);
       }
-    }
-    document.addEventListener('mousedown', handleClickOutside)
-    return () => {
-      document.removeEventListener('mousedown', handleClickOutside)
-    }
-  }, [])
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
+
+  const displayName = user?.name || "Eliza Chris";
 
   return (
     <header className="bg-white border-b border-gray-200 px-6 py-4 fixed top-0 left-0 right-0 z-50">
@@ -39,8 +39,13 @@ const Header = ({ sidebarOpen, setSidebarOpen }) => {
             className="lg:hidden p-2 rounded-lg bg-white border border-gray-200"
             onClick={() => setSidebarOpen(!sidebarOpen)}
           >
-            {sidebarOpen ? <X className="w-5 h-5 text-gray-600" /> : <Menu className="w-5 h-5 text-gray-600" />}
+            {sidebarOpen ? (
+              <X className="w-5 h-5 text-gray-600" />
+            ) : (
+              <Menu className="w-5 h-5 text-gray-600" />
+            )}
           </button>
+
           <img
             src="/upto.png"
             alt="UptoSkills Logo"
@@ -62,21 +67,29 @@ const Header = ({ sidebarOpen, setSidebarOpen }) => {
         <div className="flex items-center space-x-4">
           <div className="relative">
             <Bell className="w-5 h-5 text-gray-600" />
-            <div className="absolute -top-1 -right-1 w-2 h-2 bg-orange-500 rounded-full"></div>
+            <div className="absolute -top-1 -right-1 w-2 h-2 bg-orange-500 rounded-full" />
           </div>
-          <div className="flex items-center space-x-3 relative" ref={dropdownRef}>
+
+          <div
+            className="flex items-center space-x-3 relative"
+            ref={dropdownRef}
+          >
             <img
-              src={`https://api.dicebear.com/8.x/initials/svg?seed=${user ? user.firstName : 'Eliza'}%20${user ? user.lastName : 'Chris'}`}
+              src={`https://api.dicebear.com/8.x/initials/svg?seed=${encodeURIComponent(
+                displayName
+              )}`}
               alt="User Avatar"
               className="w-8 h-8 rounded-full cursor-pointer"
               onClick={toggleDropdown}
             />
+
             <span
               className="text-gray-900 font-medium hidden sm:block cursor-pointer select-none"
               onClick={toggleDropdown}
             >
-              {user ? user.name : 'Eliza Chris'}
+              {displayName}
             </span>
+
             {dropdownOpen && (
               <div className="absolute right-0 mt-10 w-32 bg-white border border-gray-200 rounded-md shadow-lg z-50">
                 <button
@@ -91,7 +104,7 @@ const Header = ({ sidebarOpen, setSidebarOpen }) => {
         </div>
       </div>
     </header>
-  )
-}
+  );
+};
 
-export default Header
+export default Header;

@@ -3,30 +3,15 @@ logs
 *.log
 npm-debug.log*
 yarn-debug.log*
-yarn-error.log*
 pnpm-debug.log*
 lerna-debug.log*
 
-node_modules
-dist
-dist-ssr
-*.local
-
-# Editor directories and files
-.vscode/*
-!.vscode/extensions.json
-.idea
-.DS_Store
-*.suo
-*.ntvs*
-*.njsproj
-*.sln
-*.sw?
 # Node modules
 node_modules/
 
 # Build output
 dist/
+dist-ssr/
 build/
 
 # Local environment files
@@ -34,24 +19,23 @@ build/
 .env.local
 .env.*.local
 
-# Logs
-npm-debug.log*
-yarn-debug.log*
-yarn-error.log*
-pnpm-debug.log*
-
 # Editor directories and files
 .vscode/
+!.vscode/extensions.json
 .idea/
 .DS_Store
-*.swp
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
 
 # Optional cache directories
 .cache/
 .parcel-cache/
 vite.config.ts.timestamp*
 
-# Dependency managers
+# Dependency manager lock files
 package-lock.json
 yarn.lock
 pnpm-lock.yaml
@@ -62,4 +46,3 @@ coverage/
 
 # Misc
 *.local
-.env

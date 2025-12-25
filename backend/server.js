@@ -1,33 +1,48 @@
-import express from 'express';
-import dotenv from 'dotenv';
-import cors from 'cors';
-import connectDB from './config/db.js';
-import authRoutes from './routes/auth.js';
-import userRoutes from './routes/userRoutes.js';
-import courseRoutes from './routes/courseRoutes.js';
-import discussionRoutes from './routes/discussionRoutes.js';
-import analyticsRoutes from './routes/analyticsRoutes.js';
-import sidebarRoutes from './routes/sidebarRoutes.js';
+import express from "express";
+import dotenv from "dotenv";
+import cors from "cors";
+import connectDB from "./config/db.js";
+
+import authRoutes from "./routes/auth.js";
+import userRoutes from "./routes/userRoutes.js";
+import courseRoutes from "./routes/courseRoutes.js";
+import discussionRoutes from "./routes/discussionRoutes.js";
+import analyticsRoutes from "./routes/analyticsRoutes.js";
+import sidebarRoutes from "./routes/sidebarRoutes.js";
 
 dotenv.config();
-
 connectDB();
 
 const app = express();
 
-app.use(cors());
+app.use(
+  cors({
+    origin: "http://localhost:5173",
+    credentials: true,
+  })
+);
 app.use(express.json());
 
-app.get('/', (req, res) => {
-  res.send('API is running...');
+app.get("/", (req, res) => {
+  res.send("API is running...");
 });
 
-app.use('/api/auth', authRoutes);
-app.use('/api/users', userRoutes);
-app.use('/api/courses', courseRoutes);
-app.use('/api/discussions', discussionRoutes);
-app.use('/api/analytics', analyticsRoutes);
-app.use('/api/sidebar', sidebarRoutes);
+app.use("/api/auth", authRoutes);
+app.use("/api/users", userRoutes);
+app.use("/api/courses", courseRoutes);
+app.use("/api/discussions", discussionRoutes);
+app.use("/api/analytics", analyticsRoutes);
+app.use("/api/sidebar", sidebarRoutes);
+
+// Global error handler
+app.use((err, req, res, next) => {
+  console.error("🔥 Global Error:", err.stack);
+  res.status(err.statusCode || 500).json({
+    message: err.message || "Internal Server Error",
+  });
+});
 
 const PORT = process.env.PORT || 5000;
-app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
+app.listen(PORT, () => {
+  console.log(`✅ Server running on port ${PORT}`);
+});

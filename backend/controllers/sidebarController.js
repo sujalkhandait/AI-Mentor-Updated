@@ -1,6 +1,6 @@
-import fs from 'fs';
-import path from 'path';
-import { fileURLToPath } from 'url';
+import fs from "fs/promises";
+import path from "path";
+import { fileURLToPath } from "url";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -10,24 +10,36 @@ const __dirname = path.dirname(__filename);
 // @access  Private
 const getNavigationItems = async (req, res) => {
   try {
-    // Read the sidebar.json file
-    const sidebarPath = path.join(__dirname, '../../frontend/public/data/sidebar.json');
-    const sidebarData = fs.readFileSync(sidebarPath, 'utf8');
-    const navigationItems = JSON.parse(sidebarData);
+    if (!req.user) {
+      return res.status(401).json({ message: "Not authorized" });
+    }
 
-    // Filter items based on user role
-    const userRole = req.user.role;
+    const sidebarPath = path.resolve(
+      __dirname,
+      "../../frontend/public/data/sidebar.json"
+    );
+
+    const sidebarData = await fs.readFile(sidebarPath, "utf8");
+
+    let navigationItems;
+    try {
+      navigationItems = JSON.parse(sidebarData);
+    } catch {
+      return res.status(500).json({ message: "Invalid sidebar configuration" });
+    }
+
+    const userRole = req.user.role || "user";
+
     let filteredItems = navigationItems;
 
-    if (userRole !== 'admin') {
-      // Hide admin panel for non-admin users
-      filteredItems = navigationItems.filter(item => item.id !== 'admin');
+    if (userRole !== "admin") {
+      filteredItems = navigationItems.filter((item) => item.id !== "admin");
     }
 
     res.json(filteredItems);
   } catch (error) {
-    console.error('Error reading sidebar data:', error);
-    res.status(500).json({ message: 'Server Error' });
+    console.error("SIDEBAR ERROR:", error);
+    res.status(500).json({ message: "Server Error" });
   }
 };
 
