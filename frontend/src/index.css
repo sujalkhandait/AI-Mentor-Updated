@@ -1,8 +1,10 @@
 @import "tailwindcss";
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+@import url("https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap");
 
 body {
-  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue', sans-serif;
+  font-family: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto",
+    "Oxygen", "Ubuntu", "Cantarell", "Fira Sans", "Droid Sans", "Helvetica Neue",
+    sans-serif;
 }
 
 .line-clamp-2 {
@@ -43,4 +45,137 @@ body {
   .sidebar-hidden {
     transform: translateX(-100%);
   }
+}
+
+.text-gradient {
+  background: linear-gradient(90deg, #4facfe, #7846aa);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+.btn-gradient {
+  background: linear-gradient(135deg, #2186df, #02ffbb);
+  border: none;
+  color: white;
+  font-weight: 600;
+  transition: all 0.3s ease;
+}
+
+.btn-gradient:hover {
+  opacity: 0.9;
+  transform: translateY(-1px);
+  box-shadow: 0 6px 18px rgba(79, 172, 254, 0.4);
+}
+.password-input {
+  font-size: 2rem; /* bigger bullets */
+  letter-spacing: 0.35rem; /* space between bullets */
+  font-weight: 900; /* bolder bullets */
+}
+
+/* =========================
+   GLOBAL DARK THEME
+========================= */
+
+.dark body {
+  background-color: #0f172a;
+  color: #e5e7eb;
+}
+
+/* Card (Auth Card) */
+.dark .card {
+  background-color: #020617;
+  color: #e5e7eb;
+}
+
+/* Text */
+.dark .text-muted {
+  color: #94a3b8 !important;
+}
+
+/* Inputs */
+.dark .form-control {
+  background-color: #020617;
+  color: #e5e7eb;
+  border-color: #334155;
+}
+
+.dark .form-control::placeholder {
+  color: #94a3b8;
+}
+
+/* Focus */
+.dark .form-control:focus {
+  background-color: #020617;
+  color: #e5e7eb;
+  border-color: #6366f1;
+  box-shadow: none;
+}
+
+/* Buttons (optional polish) */
+.dark .btn {
+  color: #e5e7eb;
+}
+
+/* Auth layout background */
+.dark .container-fluid {
+  background-color: #020617;
+}
+
+/* =========================
+   DASHBOARD DARK MODE
+========================= */
+
+.dark .navbar {
+  background-color: #020617 !important;
+  color: #e5e7eb;
+}
+
+.dark .navbar .nav-link,
+.dark .navbar-brand {
+  color: #e5e7eb !important;
+}
+
+.dark .card {
+  background-color: #020617;
+  color: #e5e7eb;
+}
+
+.dark .table {
+  color: #e5e7eb;
+}
+
+.dark .table thead {
+  background-color: #020617;
+}
+
+.dark .table tbody tr {
+  border-color: #334155;
+}
+
+.dark .list-group-item {
+  background-color: #020617;
+  color: #e5e7eb;
+  border-color: #334155;
+}
+
+.dark .dropdown-menu {
+  background-color: #020617;
+  color: #e5e7eb;
+}
+
+.dark .dropdown-item {
+  color: #e5e7eb;
+}
+
+.dark .dropdown-item:hover {
+  background-color: #1e293b;
+}
+
+.dark .modal-content {
+  background-color: #020617;
+  color: #e5e7eb;
+}
+
+.dark .btn-outline-secondary {
+  color: #e5e7eb;
+  border-color: #475569;
 }

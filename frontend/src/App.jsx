@@ -1,19 +1,20 @@
-import React from 'react'
-import { Routes, Route, Navigate, Outlet } from 'react-router-dom'
-import { useAuth } from './context/AuthContext'
-import ProtectedRoute from './components/ProtectedRoute'
-import AdminRoute from './components/AdminRoute'
-import LoginPage from './pages/LoginPage'
-import SignUpPage from './pages/SignUpPage'
-import Dashboard from './pages/Dashboard'
-import Analytics from './pages/Analytics'
-import CoursesPage from './pages/CoursesPage'
-import DiscussionsPage from './pages/DiscussionsPage'
-import Settings from './pages/Settings'
-import WatchedVideos from './pages/WatchedVideos'
-import CoursePreview from './pages/CoursePreview'
-import LearningPage from './pages/LearningPage'
-import AdminPage from './pages/AdminPage'
+import React from "react";
+import { Routes, Route, Navigate, Outlet } from "react-router-dom";
+import { useAuth } from "./context/AuthContext";
+import ProtectedRoute from "./components/ProtectedRoute";
+import AdminRoute from "./components/AdminRoute";
+import LoginPage from "./pages/LoginPage";
+import SignUpPage from "./pages/SignUpPage";
+import Dashboard from "./pages/Dashboard";
+import Analytics from "./pages/Analytics";
+import CoursesPage from "./pages/CoursesPage";
+import DiscussionsPage from "./pages/DiscussionsPage";
+import Settings from "./pages/Settings";
+import WatchedVideos from "./pages/WatchedVideos";
+import CoursePreview from "./pages/CoursePreview";
+import LearningPage from "./pages/LearningPage";
+import AdminPage from "./pages/AdminPage";
+import "./App.css";
 
 // Redirects from the root path based on authentication status.
 const RootRedirect = () => {
@@ -58,7 +59,7 @@ const App = () => {
       {/* Other public routes */}
       <Route path="/course-preview/:courseId" element={<CoursePreview />} />
     </Routes>
-  )
-}
+  );
+};
 
-export default App
+export default App;
