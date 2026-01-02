@@ -4,6 +4,7 @@ import { Eye, EyeOff, Lock, Moon, Sun } from "lucide-react";
 import { useTheme } from "../context/ThemeContext";
 import { useAuth } from "../context/AuthContext";
 import AiPattern from "../assets/gradinet.jpg";
+import API_BASE_URL from "../lib/api";
 
 export default function SignUpPage() {
   const [email, setEmail] = useState("");
@@ -23,7 +24,7 @@ export default function SignUpPage() {
     e.preventDefault();
     setLoading(true);
     try {
-      const response = await fetch('http://localhost:5000/api/auth/register', {
+      const response = await fetch('/api/auth/register', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -48,9 +49,9 @@ export default function SignUpPage() {
   };
 
   return (
-    <div className="min-h-screen w-full flex flex-col md:flex-row bg-white font-sans">
+    <div className="h-screen w-full flex flex-col md:flex-row bg-white font-sans overflow-hidden">
       {/* Left Side - Hero Section */}
-      <div className="flex-1 flex flex-col  items-center p-6 md:p-10">
+      <div className="flex-1 flex flex-col  items-center p-6 md:p-1">
         <div className="max-w-[600px] flex flex-col justify-center text-center md:text-left">
           <img
             src="upto.png"
@@ -72,23 +73,23 @@ export default function SignUpPage() {
             Platform
           </h1>
 
-          <p className="text-[#5E5858] font-medium text-[clamp(14px,1vw,20px)] max-w-[500px] mt-3 leading-6 mx-auto md:mx-0">
+          <p className="text-[#5E5858] font-medium text-[clamp(14px,1vw,20px)] max-w-[500px] mt-3 leading-6 t mx-auto md:mx-0">
             Unlock the future of education with AI-powered courses designed to
             accelerate your learning journey.
           </p>
         </div>
 
-        <div className="w-[80%] md:w-[60%] mt-8">
+        <div className="w-[100%]  md:w-[60%] mt-8">
           <img
             src="signupimg.png"
             alt="AI Learning Illustration"
-            className="w-full h-auto object-contain"
+            className="w-250 h-110 object-contain"
           />
         </div>
       </div>
 
       {/* Right Side - Sign Up Form */}
-      <div className="w-full max-w-[620px] flex items-center justify-center p-6 md:p-10">
+      <div className="w-full max-w-[600px] h-200 flex items-center justify-center p-6 md:p-10">
         <div className="w-full max-w-[500px] p-6 md:p-8 rounded-[20px] border border-[#E8E8E8] bg-white shadow-[4px_4px_38.7px_-4px_rgba(110,110,110,0.30)]">
           {/* Form Header */}
           <div className="mb-6 md:mb-8 flex justify-between items-start">
@@ -97,7 +98,7 @@ export default function SignUpPage() {
                 Join Us Today!
               </h2>
               <p className="text-[#5E5858] text-[16px] md:text-[20px] font-medium leading-[26px] md:leading-[28px]">
-                Create your account for an enhanced experience at your fingertips.
+                Create your account for an enhanced experience at your fingertips.  
               </p>
             </div>
             <div className="flex items-center gap-2">
@@ -115,7 +116,7 @@ export default function SignUpPage() {
           {/* Form */}
           <form onSubmit={handleSubmit} className="flex flex-col gap-6 md:gap-8">
             {/* Email Address */}
-            <div className="flex flex-col gap-2">
+            <div className="flex flex-col gap-1">
               <label htmlFor="email" className="text-[#0D0D0D] text-[16px] md:text-[18px] font-medium">
                 Email Address
               </label>
@@ -125,13 +126,13 @@ export default function SignUpPage() {
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 placeholder="Enter your email here"
-                className="h-[50px] md:h-[58px] px-4 rounded-[12px] border border-[#B3B3B3] bg-white text-[16px] md:text-[18px] font-medium placeholder:text-[#5E5858] focus:outline-none focus:border-cyan-400 transition-colors"
+                className="h-[50px] md:h-[50px] px-4 rounded-[12px] border border-[#B3B3B3] bg-white text-[16px] md:text-[18px] font-medium placeholder:text-[#5E5858] focus:outline-none focus:border-cyan-400 transition-colors"
                 required
               />
             </div>
 
             {/* Username */}
-            <div className="flex flex-col gap-2">
+            <div className="flex flex-col gap-1">
               <label htmlFor="username" className="text-[#0D0D0D] text-[16px] md:text-[18px] font-medium">
                 Choose a Username
               </label>
@@ -141,7 +142,7 @@ export default function SignUpPage() {
                 value={username}
                 onChange={(e) => setUsername(e.target.value)}
                 placeholder="Enter your username here"
-                className="h-[50px] md:h-[58px] px-4 rounded-[12px] border border-[#B3B3B3] bg-white text-[16px] md:text-[18px] font-medium placeholder:text-[#5E5858] focus:outline-none focus:border-cyan-400 transition-colors"
+                className="h-[50px] md:h-[48px] px-4 rounded-[12px] border border-[#B3B3B3] bg-white text-[16px] md:text-[18px] font-medium placeholder:text-[#5E5858] focus:outline-none focus:border-cyan-400 transition-colors"
                 required
               />
             </div>
@@ -158,7 +159,7 @@ export default function SignUpPage() {
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   placeholder="••••••••••"
-                  className="h-[50px] md:h-[58px] w-full px-4 pr-12 rounded-[12px] border border-[#B3B3B3] bg-white text-[16px] md:text-[18px] font-medium placeholder:text-[#0D0D0D] focus:outline-none focus:border-cyan-400 transition-colors"
+                  className="h-[50px] md:h-[48px] w-full px-4 pr-12 rounded-[12px] border border-[#B3B3B3] bg-white text-[16px] md:text-[18px] font-medium placeholder:text-[#0D0D0D] focus:outline-none focus:border-cyan-400 transition-colors"
                   required
                   minLength={8}
                 />
@@ -169,15 +170,15 @@ export default function SignUpPage() {
                   className="absolute right-4 top-1/2 -translate-y-1/2 p-1 rounded hover:bg-gray-100 transition-colors"
                 >
                   {showPassword ? (
-                    <EyeOff className="w-6 h-6 text-[#757575]" />
+                    <EyeOff className="w-6 h-5 text-[#757575]" />
                   ) : (
-                    <Eye className="w-6 h-6 text-[#757575]" />
+                    <Eye className="w-6 h-5 text-[#757575]" />
                   )}
                 </button>
               </div>
 
               {/* Password Requirement */}
-              <div className="flex items-center gap-2 pt-2">
+              <div className="flex items-center gap-3 pt-2">
                 <Lock className="w-6 h-6 text-[#0D0D0D] opacity-40" />
                 <span className="text-[#0D0D0D] text-[14px] md:text-[16px] font-medium">
                   Minimum 8 characters required
@@ -186,7 +187,7 @@ export default function SignUpPage() {
             </div>
 
             {/* Action Buttons */}
-            <div className="flex flex-col gap-3 mt-4">
+            <div className="flex flex-col gap-3 mt-2">
               <button
                 type="submit"
                 disabled={loading}

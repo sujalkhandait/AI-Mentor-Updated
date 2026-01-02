@@ -24,7 +24,7 @@ export default function CoursePreview() {
 
         if (data) {
           // The backend returns the course directly
-          setCourseData(data);
+          setCourseData(data || null);
           setError(null);
         } else {
           setError(`Course with ID ${courseId} not found`);
@@ -44,11 +44,12 @@ export default function CoursePreview() {
       navigate('/login');
       return;
     }
+    purchaseLock.current = true;
 
     setIsPurchasing(true);
     try {
       const token = localStorage.getItem('token');
-      const response = await fetch('http://localhost:5000/api/users/purchase-course', {
+      const response = await fetch('/api/users/purchase-course', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -103,7 +104,7 @@ export default function CoursePreview() {
             {/* Course Header */}
             <section className="mb-6 lg:mb-8 relative">
               <div className="flex items-center gap-2 lg:gap-3 mb-4 flex-wrap">
-                {courseData.tags.map((tag, index) => (
+                {courseData.tags?.map((tag, index) => (
                   <span key={index} className={`text-sm font-medium ${
                     tag === 'Bestseller' ? 'text-[#FACC15]' :
                     tag === 'Beginner-Friendly' ? 'bg-[#22C55E] text-white px-3 py-1 rounded-full' :

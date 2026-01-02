@@ -54,7 +54,7 @@ export default function Learning() {
     const fetchLearningData = async () => {
       try {
         const token = localStorage.getItem('token');
-        const response = await fetch(`http://localhost:5000/api/courses/${courseId}/learning`, {
+        const response = await fetch(`/api/courses/${courseId}/learning`, {
           headers: {
             'Authorization': `Bearer ${token}`,
           },
@@ -119,7 +119,7 @@ export default function Learning() {
 
     try {
       const token = localStorage.getItem('token');
-      const response = await fetch('http://localhost:5000/api/users/course-progress', {
+      const response = await fetch('/api/users/course-progress', {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
@@ -210,7 +210,7 @@ export default function Learning() {
     // Update progress on backend
     try {
       const token = localStorage.getItem('token');
-      await fetch('http://localhost:5000/api/users/course-progress', {
+      await fetch('/api/users/course-progress', {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',

@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react'
 import Header from '../components/Header' // Assuming Header is correctly imported
 import Sidebar from '../components/Sidebar'
 import { useAuth } from '../context/AuthContext'
+import API_BASE_URL from '../lib/api'
 
 const Analytics = () => {
   const [sidebarOpen, setSidebarOpen] = useState(false)
@@ -63,7 +64,7 @@ const Analytics = () => {
           return
         }
 
-        const response = await fetch('http://localhost:5000/api/analytics', {
+        const response = await fetch('/api/analytics', {
           headers: {
             Authorization: `Bearer ${token}`,
           },

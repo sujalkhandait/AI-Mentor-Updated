@@ -55,7 +55,7 @@ const DiscussionsPage = () => {
   const createDiscussion = async (title, description) => {
     try {
       const token = localStorage.getItem('token')
-      const response = await fetch('http://localhost:5000/api/discussions', {
+      const response = await fetch('/api/discussions', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -78,7 +78,7 @@ const DiscussionsPage = () => {
   const addReply = async (discussionId, text) => {
     try {
       const token = localStorage.getItem('token')
-      const response = await fetch(`http://localhost:5000/api/discussions/${discussionId}/reply`, {
+      const response = await fetch(`/api/discussions/${discussionId}/reply`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -109,7 +109,7 @@ const DiscussionsPage = () => {
 
     try {
       const token = localStorage.getItem('token')
-      const response = await fetch('http://localhost:5000/api/courses/my-courses', {
+      const response = await fetch('/api/courses/my-courses', {
         headers: {
           'Authorization': `Bearer ${token}`
         }

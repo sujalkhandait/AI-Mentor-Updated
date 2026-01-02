@@ -67,7 +67,7 @@ export default function Settings() {
     try {
       const token = localStorage.getItem('token');
       const response = await axios.put(
-        'http://localhost:5000/api/users/profile',
+        '/api/users/profile',
         {
           firstName: formData.firstName,
           lastName: formData.lastName,
@@ -350,7 +350,7 @@ export default function Settings() {
                       try {
                         const token = localStorage.getItem('token');
                         await axios.put(
-                          'http://localhost:5000/api/users/settings',
+                          '/api/users/settings',
                           { notifications: settingsData.notifications },
                           { headers: { Authorization: `Bearer ${token}` } }
                         );
@@ -419,8 +419,8 @@ export default function Settings() {
                   </div>
 
                   <div className="border-t border-[#E5E7EB] pt-6">
-                    <h3 className="text-[18px] font-semibold text-[#1F2937] font-[Inter] mb-4">Change Password</h3>
-                    <div className="space-y-4">
+                    <h3 className="text-[18px] font-semibold text-[#1F2937] font-[Inter]  mb-4">Change Password</h3>
+                    <div className="space-y-5">
                       <div className="relative">
                         <label className="absolute -top-2 left-4 bg-white px-2 text-[14px] text-[#475569] font-medium font-[Inter]">
                           Current Password
@@ -495,7 +495,7 @@ export default function Settings() {
                       try {
                         const token = localStorage.getItem('token');
                         await axios.put(
-                          'http://localhost:5000/api/users/settings',
+                          '/api/users/settings',
                           { security: settingsData.security },
                           { headers: { Authorization: `Bearer ${token}` } }
                         );
@@ -590,7 +590,7 @@ export default function Settings() {
                       try {
                         const token = localStorage.getItem('token');
                         await axios.put(
-                          'http://localhost:5000/api/users/settings',
+                          '/api/users/settings',
                           { appearance: settingsData.appearance },
                           { headers: { Authorization: `Bearer ${token}` } }
                         );
@@ -657,7 +657,7 @@ export default function Settings() {
                       try {
                         const token = localStorage.getItem('token');
                         await axios.put(
-                          'http://localhost:5000/api/users/settings',
+                          '/api/users/settings',
                           { appearance: { language: settingsData.appearance.language } },
                           { headers: { Authorization: `Bearer ${token}` } }
                         );

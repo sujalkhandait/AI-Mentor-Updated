@@ -44,8 +44,8 @@ const Dashboard = () => {
         };
 
         const [coursesRes, statsRes] = await Promise.all([
-          fetch('http://localhost:5000/api/courses', { headers }),
-          fetch('http://localhost:5000/api/courses/stats/cards', { headers })
+          fetch('/api/courses', { headers }),
+          fetch('/api/courses/stats/cards', { headers })
         ]);
 
         if (!coursesRes.ok) {
