@@ -534,7 +534,7 @@ export default function Learning() {
       <Header sidebarOpen={sidebarOpen} setSidebarOpen={setSidebarOpen} />
 
       {/* Sidebar */}
-      <div className="fixed left-0 top-16 bottom-0 w-80 text-main bg-card border-r border-gray-200 overflow-y-auto z-10">
+      <div className="fixed left-0 top-16 bottom-0 w-80 text-main bg-card border-r border-border overflow-y-auto z-10">
         <div className="p-6 h-full overflow-y-auto">
           <div className="flex items-center justify-between mb-6">
             <h2 className="text-xl font-bold text-main">
@@ -542,7 +542,7 @@ export default function Learning() {
             </h2>
             <button
               onClick={() => navigate("/courses")}
-              className="text-gray-400 hover:text-gray-600"
+              className="text-muted hover:text-main"
             >
               <ChevronLeft className="w-5 h-5" />
             </button>
@@ -558,7 +558,7 @@ export default function Learning() {
                 placeholder="Search celebrities..."
                 value={celebritySearch}
                 onChange={(e) => setCelebritySearch(e.target.value)}
-                className="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                className="w-full px-3 py-2 border border-border bg-input rounded-lg focus:outline-none focus:ring-2 focus:ring-primary text-main placeholder-muted"
               />
             </div>
             <div className="flex flex-col gap-2">
@@ -581,10 +581,10 @@ export default function Learning() {
                           p.catch(() => {});
                       }
                     }}
-                    className={`w-full text-left px-4 py-3 rounded-lg border ${
+                    className={`w-full text-left px-4 py-3 rounded-lg border border-border ${
                       selectedCelebrity === c
-                        ? "bg-blue-600 text-white"
-                        : "bg-white text-gray-900"
+                        ? "bg-primary text-white"
+                        : "bg-input text-main"
                     }`}
                   >
                     {c}
@@ -611,9 +611,9 @@ export default function Learning() {
               });
               return (
                 <>
-                  <div className="w-full bg-gray-200 dark:bg-gray-400 rounded-full h-2">
+                  <div className="w-full bg-border rounded-full h-2">
                     <div
-                      className="bg-blue-600 h-2 rounded-full"
+                      className="bg-primary h-2 rounded-full"
                       style={{ width: `${progressPercent}%` }}
                     ></div>
                   </div>
@@ -649,11 +649,11 @@ export default function Learning() {
               ).map((module) => (
                 <div
                   key={module.id}
-                  className="border border-gray-200 rounded-lg"
+                  className="border border-border rounded-lg"
                 >
                   <button
                     onClick={() => toggleModule(module.id)}
-                    className="w-full flex items-center justify-between p-4 text-left hover:bg-border"
+                    className="w-full flex items-center justify-between p-4 text-left bg-input  transition-colors"
                   >
                     <span className="font-medium text-main">
                       {module.title}
@@ -666,14 +666,14 @@ export default function Learning() {
                   </button>
 
                   {expandedModule === module.id && (
-                    <div className="px-4 pb-4 space-y-2">
+                    <div className="p-4 space-y-2">
                       {module.lessons.map((lesson) => (
                         <button
                           key={lesson.id}
                           onClick={() => handleLessonClick(lesson)}
-                          className={`w-full flex items-center gap-3 p-3 rounded-lg text-left hover:bg-border ${
+                          className={`w-full flex items-center gap-3 p-3 rounded-lg text-left hover:bg-input transition-colors ${
                             currentLesson?.id === lesson.id
-                              ? "bg-input-bg border border-blue-200 dark:border-blue-200"
+                              ? "bg-input border border-primary"
                               : ""
                           }`}
                         >
@@ -780,11 +780,11 @@ export default function Learning() {
                       {formatTime(currentTime)}
                     </span>
                     <div
-                      className="flex-1 h-1 bg-gray-600 rounded-lg cursor-pointer"
+                      className="flex-1 h-1 bg-border rounded-lg cursor-pointer"
                       onClick={handleSeek}
                     >
                       <div
-                        className="h-full bg-white rounded-lg"
+                        className="h-full bg-primary rounded-lg"
                         style={{ width: `${progress}%` }}
                       ></div>
                     </div>
@@ -811,7 +811,7 @@ export default function Learning() {
                       step="0.1"
                       value={volume}
                       onChange={handleVolumeChange}
-                      className="w-20 h-1 bg-gray-600 rounded-lg appearance-none cursor-pointer range-sm accent-white"
+                      className="w-20 h-1 bg-border rounded-lg appearance-none cursor-pointer range-sm accent-primary"
                     />
                   </div>
 
@@ -837,7 +837,7 @@ export default function Learning() {
               <button
                 onClick={handlePrevious}
                 disabled={currentLessonIndex <= 0}
-                className="px-6 py-3 rounded-lg bg-gray-600 text-white font-medium hover:bg-gray-700 transition-colors flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+                className="px-6 py-3 rounded-lg bg-border text-main font-medium hover:bg-input transition-colors flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 <ChevronLeft className="w-4 h-4" />
                 Previous
@@ -848,7 +848,7 @@ export default function Learning() {
                 disabled={
                   currentLessonIndex >= allLessons.length - 1 || isNavigating
                 }
-                className="px-6 py-3 rounded-lg bg-blue-600 text-white font-medium shadow-lg hover:bg-blue-700 transition-colors flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+                className="px-6 py-3 rounded-lg bg-primary text-white font-medium shadow-lg hover:opacity-90 transition-opacity flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 {isNavigating ? "Loading..." : "Next"}
                 <ChevronRight className="w-4 h-4" />
