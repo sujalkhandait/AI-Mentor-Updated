@@ -8,7 +8,7 @@ yarn-error.log*
 pnpm-debug.log*
 
 venv/
-
+ai_service/
 
 # =====================
 # Environment files
