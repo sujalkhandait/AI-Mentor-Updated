@@ -43,7 +43,8 @@ def home():
 @app.post("/generate")
 def generate_lesson(data: LessonRequest, background_tasks: BackgroundTasks):
     # Generate filename here so we can return it immediately
-    topic_clean = data.topic.replace(" ", "_")
+    # Sanitize topic: remove special characters, replace spaces with underscores
+    topic_clean = re.sub(r'[^\w\s-]', '', data.topic).strip().replace(" ", "_")
     timestamp = datetime.datetime.now().strftime("%Y%m%d_%H%M%S")
     base_filename = f"{topic_clean}_{timestamp}"
     
