@@ -573,271 +573,339 @@ export default function Learning() {
   };
 
   return (
-    <div className="min-h-screen bg-[#F8F9FA] flex flex-col">
+    <div className="min-h-screen bg-canvas-alt flex">
       <Header sidebarOpen={sidebarOpen} setSidebarOpen={setSidebarOpen} />
 
-      <div className="flex flex-1 mt-16">
-        {/* Sidebar - Left */}
-        <aside className="w-80 pt-[29px] bg-white border-r border-gray-200 overflow-y-auto hidden lg:block">
-          <div className="p-6">
+      {/* Sidebar */}
+      <div className="fixed left-0 top-16 bottom-0 w-80 text-main bg-card border-r border-border overflow-y-auto z-10">
+        <div className="p-6 h-full overflow-y-auto">
+          <div className="flex items-center justify-between mb-6">
+            <h2 className="text-xl font-bold text-main">
+              {learningData?.course?.title || learningData?.title || "Course"}
+            </h2>
             <button
               onClick={() => navigate("/courses")}
-              className="flex items-center gap-2 text-gray-600 hover:text-gray-900 mb-6 transition-colors group"
+              className="text-muted hover:text-main"
             >
-              <ChevronLeft className="w-5 h-5 group-hover:-translate-x-1 transition-transform" />
-              <span className="font-medium">Back to Courses</span>
+              <ChevronLeft className="w-5 h-5" />
             </button>
+          </div>
 
-            <h1 className="text-2xl font-bold text-gray-800 mb-8 leading-tight">
-              {learningData?.course?.title || learningData?.title || "Course"}
-            </h1>
-
-            <div className="space-y-6">
-              <div>
-                <h3 className="text-lg font-semibold text-gray-800 mb-4 flex items-center gap-2">
-                  Celebrities
-                </h3>
-                <div className="relative mb-4">
-                  <input
-                    type="search"
-                    placeholder="Search celebrities..."
-                    value={celebritySearch}
-                    onChange={(e) => setCelebritySearch(e.target.value)}
-                    className="w-full px-4 py-2 bg-gray-50 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
-                  />
-                </div>
-                <div className="space-y-2">
-                  {celebrities
-                    .filter((c) =>
-                      c.toLowerCase().includes(celebritySearch.trim().toLowerCase())
-                    )
-                    .map((c) => (
-                      <button
-                        key={c}
-                        onClick={() => {
-                          if (selectedCelebrity === c) {
-                            setSelectedCelebrity(null);
-                            setAiVideoUrl(null);
-                          } else {
-                            setSelectedCelebrity(c);
-                          }
-                        }}
-                        className={`w-full text-left px-4 py-3 rounded-lg border transition-all duration-200 ${
-                          selectedCelebrity === c
-                            ? "bg-blue-600 border-blue-600 text-white shadow-md"
-                            : "bg-white border-gray-200 text-gray-700 hover:border-blue-500 hover:bg-blue-50"
-                        }`}
-                      >
-                        {c}
-                      </button>
-                    ))}
-                </div>
-              </div>
+          <div className="mb-4">
+            <h3 className="text-sm font-semibold text-main mb-3">
+              Celebrities
+            </h3>
+            <div className="mb-3">
+              <input
+                type="search"
+                placeholder="Search celebrities..."
+                value={celebritySearch}
+                onChange={(e) => setCelebritySearch(e.target.value)}
+                className="w-full px-3 py-2 border border-border bg-input rounded-lg focus:outline-none focus:ring-2 focus:ring-primary text-main placeholder-muted"
+              />
+            </div>
+            <div className="flex flex-col gap-2">
+              {celebrities
+                .filter((c) =>
+                  c.toLowerCase().includes(celebritySearch.trim().toLowerCase())
+                )
+                .map((c) => (
+                  <button
+                    key={c}
+                    onClick={() => {
+                      if (selectedCelebrity === c) {
+                        // Toggle off if same celebrity clicked again
+                        setSelectedCelebrity(null);
+                        setAiVideoUrl(null);
+                      } else {
+                        setSelectedCelebrity(c);
+                      }
+                    }}
+                    className={`w-full text-left px-4 py-3 rounded-lg border border-border ${
+                      selectedCelebrity === c
+                        ? "bg-primary text-white"
+                        : "bg-input text-main"
+                    }`}
+                  >
+                    {c}
+                  </button>
+                ))}
             </div>
           </div>
-        </aside>
 
-        {/* Main Content Area */}
-        <div className="flex-1 overflow-y-auto">
-          <div className="max-w-[1400px] mx-auto p-6">
-            <div className="grid grid-cols-1 xl:grid-cols-3 gap-6">
-              {/* Center: Video Player */}
-              <div className="pt-[12px] xl:col-span-2 space-y-6">
+          <div className="mb-6">
+            {(() => {
+              const completedCount =
+                user?.purchasedCourses?.find(
+                  (course) => course.courseId === parseInt(courseId)
+                )?.progress?.completedLessons?.length || 0;
+              const totalCount = allLessons.length;
+              const progressPercent = Math.min(
+                (completedCount / totalCount) * 100,
+                100
+              );
+              console.log("Progress calculation:", {
+                completedCount,
+                totalCount,
+                progressPercent,
+              });
+              return (
+                <>
+                  <div className="w-full bg-border rounded-full h-2">
+                    <div
+                      className="bg-primary h-2 rounded-full"
+                      style={{ width: `${progressPercent}%` }}
+                    ></div>
+                  </div>
+                  <p className="text-sm text-muted mt-2">
+                    {Math.round(progressPercent)}% Complete
+                  </p>
+                </>
+              );
+            })()}
+          </div>
+          <div className="space-y-2">
+            {(() => {
+              const q = searchQuery.trim().toLowerCase();
+              const filteredModules = (modules || [])
+                .map((module) => ({
+                  ...module,
+                  lessons: module.lessons.filter((lesson) =>
+                    lesson.title.toLowerCase().includes(q)
+                  ),
+                }))
+                .filter((m) => m.lessons.length > 0);
+
+              if (q && filteredModules.length === 0) {
+                return (
+                  <p className="text-sm text-muted">
+                    No results for "{searchQuery}"
+                  </p>
+                );
+              }
+
+              return (
+                filteredModules.length > 0 ? filteredModules : modules || []
+              ).map((module) => (
                 <div
-                  ref={playerContainerRef}
-                  className="relative bg-black rounded-xl overflow-hidden shadow-2xl group ring-1 ring-gray-200"
-                  style={{ aspectRatio: "16/9" }}
+                  key={module.id}
+                  className="border border-border rounded-lg"
                 >
-                  {isAIVideoLoading && (
-                    <div className="absolute inset-0 z-20 flex flex-col items-center justify-center bg-black/80 backdrop-blur-sm">
-                      <div className="w-12 h-12 border-4 border-blue-500 border-t-transparent rounded-full animate-spin mb-4"></div>
-                      <p className="text-white text-sm font-medium">Generating AI Video...</p>
-                    </div>
-                  )}
-                  {currentLesson?.youtubeUrl ? (
-                    <iframe
-                      key={currentLesson.id}
-                      src={`https://www.youtube.com/embed/${getYouTubeVideoId(
-                        currentLesson.youtubeUrl
-                      )}?autoplay=0&rel=0`}
-                      className="w-full h-full"
-                      frameBorder="0"
-                      allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                      allowFullScreen
-                      title={currentLesson.title}
-                    ></iframe>
-                  ) : (
-                    <video
-                      ref={videoRef}
-                      src={
-                        aiVideoUrl ||
-                        (selectedCelebrity &&
-                          celebrityVideoMap[selectedCelebrity] &&
-                          celebrityVideoMap[selectedCelebrity].video) ||
-                        currentLesson?.videoUrl
-                      }
-                      className="w-full h-full object-contain"
-                      onTimeUpdate={handleProgress}
-                      onLoadedMetadata={handleProgress}
-                      onEnded={() => setIsPlaying(false)}
-                      playsInline
-                      preload="metadata"
+                  <button
+                    onClick={() => toggleModule(module.id)}
+                    className="w-full flex items-center justify-between p-4 text-left bg-input  transition-colors"
+                  >
+                    <span className="font-medium text-main">
+                      {module.title}
+                    </span>
+                    <ChevronDown
+                      className={`w-4 h-4 transition-transform ${
+                        expandedModule === module.id ? "rotate-180" : ""
+                      }`}
                     />
-                  )}
+                  </button>
 
-                  {/* Caption overlay */}
-                  {activeCaption && (
-                    <div className="absolute left-1/2 transform -translate-x-1/2 bottom-12 px-6 py-3 bg-black/80 text-white rounded-lg max-w-[80%] text-center backdrop-blur-sm">
-                      <p className="text-lg font-medium leading-relaxed">{activeCaption}</p>
-                    </div>
-                  )}
-                </div>
-
-                {/* Module List Accordion - Moved below video */}
-                <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
-                  {modules?.map((module, mIdx) => (
-                    <div key={module.id} className="border-b border-gray-100 last:border-0">
-                      <button
-                        onClick={() => toggleModule(module.id)}
-                        className="w-full flex items-center justify-between p-5 text-left hover:bg-gray-50 transition-colors"
-                      >
-                        <span className="font-bold text-gray-800">
-                          Module {mIdx + 1}: {module.title}
-                        </span>
-                        <ChevronDown
-                          className={`w-5 h-5 text-gray-500 transition-transform duration-300 ${
-                            expandedModule === module.id ? "rotate-180" : ""
+                  {expandedModule === module.id && (
+                    <div className="p-4 space-y-2">
+                      {module.lessons.map((lesson) => (
+                        <button
+                          key={lesson.id}
+                          onClick={() => handleLessonClick(lesson)}
+                          className={`w-full flex items-center gap-3 p-3 rounded-lg text-left hover:bg-input transition-colors ${
+                            currentLesson?.id === lesson.id
+                              ? "bg-input border border-primary"
+                              : ""
                           }`}
-                        />
-                      </button>
-
-                      {expandedModule === module.id && (
-                        <div className="bg-gray-50/50 p-2 space-y-1">
-                          {module.lessons.map((lesson) => (
-                            <button
-                              key={lesson.id}
-                              onClick={() => handleLessonClick(lesson)}
-                              className={`w-full flex items-center gap-4 p-4 rounded-lg text-left transition-all ${
-                                currentLesson?.id === lesson.id
-                                  ? "bg-blue-50 text-blue-700 ring-1 ring-blue-200"
-                                  : "hover:bg-white text-gray-600"
-                              }`}
-                            >
-                              <div className="shrink-0">
-                                {lesson.type === "video" ? (
-                                  <Play className={`w-4 h-4 ${currentLesson?.id === lesson.id ? "text-blue-600" : "text-gray-400"}`} />
-                                ) : (
-                                  <FileText className="w-4 h-4 text-gray-400" />
-                                )}
-                              </div>
-                              <div className="flex-1">
-                                <p className={`text-sm font-semibold ${currentLesson?.id === lesson.id ? "text-blue-900" : "text-gray-800"}`}>
-                                  {lesson.title}
-                                </p>
-                                <p className="text-xs text-gray-500 mt-0.5">{lesson.duration}</p>
-                              </div>
-                              <div className="shrink-0">
-                                {user?.purchasedCourses
-                                  ?.find((c) => c.courseId === parseInt(courseId))
-                                  ?.progress?.completedLessons?.some((cl) => cl.lessonId === lesson.id) ? (
-                                  <div className="w-5 h-5 rounded-full bg-green-100 flex items-center justify-center">
-                                    <Check className="w-3 h-3 text-green-600" />
-                                  </div>
-                                ) : (
-                                  <div className="w-5 h-5 rounded-full border-2 border-gray-200" />
-                                )}
-                              </div>
-                            </button>
-                          ))}
-                        </div>
-                      )}
-                    </div>
-                  ))}
-                </div>
-              </div>
-
-              {/* Right: Info Panel and Controls */}
-              <div className="space-y-6">
-                <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6 space-y-6">
-                  <div>
-                    <h2 className="text-2xl font-bold text-gray-900 mb-4">
-                      {currentLesson?.title || "Selecting Lesson..."}
-                    </h2>
-                    <p className="text-gray-600 text-sm leading-relaxed line-clamp-6">
-                      {currentLesson?.content?.introduction || 
-                       "Learn the fundamentals and advanced concepts of this topic in this comprehensive lesson."}
-                    </p>
-                  </div>
-
-                  {/* Playback Controls */}
-                  <div className="space-y-4 pt-4 border-t border-gray-100">
-                    <div className="flex items-center gap-4">
-                      <button
-                        onClick={togglePlay}
-                        className="flex items-center justify-center w-12 h-10 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors shadow-sm"
-                      >
-                        {isPlaying ? <Pause className="w-5 h-5" /> : <Play className="w-5 h-5" />}
-                      </button>
-                      
-                      <div className="flex-1 bg-gray-100 h-1.5 rounded-full relative group cursor-pointer" onClick={handleSeek}>
-                        <div 
-                          className="absolute h-full bg-red-500 rounded-full transition-all duration-100"
-                          style={{ width: `${progress}%` }}
                         >
-                          <div className="absolute right-0 top-1/2 -translate-y-1/2 w-3 h-3 bg-red-600 rounded-full shadow-md scale-0 group-hover:scale-100 transition-transform" />
-                        </div>
-                      </div>
-
-                      <button onClick={toggleFullscreen} className="p-2 text-gray-500 hover:text-gray-800 transition-colors bg-gray-50 rounded-lg">
-                        <Maximize className="w-5 h-5" />
-                      </button>
+                          {lesson.type === "video" ? (
+                            <Play className="w-4 h-4 text-gray-400" />
+                          ) : (
+                            <FileText className="w-4 h-4 text-main" />
+                          )}
+                          <div className="flex-1">
+                            <p className="text-sm font-medium text-main">
+                              {lesson.title}
+                            </p>
+                            <p className="text-xs text-muted">
+                              {lesson.duration}
+                            </p>
+                          </div>
+                          {user?.purchasedCourses
+                            ?.find(
+                              (course) => course.courseId === parseInt(courseId)
+                            )
+                            ?.progress?.completedLessons?.some(
+                              (cl) => cl.lessonId === lesson.id
+                            ) ? (
+                            <Check className="w-4 h-4 text-green-500" />
+                          ) : (
+                            <Circle className="w-4 h-4 text-gray-300" />
+                          )}
+                        </button>
+                      ))}
                     </div>
-
-                    <div className="flex items-center justify-between text-xs text-gray-500 font-medium px-1">
-                      <span>{formatTime(currentTime)}</span>
-                      <span>{formatTime(duration)}</span>
-                    </div>
-
-                    <div className="flex items-center gap-3 bg-gray-50 p-3 rounded-xl">
-                      <button onClick={toggleMute} className="text-gray-500 hover:text-gray-800">
-                        {isMuted ? <VolumeX className="w-5 h-5" /> : <Volume2 className="w-5 h-5" />}
-                      </button>
-                      <input
-                        type="range"
-                        min="0"
-                        max="1"
-                        step="0.01"
-                        value={volume}
-                        onChange={handleVolumeChange}
-                        className="flex-1 h-1.5 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-blue-600"
-                      />
-                    </div>
-                  </div>
-
-                  {/* Navigation Buttons */}
-                  <div className="grid grid-cols-2 gap-4 pt-4">
-                    <button
-                      onClick={handlePrevious}
-                      disabled={currentLessonIndex <= 0}
-                      className="flex items-center justify-center gap-2 px-4 py-3 bg-gray-100 text-gray-700 font-semibold rounded-lg hover:bg-gray-200 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
-                    >
-                      <ChevronLeft className="w-4 h-4" />
-                      Previous
-                    </button>
-                    <button
-                      onClick={handleNext}
-                      disabled={currentLessonIndex >= allLessons.length - 1 || isNavigating}
-                      className="flex items-center justify-center gap-2 px-4 py-3 bg-blue-600 text-white font-semibold rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-all shadow-md"
-                    >
-                      {isNavigating ? "Loading..." : "Next"}
-                      <ChevronRight className="w-4 h-4" />
-                    </button>
-                  </div>
+                  )}
                 </div>
-              </div>
-            </div>
+              ));
+            })()}
           </div>
         </div>
+      </div>
+
+      {/* Main Content */}
+      <div className="ml-80 flex-1 mt-16">
+        <main className="p-8 space-y-8">
+          {/* Video Player */}
+          <div
+            ref={playerContainerRef}
+            className="relative bg-black rounded-lg overflow-hidden group"
+            style={{ aspectRatio: "16/9" }}
+          >
+            {isAIVideoLoading && (
+              <div className="absolute inset-0 z-20 flex flex-col items-center justify-center bg-black/80 backdrop-blur-sm">
+                <div className="w-12 h-12 border-4 border-gray-600 border-t-transparent rounded-full animate-spin mb-4"></div>
+                <p className="text-gray-400 text-sm mt-2">
+                  This may take a few moments
+                </p>
+              </div>
+            )}
+            {currentLesson?.youtubeUrl ? (
+              <iframe
+                key={currentLesson.id}
+                src={`https://www.youtube.com/embed/${getYouTubeVideoId(
+                  currentLesson.youtubeUrl
+                )}`}
+                className="w-full h-full"
+                frameBorder="0"
+                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                allowFullScreen
+                title={currentLesson.title}
+              ></iframe>
+            ) : (
+              <video
+                ref={videoRef}
+                src={
+                  aiVideoUrl ||
+                  (selectedCelebrity &&
+                    celebrityVideoMap[selectedCelebrity] &&
+                    celebrityVideoMap[selectedCelebrity].video) ||
+                  currentLesson?.videoUrl
+                }
+                className="w-full h-full object-contain bg-black"
+                onTimeUpdate={handleProgress}
+                onLoadedMetadata={handleProgress}
+                onEnded={() => {
+                  setIsPlaying(false);
+                }}
+                controls={false}
+                playsInline
+                preload="metadata"
+              />
+            )}
+
+            {/* Caption overlay (custom) */}
+            {activeCaption && (
+              <div className="absolute left-1/2 transform -translate-x-1/2 bottom-16 px-4 py-2 bg-black/70 text-white rounded-md max-w-3xl text-center">
+                <p className="text-sm leading-relaxed">{activeCaption}</p>
+              </div>
+            )}
+
+            {/* Video Controls - Only show for local videos, not YouTube */}
+            {!currentLesson?.youtubeUrl && (
+              <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 to-transparent p-4">
+                <div className="flex items-center gap-4">
+                  <button
+                    onClick={togglePlay}
+                    className="text-white hover:scale-110 transition-transform"
+                  >
+                    {isPlaying ? (
+                      <Pause className="w-6 h-6" />
+                    ) : (
+                      <Play className="w-6 h-6" />
+                    )}
+                  </button>
+
+                  <div className="flex-1 flex items-center gap-2">
+                    <span className="text-white text-sm">
+                      {formatTime(currentTime)}
+                    </span>
+                    <div
+                      className="flex-1 h-1 bg-border rounded-lg cursor-pointer"
+                      onClick={handleSeek}
+                    >
+                      <div
+                        className="h-full bg-primary rounded-lg"
+                        style={{ width: `${progress}%` }}
+                      ></div>
+                    </div>
+                    <span className="text-white text-sm">
+                      {formatTime(duration)}
+                    </span>
+                  </div>
+
+                  <div className="flex items-center gap-2">
+                    <button
+                      onClick={toggleMute}
+                      className="text-white hover:scale-110 transition-transform"
+                    >
+                      {isMuted ? (
+                        <VolumeX className="w-5 h-5" />
+                      ) : (
+                        <Volume2 className="w-5 h-5" />
+                      )}
+                    </button>
+                    <input
+                      type="range"
+                      min="0"
+                      max="1"
+                      step="0.1"
+                      value={volume}
+                      onChange={handleVolumeChange}
+                      className="w-20 h-1 bg-border rounded-lg appearance-none cursor-pointer range-sm accent-primary"
+                    />
+                  </div>
+
+                  <button
+                    onClick={toggleFullscreen}
+                    className="text-white hover:scale-110 transition-transform"
+                  >
+                    {isFullscreen ? (
+                      <Minimize className="w-5 h-5" />
+                    ) : (
+                      <Maximize className="w-5 h-5" />
+                    )}
+                  </button>
+                </div>
+              </div>
+            )}
+          </div>
+
+          {/* Lesson Content */}
+          <div className="max-w-4xl space-y-6">
+            {/* Only show navigation buttons below the player; content cards removed to avoid duplicate text */}
+            <div className="flex items-center justify-between pt-8">
+              <button
+                onClick={handlePrevious}
+                disabled={currentLessonIndex <= 0}
+                className="px-6 py-3 rounded-lg bg-border text-main font-medium hover:bg-input transition-colors flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                <ChevronLeft className="w-4 h-4" />
+                Previous
+              </button>
+
+              <button
+                onClick={handleNext}
+                disabled={
+                  currentLessonIndex >= allLessons.length - 1 || isNavigating
+                }
+                className="px-6 py-3 rounded-lg bg-primary text-white font-medium shadow-lg hover:opacity-90 transition-opacity flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                {isNavigating ? "Loading..." : "Next"}
+                <ChevronRight className="w-4 h-4" />
+              </button>
+            </div>
+          </div>
+        </main>
       </div>
     </div>
   );
