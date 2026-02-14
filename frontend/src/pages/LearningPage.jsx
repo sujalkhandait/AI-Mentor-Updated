@@ -64,6 +64,7 @@ export default function Learning() {
   const [isNavigating, setIsNavigating] = useState(false);
   const [aiVideoUrl, setAiVideoUrl] = useState(null);
   const [isAIVideoLoading, setIsAIVideoLoading] = useState(false);
+  const [generatedTextContent, setGeneratedTextContent] = useState("");
 
   const videoRef = useRef(null);
   const playerContainerRef = useRef(null);
@@ -316,8 +317,15 @@ export default function Learning() {
             topic: learningData.currentLesson.title || learningData?.modules?.[0]?.lessons?.[0]?.title || "Welcome to the lesson"
           };
           const data = await getAIVideo(payload);
+          console.log("🎬 Received AI Video data:", data);
           if (data && data.videoUrl) {
             setAiVideoUrl(data.videoUrl);
+            if (data.textContent) {
+              console.log("📝 Setting generated text content:", data.textContent.substring(0, 100));
+              setGeneratedTextContent(data.textContent);
+            } else {
+              console.log("⚠️ No textContent in response");
+            }
             v.pause();
             v.src = data.videoUrl;
             v.load();
@@ -349,6 +357,7 @@ export default function Learning() {
         }
       } else {
         setIsAIVideoLoading(false);
+        setGeneratedTextContent(""); // Clear generated text when no celebrity is selected
         const src = learningData.currentLesson.videoUrl;
         if (src) {
           v.pause();
@@ -578,7 +587,7 @@ export default function Learning() {
 
       <div className="flex flex-1 mt-16">
         {/* Sidebar - Left */}
-        <aside className="w-80 pt-[29px] bg-white border-r border-gray-200 overflow-y-auto hidden lg:block">
+        <aside className="w-80 pt-7.25 bg-white border-r border-gray-200 overflow-y-auto hidden lg:block">
           <div className="p-6">
             <button
               onClick={() => navigate("/courses")}
@@ -639,10 +648,10 @@ export default function Learning() {
 
         {/* Main Content Area */}
         <div className="flex-1 overflow-y-auto">
-          <div className="max-w-[1400px] mx-auto p-6">
+          <div className="max-w-350 mx-auto p-6">
             <div className="grid grid-cols-1 xl:grid-cols-3 gap-6">
               {/* Center: Video Player */}
-              <div className="pt-[12px] xl:col-span-2 space-y-6">
+              <div className="pt-3 xl:col-span-2 space-y-6">
                 <div
                   ref={playerContainerRef}
                   className="relative bg-black rounded-xl overflow-hidden shadow-2xl group ring-1 ring-gray-200"
@@ -763,10 +772,18 @@ export default function Learning() {
                     <h2 className="text-2xl font-bold text-gray-900 mb-4">
                       {currentLesson?.title || "Selecting Lesson..."}
                     </h2>
-                    <p className="text-gray-600 text-sm leading-relaxed line-clamp-6">
-                      {currentLesson?.content?.introduction || 
-                       "Learn the fundamentals and advanced concepts of this topic in this comprehensive lesson."}
-                    </p>
+                    <div className="text-gray-600 text-sm leading-relaxed max-h-64 overflow-y-auto pr-2 custom-scrollbar">
+                      <p className="whitespace-pre-wrap">
+                        {(() => {
+                          const displayText = generatedTextContent || 
+                                            currentLesson?.content?.introduction || 
+                                            "Learn the fundamentals and advanced concepts of this topic in this comprehensive lesson.";
+                          console.log("🖥️ Displaying text:", displayText.substring(0, 100));
+                          console.log("🖥️ generatedTextContent:", generatedTextContent?.substring(0, 50));
+                          return displayText;
+                        })()}
+                      </p>
+                    </div>
                   </div>
 
                   {/* Playback Controls */}

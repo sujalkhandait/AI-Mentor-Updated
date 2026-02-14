@@ -44,6 +44,7 @@ router.post("/generate-video", async (req, res) => {
     const ai_service_url = `http://127.0.0.1:8000/generate`;
 
     let videoFileName = ""; // Will be set by API response
+    let textFileName = ""; // Will be set by API response
 
     try {
       const aiResponse = await fetch(ai_service_url, {
@@ -60,6 +61,7 @@ router.post("/generate-video", async (req, res) => {
       const aiData = await aiResponse.json();
       // The API now returns the exact filename it is generating!
       videoFileName = aiData.filename;
+      textFileName = aiData.text_file;
       console.log(`✅ AI service started. Filename to poll: ${videoFileName}`);
 
     } catch (aiError) {
@@ -77,6 +79,11 @@ router.post("/generate-video", async (req, res) => {
       __dirname,
       "../../ai_service/outputs/video",
       videoFileName
+    );
+    const aiServiceTextPath = path.join(
+      __dirname,
+      "../../ai_service/outputs/text",
+      textFileName || videoFileName.replace('.mp4', '.txt')
     );
     const backendVideosFolder = path.join(__dirname, "../videos");
     const backendVideoPath = path.join(backendVideosFolder, videoFileName);
@@ -97,10 +104,23 @@ router.post("/generate-video", async (req, res) => {
         if (await waitForFileStability(aiServiceVideoPath)) {
           console.log("✅ Video generation complete and file verified!");
           await fs.promises.copyFile(aiServiceVideoPath, backendVideoPath);
+          
+          // Read text file content if it exists
+          let textContent = "";
+          if (fs.existsSync(aiServiceTextPath)) {
+            textContent = await fs.promises.readFile(aiServiceTextPath, 'utf-8');
+            console.log("✅ Text file also loaded!");
+            console.log("📝 Text content length:", textContent.length);
+            console.log("📝 Text preview:", textContent.substring(0, 100));
+          } else {
+            console.log("⚠️ Text file not found at:", aiServiceTextPath);
+          }
+          
           return res.json({
             status: "success",
             message: "Video generated successfully",
             videoUrl: `http://localhost:5000/videos/${videoFileName}`,
+            textContent: textContent,
             topic,
             celebrity,
           });
