@@ -695,13 +695,13 @@ export default function Learning() {
 
             {/* Lesson Content */}
             <div className="xl:col-span-1 space-y-6">
-              <div className="bg-white rounded-lg p-6 shadow-sm">
-                <h3 className="text-lg font-semibold text-gray-900 mb-4">
+              <div className="bg-card rounded-lg p-6 shadow-sm">
+                <h3 className="text-lg font-semibold text-main mb-4">
                   {currentLesson?.title || "Select a Lesson"}
                 </h3>
                 {currentLesson?.content?.introduction && (
                   <div className="prose prose-sm max-w-none">
-                    <p className="text-gray-700">
+                    <p className="text-muted">
                       {currentLesson.content.introduction}
                     </p>
                   </div>
@@ -709,7 +709,7 @@ export default function Learning() {
               </div>
 
               {/* Custom Controls */}
-              <div className="bg-white rounded-lg p-6 shadow-sm">
+              <div className="bg-card rounded-lg p-6 shadow-sm">
                 <div className="flex items-center justify-between mb-4">
                   <button
                     onClick={togglePlay}
@@ -773,7 +773,7 @@ export default function Learning() {
               </div>
 
               {/* Navigation */}
-              <div className="bg-white rounded-lg p-6 shadow-sm">
+              <div className="bg-card rounded-lg p-6 shadow-sm">
                 <div className="flex justify-between">
                   <button
                     onClick={handlePrevious}
