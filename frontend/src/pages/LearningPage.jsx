@@ -90,30 +90,40 @@ export default function Learning() {
 
         if (response.ok) {
           const courseData = await response.json();
-          console.log(courseData);
-          setLearningData(courseData);
-          // Load user's progress for this course
+          
+          // Hydrate the currentLesson: find its full details in the modules list
+          // This ensures we get the 'type' property even if the initial object is partial
+          const findFullLesson = (id) => {
+            return courseData.modules
+              .flatMap(m => m.lessons)
+              .find(l => l.id === id);
+          };
+
           const userProgress = user?.purchasedCourses?.find(
             (course) => course.courseId === parseInt(courseId)
           )?.progress;
+
+          let initialLesson = null;
+
+          if (userProgress?.currentLesson?.lessonId) {
+            initialLesson = findFullLesson(userProgress.currentLesson.lessonId);
+          } 
+          
+          // If no progress or lesson not found, fallback to the course's default currentLesson 
+          // or the very first lesson of the first module
+          if (!initialLesson) {
+             const defaultId = courseData.currentLesson?.id || courseData.modules?.[0]?.lessons?.[0]?.id;
+             initialLesson = findFullLesson(defaultId);
+          }
+
+          if (initialLesson) {
+            courseData.currentLesson = initialLesson;
+          }
+
+          setLearningData(courseData);
+
           if (userProgress) {
-            setExpandedModule(
-              userProgress.currentLesson?.moduleTitle || "module-1"
-            );
-            // Set current lesson based on progress
-            const currentLesson = userProgress.currentLesson;
-            if (currentLesson) {
-              // Find and set the current lesson
-              const lesson = courseData.modules
-                .flatMap((module) => module.lessons)
-                .find((l) => l.id === currentLesson.lessonId);
-              if (lesson) {
-                setLearningData((prev) => ({
-                  ...prev,
-                  currentLesson: lesson,
-                }));
-              }
-            }
+            setExpandedModule(userProgress.currentLesson?.moduleTitle || "module-1");
           }
         } else {
           console.error(
@@ -158,6 +168,14 @@ export default function Learning() {
             ],
             currentLesson: {
               id: 1,
+              title: "Introduction to React",
+              type: "video",
+              duration: "0:10",
+              youtubeUrl: "https://www.youtube.com/watch?v=Ke90Tje7VS0",
+              content: {
+                introduction: "React is a JavaScript library for building user interfaces...",
+                keyConcepts: [],
+              },
             },
           };
 
@@ -311,66 +329,77 @@ export default function Learning() {
     loadCaptions();
   }, [selectedCelebrity]);
 
-  // Ensure when currentLesson changes we load its video into the player
-  useEffect(() => {
-    const v = videoRef.current;
-    if (!v || !learningData?.currentLesson) return;
+// Ensure when currentLesson changes we load its video into the player
+useEffect(() => {
+  const v = videoRef.current;
+  if (!v || !learningData?.currentLesson) return;
 
-    const loadVideo = async () => {
-      if (selectedCelebrity) {
-        setIsAIVideoLoading(true);
-        try {
-          const payload = {
-            celebrity: selectedCelebrity.split(" ")[0].toLowerCase(),
-            course: learningData?.course?.title || learningData?.modules?.[0]?.title || "React JS",
-            topic: learningData.currentLesson.title || learningData?.modules?.[0]?.lessons?.[0]?.title || "Welcome to the lesson"
-          };
-          const data = await getAIVideo(payload);
-          if (data && data.videoUrl) {
-            setAiVideoUrl(data.videoUrl);
-            v.pause();
-            v.src = data.videoUrl;
-            v.load();
-            const p = v.play();
-            if (p && typeof p.then === "function") {
-              p.then(() => setIsPlaying(true)).catch(() => setIsPlaying(false));
-            } else {
-              setIsPlaying(true);
-            }
-          }
-        } catch (error) {
-          console.error("Error generating AI video on lesson change:", error);
-          const src =
-            celebrityVideoMap[selectedCelebrity]?.video ||
-            learningData.currentLesson.videoUrl;
-          if (src) {
-            v.pause();
-            v.src = src;
-            v.load();
-            const p = v.play();
-            if (p && typeof p.then === "function") {
-              p.then(() => setIsPlaying(true)).catch(() => setIsPlaying(false));
-            } else {
-              setIsPlaying(true);
-            }
-          }
-        } finally {
-          setIsAIVideoLoading(false);
-        }
-      } else {
-        setIsAIVideoLoading(false);
-        const src = learningData.currentLesson.videoUrl;
-        if (src) {
+  const loadVideo = async () => {
+    if (selectedCelebrity) {
+      setIsAIVideoLoading(true);
+
+      try {
+        const payload = {
+          courseId: parseInt(courseId),
+          lessonId: currentLesson?.id,
+          celebrity: selectedCelebrity.split(" ")[0].toLowerCase(),
+        };
+
+        const data = await getAIVideo(payload);
+
+        if (data && data.videoUrl) {
+          // Just use direct URL (no blob, no fetch)
+          setAiVideoUrl(data.videoUrl);
+
           v.pause();
-          v.src = src;
+          v.src = data.videoUrl;
           v.load();
-          setIsPlaying(false); // Lessons don't autoplay by default unless celebrity is selected
-        }
-      }
-    };
 
-    loadVideo();
-  }, [learningData?.currentLesson, selectedCelebrity]);
+          const p = v.play();
+          if (p && typeof p.then === "function") {
+            p.then(() => setIsPlaying(true)).catch(() => setIsPlaying(false));
+          } else {
+            setIsPlaying(true);
+          }
+        }
+      } catch (error) {
+        console.error("Error generating AI video:", error);
+
+        const fallbackSrc =
+          celebrityVideoMap[selectedCelebrity]?.video ||
+          learningData.currentLesson.videoUrl;
+
+        if (fallbackSrc) {
+          v.pause();
+          v.src = fallbackSrc;
+          v.load();
+
+          const p = v.play();
+          if (p && typeof p.then === "function") {
+            p.then(() => setIsPlaying(true)).catch(() => setIsPlaying(false));
+          } else {
+            setIsPlaying(true);
+          }
+        }
+      } finally {
+        setIsAIVideoLoading(false);
+      }
+    } else {
+      setIsAIVideoLoading(false);
+
+      const src = learningData.currentLesson.videoUrl;
+      if (src) {
+        v.pause();
+        v.src = src;
+        v.load();
+        setIsPlaying(false);
+      }
+    }
+  };
+
+  loadVideo();
+}, [learningData?.currentLesson, selectedCelebrity]);
+
 
   // If selectedCelebrity is Salman Khan and the user wants the Reactjs paragraph
   // shown word-by-word, create per-word cues when video metadata (duration) is available.
@@ -647,51 +676,76 @@ export default function Learning() {
 
       <div className="ml-80 p-6">
         <div className="mb-6">
-            {(() => {
-              const completedCount =
-                user?.purchasedCourses?.find(
-                  (course) => course.courseId === parseInt(courseId)
-                )?.progress?.completedLessons?.length || 0;
-              const totalCount = allLessons.length;
-              const progressPercent = Math.min(
-                (completedCount / totalCount) * 100,
-                100
-              );
-              console.log("Progress calculation:", {
-                completedCount,
-                totalCount,
-                progressPercent,
-              });
-              return (
-                <>
-                  <div className="w-full bg-border rounded-full h-2">
-                    <div
-                      className="bg-primary h-2 rounded-full"
-                      style={{ width: `${progressPercent}%` }}
-                    ></div>
-                  </div>
-                  <p className="text-sm text-muted mt-2">
-                    {Math.round(progressPercent)}% Complete
-                  </p>
-                </>
-              );
-            })()}
-          </div>
+          {(() => {
+            const completedCount =
+              user?.purchasedCourses?.find(
+                (course) => course.courseId === parseInt(courseId)
+              )?.progress?.completedLessons?.length || 0;
+            const totalCount = allLessons.length;
+            const progressPercent = Math.min(
+              (completedCount / totalCount) * 100,
+              100
+            );
+            return (
+              <>
+                <div className="w-full bg-border rounded-full h-2">
+                  <div
+                    className="bg-primary h-2 rounded-full"
+                    style={{ width: `${progressPercent}%` }}
+                  ></div>
+                </div>
+                <p className="text-sm text-muted mt-2">
+                  {Math.round(progressPercent)}% Complete
+                </p>
+              </>
+            );
+          })()}
+        </div>
 
           {/* Main Content Grid */}
           <div className="grid grid-cols-1 xl:grid-cols-3 gap-6">
-            {/* Video Player */}
-            <VideoPlayer
-              currentLesson={currentLesson}
-              aiVideoUrl={aiVideoUrl}
-              selectedCelebrity={selectedCelebrity}
-              celebrityVideoMap={celebrityVideoMap}
-              activeCaption={activeCaption}
-              playerContainerRef={playerContainerRef}
-              videoRef={videoRef}
-              handleProgress={handleProgress}
-              getYouTubeVideoId={getYouTubeVideoId}
-            />
+            {currentLesson?.type === "video" || !currentLesson?.type ? (
+              <VideoPlayer
+                currentLesson={currentLesson}
+                aiVideoUrl={aiVideoUrl}
+                selectedCelebrity={selectedCelebrity}
+                celebrityVideoMap={celebrityVideoMap}
+                activeCaption={activeCaption}
+                playerContainerRef={playerContainerRef}
+                videoRef={videoRef}
+                handleProgress={handleProgress}
+                getYouTubeVideoId={getYouTubeVideoId}
+                isAIVideoLoading={isAIVideoLoading}
+              />
+            ) : (
+              <div className="xl:col-span-2 bg-white rounded-xl shadow-sm border border-gray-100 p-8">
+                <div className="flex items-center gap-3 mb-6 text-blue-600">
+                  <FileText className="w-6 h-6" />
+                  <span className="font-semibold uppercase tracking-wider text-sm">Document Lesson</span>
+                </div>
+                <h2 className="text-3xl font-bold text-gray-900 mb-6">{currentLesson?.title}</h2>
+                {currentLesson?.content?.introduction && (
+                  <div className="max-w-none">
+                    <p className="text-gray-700 text-lg leading-relaxed">
+                      {currentLesson.content.introduction}
+                    </p>
+                  </div>
+                )}
+                {currentLesson?.content?.keyConcepts && currentLesson.content.keyConcepts.length > 0 && (
+                  <div className="mt-8">
+                    <h3 className="text-xl font-bold text-gray-900 mb-4">Key Concepts</h3>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      {currentLesson.content.keyConcepts.map((concept, idx) => (
+                        <div key={idx} className={`p-4 rounded-lg border ${concept.borderColor || 'border-gray-200'} ${concept.bgColor || 'bg-gray-50'}`}>
+                          <h4 className={`font-bold mb-2 ${concept.textColor || 'text-gray-900'}`}>{concept.title}</h4>
+                          <p className={`text-sm ${concept.descriptionColor || 'text-gray-600'}`}>{concept.description}</p>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </div>
+            )}
 
             {/* Lesson Content */}
             <div className="xl:col-span-1 space-y-6">
@@ -699,78 +753,81 @@ export default function Learning() {
                 <h3 className="text-lg font-semibold text-gray-900 mb-4">
                   {currentLesson?.title || "Select a Lesson"}
                 </h3>
-                {currentLesson?.content?.introduction && (
-                  <div className="prose prose-sm max-w-none">
-                    <p className="text-gray-700">
+                {/* Only show intro here if it's a video lesson, otherwise it's in the main area */}
+                {(currentLesson?.type === "video" || !currentLesson?.type) && currentLesson?.content?.introduction && (
+                  <div className="max-w-none">
+                    <p className="text-gray-700 text-sm leading-relaxed">
                       {currentLesson.content.introduction}
                     </p>
                   </div>
                 )}
               </div>
 
-              {/* Custom Controls */}
-              <div className="bg-white rounded-lg p-6 shadow-sm">
-                <div className="flex items-center justify-between mb-4">
-                  <button
-                    onClick={togglePlay}
-                    className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
-                  >
-                    {isPlaying ? (
-                      <Pause className="w-4 h-4" />
-                    ) : (
-                      <Play className="w-4 h-4" />
-                    )}
-                    {isPlaying ? "Pause" : "Play"}
-                  </button>
-                  <button
-                    onClick={toggleFullscreen}
-                    className="flex items-center gap-2 px-4 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700"
-                  >
-                    {isFullscreen ? (
-                      <Minimize className="w-4 h-4" />
-                    ) : (
-                      <Maximize className="w-4 h-4" />
-                    )}
-                  </button>
-                </div>
+              {/* Custom Controls - Only for Video */}
+              {(currentLesson?.type === "video" || !currentLesson?.type) && (
+                <div className="bg-white rounded-lg p-6 shadow-sm">
+                  <div className="flex items-center justify-between mb-4">
+                    <button
+                      onClick={togglePlay}
+                      className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
+                    >
+                      {isPlaying ? (
+                        <Pause className="w-4 h-4" />
+                      ) : (
+                        <Play className="w-4 h-4" />
+                      )}
+                      {isPlaying ? "Pause" : "Play"}
+                    </button>
+                    <button
+                      onClick={toggleFullscreen}
+                      className="flex items-center gap-2 px-4 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700"
+                    >
+                      {isFullscreen ? (
+                        <Minimize className="w-4 h-4" />
+                      ) : (
+                        <Maximize className="w-4 h-4" />
+                      )}
+                    </button>
+                  </div>
 
-                {/* Progress Bar */}
-                <div className="mb-4">
-                  <div
-                    className="w-full bg-gray-200 rounded-full h-2 cursor-pointer"
-                    onClick={handleSeek}
-                  >
+                  {/* Progress Bar */}
+                  <div className="mb-4">
                     <div
-                      className="bg-blue-600 h-2 rounded-full"
-                      style={{ width: `${progress}%` }}
-                    ></div>
+                      className="w-full bg-gray-200 rounded-full h-2 cursor-pointer"
+                      onClick={handleSeek}
+                    >
+                      <div
+                        className="bg-blue-600 h-2 rounded-full"
+                        style={{ width: `${progress}%` }}
+                      ></div>
+                    </div>
+                    <div className="flex justify-between text-xs text-gray-500 mt-1">
+                      <span>{formatTime(currentTime)}</span>
+                      <span>{formatTime(duration)}</span>
+                    </div>
                   </div>
-                  <div className="flex justify-between text-xs text-gray-500 mt-1">
-                    <span>{formatTime(currentTime)}</span>
-                    <span>{formatTime(duration)}</span>
-                  </div>
-                </div>
 
-                {/* Volume Control */}
-                <div className="flex items-center gap-2">
-                  <button onClick={toggleMute} className="text-gray-600">
-                    {isMuted || volume === 0 ? (
-                      <VolumeX className="w-4 h-4" />
-                    ) : (
-                      <Volume2 className="w-4 h-4" />
-                    )}
-                  </button>
-                  <input
-                    type="range"
-                    min="0"
-                    max="1"
-                    step="0.1"
-                    value={volume}
-                    onChange={handleVolumeChange}
-                    className="flex-1"
-                  />
+                  {/* Volume Control */}
+                  <div className="flex items-center gap-2">
+                    <button onClick={toggleMute} className="text-gray-600">
+                      {isMuted || volume === 0 ? (
+                        <VolumeX className="w-4 h-4" />
+                      ) : (
+                        <Volume2 className="w-4 h-4" />
+                      )}
+                    </button>
+                    <input
+                      type="range"
+                      min="0"
+                      max="1"
+                      step="0.1"
+                      value={volume}
+                      onChange={handleVolumeChange}
+                      className="flex-1"
+                    />
+                  </div>
                 </div>
-              </div>
+              )}
 
               {/* Navigation */}
               <div className="bg-white rounded-lg p-6 shadow-sm">

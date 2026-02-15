@@ -132,6 +132,48 @@ const getCourseLearningData = async (req, res) => {
   }
 };
 
+/* =================================
+  Get Course and Lesson Titles
+===================================== */
+const getCourseAndLessonTitles = (courseId, lessonId) => {
+  try {
+    const learningPath = path.join(
+      __dirname,
+      "../../frontend/public/data/learning.json"
+    );
+
+    const raw = fs.readFileSync(learningPath, "utf-8");
+    const learningData = JSON.parse(raw);
+
+    // 🔹 courseId is key in JSON
+    const courseData = learningData[String(courseId)];
+
+    if (!courseData) return null;
+
+    const courseTitle = courseData.course?.title;
+
+    if (!courseTitle) return null;
+
+    // 🔹 Flatten all modules into lessons
+    const lesson = (courseData.modules || [])
+      .flatMap((module) => module.lessons || [])
+      .find((l) => l.id === lessonId); // IMPORTANT: string compare
+
+    if (!lesson) return null;
+
+    return {
+      courseTitle,
+      lessonTitle: lesson.title,
+    };
+
+  } catch (error) {
+    console.error("Error reading learning.json:", error);
+    return null;
+  }
+};
+
+
+
 const getStatsCards = async (req, res) => {
   res.json({
     totalCourses: 0,
@@ -172,6 +214,7 @@ export {
   getCourses,
   getCourseById,
   getCourseLearningData,
+  getCourseAndLessonTitles,
   getStatsCards,
   getMyCourses,
   addCourse,

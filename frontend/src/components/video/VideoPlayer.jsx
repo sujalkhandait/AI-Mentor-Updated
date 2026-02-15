@@ -9,26 +9,36 @@ const VideoPlayer = ({
   playerContainerRef,
   videoRef,
   handleProgress,
-  getYouTubeVideoId
+  getYouTubeVideoId,
+  isAIVideoLoading,
 }) => {
-  const [isLoading, setIsLoading] = useState(false);
 
-  const handlePlayStart = () => {
-    setIsLoading(true);
-    setTimeout(() => {
-      setIsLoading(false);
-    }, 2000); // 2 second loading effect
-  };
 
+  const [isBuffering, setIsBuffering] = useState(false);
+
+  // Handle native video loading states
   useEffect(() => {
-    const videoElement = videoRef?.current;
-    if (videoElement) {
-      videoElement.addEventListener('play', handlePlayStart);
-      return () => {
-        videoElement.removeEventListener('play', handlePlayStart);
-      };
-    }
+    const v = videoRef?.current;
+    if (!v) return;
+
+    const onWaiting = () => setIsBuffering(true);
+    const onCanPlay = () => setIsBuffering(false);
+    const onLoadStart = () => setIsBuffering(true);
+
+    v.addEventListener("waiting", onWaiting);
+    v.addEventListener("canplay", onCanPlay);
+    v.addEventListener("loadstart", onLoadStart);
+
+    return () => {
+      v.removeEventListener("waiting", onWaiting);
+      v.removeEventListener("canplay", onCanPlay);
+      v.removeEventListener("loadstart", onLoadStart);
+    };
   }, [videoRef]);
+
+  // Unified loading state: either AI is being generated OR the video is buffering bytes
+  const showLoading = isAIVideoLoading || isBuffering;
+
   return (
     <div className="xl:col-span-2">
       <div
@@ -67,12 +77,12 @@ const VideoPlayer = ({
           />
         )}
 
-        {/* Loading Overlay */}
-        {isLoading && (
+        {/* Loading Overlay (Original Style) */}
+        {showLoading && (
           <div className="absolute inset-0 bg-black/50 flex items-center justify-center z-10">
             <div className="flex flex-col items-center">
               <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-white"></div>
-              <p className="text-white mt-2 text-sm">Loading video...`</p>
+              <p className="text-white mt-2 text-sm">Loading video...</p>
             </div>
           </div>
         )}

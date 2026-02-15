@@ -59,10 +59,10 @@ def generate_lesson(data: LessonRequest, background_tasks: BackgroundTasks):
     timestamp = datetime.datetime.now().strftime("%Y%m%d_%H%M%S")
     base_filename = f"{topic_clean}_{timestamp}"
     
-    background_tasks.add_task(process_lesson, data, base_filename)
-    
+    process_lesson(data, base_filename)
+
     return {
-        "status": "Processing started",
+        "status": "Completed",
         "filename": f"{base_filename}.mp4",
         "text_file": f"{base_filename}.txt",
         "audio_file": f"{base_filename}.mp3"

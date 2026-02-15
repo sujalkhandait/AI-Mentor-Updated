@@ -2,6 +2,8 @@ import express from "express";
 import fs from "fs";
 import path from "path";
 import dotenv from "dotenv";
+import { protect } from "../middleware/authMiddleware.js";
+import { getCourseAndLessonTitles } from "../controllers/courseController.js";
 dotenv.config();
 import { fileURLToPath } from "url";
 
@@ -10,143 +12,91 @@ const __dirname = path.dirname(__filename);
 
 const router = express.Router();
 
-router.post("/generate-video", async (req, res) => {
+router.post("/generate-video", protect, async (req, res) => {
   try {
-    const { course, celebrity, topic } = req.body;
+    const { courseId, lessonId, celebrity } = req.body;
 
-    // Helper to check if file size is stable (finished writing)
-    const waitForFileStability = async (filePath) => {
-      let lastSize = -1;
-      let stableCount = 0;
-      const maxStabilityChecks = 5; // Try for up to 5s of stability
-
-      let currentSize = 0;
-      for (let i = 0; i < maxStabilityChecks; i++) {
-        if (!fs.existsSync(filePath)) return false;
-        const stats = fs.statSync(filePath);
-        currentSize = stats.size;
-
-        if (currentSize > 0 && currentSize === lastSize) {
-          stableCount++;
-          if (stableCount >= 2) return true; // Stable for 2 consecutive checks
-        } else {
-          stableCount = 0;
-        }
-
-        lastSize = currentSize;
-        await new Promise(resolve => setTimeout(resolve, 1000));
-      }
-      return currentSize > 0;
-    };
-
-    // ----------------------------------------------------
-    // 1. Trigger Generation (Python API)
-    // ----------------------------------------------------
-    console.log("🚀 Triggering new video generation...");
-    const ai_service_url = `${process.env.AI_SERVICE_URL}/generate`;
-
-    let videoFileName = ""; // Will be set by API response
-
-    try {
-      const aiResponse = await fetch(ai_service_url, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ course, topic, celebrity }),
-      });
-
-      if (!aiResponse.ok) {
-        const errorData = await aiResponse.json().catch(() => ({}));
-        throw new Error(errorData.detail || `AI service returned status ${aiResponse.status}`);
-      }
-
-      const aiData = await aiResponse.json();
-      // The API now returns the exact filename it is generating!
-      videoFileName = aiData.filename;
-      console.log(`✅ AI service started. Filename to poll: ${videoFileName}`);
-
-    } catch (aiError) {
-      console.error("❌ AI Service Error:", aiError.message);
-      return res.status(500).json({
-        error: "AI Service Unavailable",
-        message: aiError.message
-      });
+    if (!courseId || !lessonId || !celebrity) {
+      return res.status(400).json({ message: "Missing required fields" });
     }
 
-    // 2. Setup Paths & Poll
-    const aiServiceVideoPath = path.join(
-      __dirname,
-      "../../ai_service/outputs/video",
-      videoFileName
+    // 🔐 Check purchase
+    const purchasedCourse = req.user.purchasedCourses.find(
+      (c) => Number(c.courseId) === Number(courseId)
     );
 
-    // Poll for the file
-    const maxWaitTime = 120000; // 120 seconds
-    const pollInterval = 3000; // Check every 3 seconds
-    let elapsed = 0;
-
-    while (elapsed < maxWaitTime) {
-      if (fs.existsSync(aiServiceVideoPath)) {
-        console.log("⏳ Video file detected, checking stability...");
-        if (await waitForFileStability(aiServiceVideoPath)) {
-          console.log("✅ Video generation complete and file verified!");
-          return res.json({
-            status: "success",
-            message: "Video generated successfully",
-            videoUrl: `http://localhost:5000/api/ai/video/${videoFileName}`,
-            topic,
-            celebrity,
-          });
-        }
-      }
-
-      await new Promise(resolve => setTimeout(resolve, pollInterval));
-      elapsed += pollInterval;
-      if (elapsed % 15000 === 0) console.log(`Polling... ${elapsed / 1000}s elapsed`);
+    if (!purchasedCourse) {
+      return res.status(403).json({ message: "Course not purchased" });
     }
 
-    // Timeout
-    return res.status(408).json({
-      error: "Video generation timeout",
-      message: "Generation is taking longer than expected.",
+    // 📘 Get titles from JSON
+    const titles = getCourseAndLessonTitles(courseId, lessonId);
+
+    if (!titles) {
+      return res.status(404).json({ message: "Invalid course or lesson" });
+    }
+
+    const { courseTitle, lessonTitle } = titles;
+
+    // 🚀 Call AI service
+    const aiResponse = await fetch(
+      `${process.env.AI_SERVICE_URL}/generate`,
+      {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          course: courseTitle,
+          topic: lessonTitle,
+          celebrity,
+        }),
+      }
+    );
+
+    if (!aiResponse.ok) {
+      throw new Error("AI service failed");
+    }
+
+    const { filename } = await aiResponse.json();
+
+    res.json({
+      videoUrl: `/api/ai/video/${courseId}/${filename}`,
     });
 
   } catch (error) {
-    console.error("🔥 Route Error:", error);
-    if (!res.headersSent) {
-      res.status(500).json({
-        error: "Internal Server Error",
-        message: error.message
-      });
-    }
+    console.error("AI GENERATE ERROR:", error);
+    res.status(500).json({ message: "Failed to generate AI video" });
   }
 });
 
 // ----------------------------------------------------
 // 3. Proxy Video Stream from Python (The "Middleman")
 // ----------------------------------------------------
-router.get("/video/:filename", async (req, res) => {
-  const { filename } = req.params;
-  const pythonVideoUrl = `${process.env.AI_SERVICE_URL}/video-stream/${filename}`;
-
+router.get("/video/:courseId/:filename", async (req, res) => {
   try {
-    // 1. Node asks Python for the data (internal call)
+    const { courseId, filename } = req.params;
+
+    const pythonVideoUrl =
+      `${process.env.AI_SERVICE_URL}/video-stream/${filename}`;
+
     const response = await fetch(pythonVideoUrl);
 
     if (!response.ok) {
-      return res.status(404).json({ error: "Video not found in AI service" });
+      return res.status(404).json({
+        error: "Video not found in AI service",
+      });
     }
 
-    // 2. Node gets the bytes into memory (No hard drive copy!)
     const arrayBuffer = await response.arrayBuffer();
     const videoBuffer = Buffer.from(arrayBuffer);
 
-    // 3. Node hands the bytes to the Frontend
     res.setHeader("Content-Type", "video/mp4");
     res.send(videoBuffer);
 
   } catch (error) {
     console.error("❌ Proxy Error:", error.message);
-    res.status(500).json({ error: "Failed to load video via proxy" });
+    res.status(500).json({
+      error: "Failed to load video via proxy",
+    });
   }
 });
 
