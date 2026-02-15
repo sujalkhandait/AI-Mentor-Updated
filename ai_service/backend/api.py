@@ -1,6 +1,7 @@
 # backend/api.py
 
 from fastapi import FastAPI, BackgroundTasks
+from fastapi.staticfiles import StaticFiles
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 from gemini_api import generate_text
@@ -29,6 +30,16 @@ class LessonRequest(BaseModel):
     course: str
     topic: str
     celebrity: str
+
+# --------------------------
+# Serve Video Files
+# --------------------------
+BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+video_output_path = os.path.join(BASE_DIR, "outputs", "video")
+if not os.path.exists(video_output_path):
+    os.makedirs(video_output_path, exist_ok=True)
+
+app.mount("/video-stream", StaticFiles(directory=video_output_path), name="video-stream")
 
 # --------------------------
 # Root Route

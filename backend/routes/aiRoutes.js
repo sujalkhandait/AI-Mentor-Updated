@@ -1,6 +1,8 @@
 import express from "express";
 import fs from "fs";
 import path from "path";
+import dotenv from "dotenv";
+dotenv.config();
 import { fileURLToPath } from "url";
 
 const __filename = fileURLToPath(import.meta.url);
@@ -41,7 +43,7 @@ router.post("/generate-video", async (req, res) => {
     // 1. Trigger Generation (Python API)
     // ----------------------------------------------------
     console.log("🚀 Triggering new video generation...");
-    const ai_service_url = `http://127.0.0.1:8000/generate`;
+    const ai_service_url = `${process.env.AI_SERVICE_URL}/generate`;
 
     let videoFileName = ""; // Will be set by API response
 
@@ -70,21 +72,12 @@ router.post("/generate-video", async (req, res) => {
       });
     }
 
-    // ----------------------------------------------------
     // 2. Setup Paths & Poll
-    // ----------------------------------------------------
     const aiServiceVideoPath = path.join(
       __dirname,
       "../../ai_service/outputs/video",
       videoFileName
     );
-    const backendVideosFolder = path.join(__dirname, "../videos");
-    const backendVideoPath = path.join(backendVideosFolder, videoFileName);
-
-    // Ensure backend/videos exists
-    if (!fs.existsSync(backendVideosFolder)) {
-      fs.mkdirSync(backendVideosFolder, { recursive: true });
-    }
 
     // Poll for the file
     const maxWaitTime = 120000; // 120 seconds
@@ -96,11 +89,10 @@ router.post("/generate-video", async (req, res) => {
         console.log("⏳ Video file detected, checking stability...");
         if (await waitForFileStability(aiServiceVideoPath)) {
           console.log("✅ Video generation complete and file verified!");
-          await fs.promises.copyFile(aiServiceVideoPath, backendVideoPath);
           return res.json({
             status: "success",
             message: "Video generated successfully",
-            videoUrl: `http://localhost:5000/videos/${videoFileName}`,
+            videoUrl: `http://localhost:5000/api/ai/video/${videoFileName}`,
             topic,
             celebrity,
           });
@@ -126,6 +118,35 @@ router.post("/generate-video", async (req, res) => {
         message: error.message
       });
     }
+  }
+});
+
+// ----------------------------------------------------
+// 3. Proxy Video Stream from Python (The "Middleman")
+// ----------------------------------------------------
+router.get("/video/:filename", async (req, res) => {
+  const { filename } = req.params;
+  const pythonVideoUrl = `${process.env.AI_SERVICE_URL}/video-stream/${filename}`;
+
+  try {
+    // 1. Node asks Python for the data (internal call)
+    const response = await fetch(pythonVideoUrl);
+
+    if (!response.ok) {
+      return res.status(404).json({ error: "Video not found in AI service" });
+    }
+
+    // 2. Node gets the bytes into memory (No hard drive copy!)
+    const arrayBuffer = await response.arrayBuffer();
+    const videoBuffer = Buffer.from(arrayBuffer);
+
+    // 3. Node hands the bytes to the Frontend
+    res.setHeader("Content-Type", "video/mp4");
+    res.send(videoBuffer);
+
+  } catch (error) {
+    console.error("❌ Proxy Error:", error.message);
+    res.status(500).json({ error: "Failed to load video via proxy" });
   }
 });
 
