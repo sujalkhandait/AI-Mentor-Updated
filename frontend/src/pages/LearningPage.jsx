@@ -4,7 +4,6 @@ import { useNavigate, useParams } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import { getAIVideo } from "../service/aiService";
 import VideoPlayer from "../components/video/VideoPlayer";
-import VideoPlayer from "../components/video/VideoPlayer";
 
 import {
   ChevronLeft,
@@ -44,11 +43,7 @@ export default function Learning() {
   const celebrities = ["Salman Khan", "Modi ji", "SRK"];
 
   // map celebrities to videos and vtt files
-  // map celebrities to videos and vtt files
   const celebrityVideoMap = {
-    "Salman Khan": { video: "http://localhost:5000/videos/salman.mp4", vtt: "http://localhost:5000/videos/salman.vtt" },
-    "Modi ji": { video: "http://localhost:5000/videos/modi.mp4", vtt: "http://localhost:5000/videos/modi.vtt" },
-    SRK: { video: "http://localhost:5000/videos/srk.mp4", vtt: "http://localhost:5000/videos/srk.vtt" },
     "Salman Khan": { video: "http://localhost:5000/videos/salman.mp4", vtt: "http://localhost:5000/videos/salman.vtt" },
     "Modi ji": { video: "http://localhost:5000/videos/modi.mp4", vtt: "http://localhost:5000/videos/modi.vtt" },
     SRK: { video: "http://localhost:5000/videos/srk.mp4", vtt: "http://localhost:5000/videos/srk.vtt" },
@@ -138,14 +133,11 @@ export default function Learning() {
                   {
                     id: 1,
                     title: "Introduction to React",
-                    title: "Introduction to React",
                     type: "video",
                     duration: "0:10",
                     youtubeUrl: "https://www.youtube.com/watch?v=Ke90Tje7VS0",
-                    youtubeUrl: "https://www.youtube.com/watch?v=Ke90Tje7VS0",
                     content: {
                       introduction:
-                        "React is a JavaScript library for building user interfaces. It was developed by Facebook and is now maintained by Meta and the open-source community. React allows developers to create reusable UI components and manage the state of their applications efficiently.",
                         "React is a JavaScript library for building user interfaces. It was developed by Facebook and is now maintained by Meta and the open-source community. React allows developers to create reusable UI components and manage the state of their applications efficiently.",
                       keyConcepts: [],
                     },
@@ -153,14 +145,11 @@ export default function Learning() {
                   {
                     id: 2,
                     title: "React: Advanced Concepts",
-                    title: "React: Advanced Concepts",
                     type: "video",
                     duration: "0:12",
                     youtubeUrl: "https://www.youtube.com/watch?v=4UZrsTqkcW4",
-                    youtubeUrl: "https://www.youtube.com/watch?v=4UZrsTqkcW4",
                     content: {
                       introduction:
-                        "Advanced React concepts including hooks, context, and performance optimization techniques.",
                         "Advanced React concepts including hooks, context, and performance optimization techniques.",
                       keyConcepts: [],
                     },
@@ -196,7 +185,6 @@ export default function Learning() {
           error
         );
         // Use the same fallback as above
-        // Use the same fallback as above
         const fallback = {
           course: {
             id: parseInt(courseId),
@@ -209,14 +197,11 @@ export default function Learning() {
                 {
                   id: 1,
                   title: "Introduction to React",
-                  title: "Introduction to React",
                   type: "video",
                   duration: "0:10",
                   youtubeUrl: "https://www.youtube.com/watch?v=Ke90Tje7VS0",
-                  youtubeUrl: "https://www.youtube.com/watch?v=Ke90Tje7VS0",
                   content: {
                     introduction:
-                      "React is a JavaScript library for building user interfaces. It was developed by Facebook and is now maintained by Meta and the open-source community. React allows developers to create reusable UI components and manage the state of their applications efficiently.",
                       "React is a JavaScript library for building user interfaces. It was developed by Facebook and is now maintained by Meta and the open-source community. React allows developers to create reusable UI components and manage the state of their applications efficiently.",
                     keyConcepts: [],
                   },
@@ -224,14 +209,11 @@ export default function Learning() {
                 {
                   id: 2,
                   title: "React: Advanced Concepts",
-                  title: "React: Advanced Concepts",
                   type: "video",
                   duration: "0:12",
                   youtubeUrl: "https://www.youtube.com/watch?v=4UZrsTqkcW4",
-                  youtubeUrl: "https://www.youtube.com/watch?v=4UZrsTqkcW4",
                   content: {
                     introduction:
-                      "Advanced React concepts including hooks, context, and performance optimization techniques.",
                       "Advanced React concepts including hooks, context, and performance optimization techniques.",
                     keyConcepts: [],
                   },
@@ -241,15 +223,6 @@ export default function Learning() {
           ],
           currentLesson: {
             id: 1,
-            title: "Introduction to React",
-            type: "video",
-            duration: "0:10",
-            youtubeUrl: "https://www.youtube.com/watch?v=Ke90Tje7VS0",
-            content: {
-              introduction:
-                "React is a JavaScript library for building user interfaces. It was developed by Facebook and is now maintained by Meta and the open-source community. React allows developers to create reusable UI components and manage the state of their applications efficiently.",
-              keyConcepts: [],
-            },
             title: "Introduction to React",
             type: "video",
             duration: "0:10",
@@ -616,7 +589,6 @@ export default function Learning() {
 
   return (
     <div className="min-h-screen bg-gray-50">
-    <div className="min-h-screen bg-gray-50">
       <Header sidebarOpen={sidebarOpen} setSidebarOpen={setSidebarOpen} />
 
       {/* Sidebar */}
@@ -676,173 +648,171 @@ export default function Learning() {
           </div>
         </div>
       </div>
-            </div>
-          </div>
-        </div>
-      </div>
 
       <div className="ml-80 p-6">
         <div className="mb-6">
-            {(() => {
-              const completedCount =
-                user?.purchasedCourses?.find(
-                  (course) => course.courseId === parseInt(courseId)
-                )?.progress?.completedLessons?.length || 0;
-              const totalCount = allLessons.length;
-              const progressPercent = Math.min(
-                (completedCount / totalCount) * 100,
-                100
-              );
-              console.log("Progress calculation:", {
-                completedCount,
-                totalCount,
-                progressPercent,
-              });
-              return (
-                <>
-                  <div className="w-full bg-gray-200 rounded-full h-2">
-                    <div
-                      className="bg-blue-600 h-2 rounded-full"
-                      style={{ width: `${progressPercent}%` }}
-                    ></div>
-                  </div>
-                  <p className="text-sm text-gray-600 mt-2">
-                    {Math.round(progressPercent)}% Complete
-                  </p>
-                </>
-              );
-            })()}
-          </div>
-
-          {/* Main Content Grid */}
-          <div className="grid grid-cols-1 xl:grid-cols-3 gap-6">
-            {/* Video Player */}
-            <VideoPlayer
-              currentLesson={currentLesson}
-              aiVideoUrl={aiVideoUrl}
-              selectedCelebrity={selectedCelebrity}
-              celebrityVideoMap={celebrityVideoMap}
-              activeCaption={activeCaption}
-              playerContainerRef={playerContainerRef}
-              videoRef={videoRef}
-              handleProgress={handleProgress}
-              getYouTubeVideoId={getYouTubeVideoId}
-            />
-
-            {/* Lesson Content */}
-            <div className="xl:col-span-1 space-y-6">
-              <div className="bg-white rounded-lg p-6 shadow-sm">
-                <h3 className="text-lg font-semibold text-gray-900 mb-4">
-                  {currentLesson?.title || "Select a Lesson"}
-                </h3>
-                {currentLesson?.content?.introduction && (
-                  <div className="prose prose-sm max-w-none">
-                    <p className="text-gray-700">
-                      {currentLesson.content.introduction}
-                    </p>
-                  </div>
-                )}
-              </div>
-
-              {/* Custom Controls */}
-              <div className="bg-white rounded-lg p-6 shadow-sm">
-                <div className="flex items-center justify-between mb-4">
-                  <button
-                    onClick={togglePlay}
-                    className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
-                  >
-                    {isPlaying ? (
-                      <Pause className="w-4 h-4" />
-                    ) : (
-                      <Play className="w-4 h-4" />
-                    )}
-                    {isPlaying ? "Pause" : "Play"}
-                  </button>
-                  <button
-                    onClick={toggleFullscreen}
-                    className="flex items-center gap-2 px-4 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700"
-                  >
-                    {isFullscreen ? (
-                      <Minimize className="w-4 h-4" />
-                    ) : (
-                      <Maximize className="w-4 h-4" />
-                    )}
-                  </button>
-                </div>
-
-                {/* Progress Bar */}
-                <div className="mb-4">
+          {(() => {
+            const completedCount =
+              user?.purchasedCourses?.find(
+                (course) => course.courseId === parseInt(courseId)
+              )?.progress?.completedLessons?.length || 0;
+            const totalCount = allLessons.length;
+            const progressPercent = Math.min(
+              (completedCount / totalCount) * 100,
+              100
+            );
+            console.log("Progress calculation:", {
+              completedCount,
+              totalCount,
+              progressPercent,
+            });
+            return (
+              <>
+                <div className="w-full bg-gray-200 rounded-full h-2">
                   <div
-                    className="w-full bg-gray-200 rounded-full h-2 cursor-pointer"
-                    onClick={handleSeek}
-                  >
-                    <div
-                      className="bg-blue-600 h-2 rounded-full"
-                      style={{ width: `${progress}%` }}
-                    ></div>
-                  </div>
-                  <div className="flex justify-between text-xs text-gray-500 mt-1">
-                    <span>{formatTime(currentTime)}</span>
-                    <span>{formatTime(duration)}</span>
-                  </div>
+                    className="bg-blue-600 h-2 rounded-full"
+                    style={{ width: `${progressPercent}%` }}
+                  ></div>
                 </div>
+                <p className="text-sm text-gray-600 mt-2">
+                  {Math.round(progressPercent)}% Complete
+                </p>
+              </>
+            );
+          })()}
+        </div>
 
-                {/* Volume Control */}
-                <div className="flex items-center gap-2">
-                  <button onClick={toggleMute} className="text-gray-600">
-                    {isMuted || volume === 0 ? (
-                      <VolumeX className="w-4 h-4" />
-                    ) : (
-                      <Volume2 className="w-4 h-4" />
-                    )}
-                  </button>
-                  <input
-                    type="range"
-                    min="0"
-                    max="1"
-                    step="0.1"
-                    value={volume}
-                    onChange={handleVolumeChange}
-                    className="flex-1"
-                  />
+        {/* Main Content Grid */}
+        <div className="grid grid-cols-1 xl:grid-cols-3 gap-6">
+          {/* Video Player */}
+          <VideoPlayer
+            currentLesson={currentLesson}
+            aiVideoUrl={aiVideoUrl}
+            selectedCelebrity={selectedCelebrity}
+            celebrityVideoMap={celebrityVideoMap}
+            activeCaption={activeCaption}
+            playerContainerRef={playerContainerRef}
+            videoRef={videoRef}
+            handleProgress={handleProgress}
+            getYouTubeVideoId={getYouTubeVideoId}
+          />
+
+          {/* Lesson Content */}
+          <div className="xl:col-span-1 space-y-6">
+            <div className="bg-white rounded-lg p-6 shadow-sm">
+              <h3 className="text-lg font-semibold text-gray-900 mb-4">
+                {currentLesson?.title || "Select a Lesson"}
+              </h3>
+              <div className="prose prose-sm max-w-none">
+                <p className="text-gray-700">
+                  {(() => {
+                    const displayText = generatedTextContent ||
+                      currentLesson?.content?.introduction
+                    return displayText;
+                  })()}
+                </p>
+              </div>
+            </div>
+
+            {/* Custom Controls */}
+            <div className="bg-white rounded-lg p-6 shadow-sm">
+              <div className="flex items-center justify-between mb-4">
+                <button
+                  onClick={togglePlay}
+                  className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
+                >
+                  {isPlaying ? (
+                    <Pause className="w-4 h-4" />
+                  ) : (
+                    <Play className="w-4 h-4" />
+                  )}
+                  {isPlaying ? "Pause" : "Play"}
+                </button>
+                <button
+                  onClick={toggleFullscreen}
+                  className="flex items-center gap-2 px-4 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700"
+                >
+                  {isFullscreen ? (
+                    <Minimize className="w-4 h-4" />
+                  ) : (
+                    <Maximize className="w-4 h-4" />
+                  )}
+                </button>
+              </div>
+
+              {/* Progress Bar */}
+              <div className="mb-4">
+                <div
+                  className="w-full bg-gray-200 rounded-full h-2 cursor-pointer"
+                  onClick={handleSeek}
+                >
+                  <div
+                    className="bg-blue-600 h-2 rounded-full"
+                    style={{ width: `${progress}%` }}
+                  ></div>
+                </div>
+                <div className="flex justify-between text-xs text-gray-500 mt-1">
+                  <span>{formatTime(currentTime)}</span>
+                  <span>{formatTime(duration)}</span>
                 </div>
               </div>
 
-              {/* Navigation */}
-              <div className="bg-white rounded-lg p-6 shadow-sm">
-                <div className="flex justify-between">
-                  <button
-                    onClick={handlePrevious}
-                    disabled={currentLessonIndex <= 0}
-                    className="flex items-center gap-2 px-4 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700 disabled:opacity-50 disabled:cursor-not-allowed"
-                  >
-                    <ChevronLeft className="w-4 h-4" />
-                    Previous
-                  </button>
-                  <button
-                    onClick={handleNext}
-                    disabled={currentLessonIndex >= allLessons.length - 1}
-                    className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed"
-                  >
-                    Next
-                    <ChevronRight className="w-4 h-4" />
-                  </button>
-                </div>
+              {/* Volume Control */}
+              <div className="flex items-center gap-2">
+                <button onClick={toggleMute} className="text-gray-600">
+                  {isMuted || volume === 0 ? (
+                    <VolumeX className="w-4 h-4" />
+                  ) : (
+                    <Volume2 className="w-4 h-4" />
+                  )}
+                </button>
+                <input
+                  type="range"
+                  min="0"
+                  max="1"
+                  step="0.1"
+                  value={volume}
+                  onChange={handleVolumeChange}
+                  className="flex-1"
+                />
+              </div>
+            </div>
+
+            {/* Navigation */}
+            <div className="bg-white rounded-lg p-6 shadow-sm">
+              <div className="flex justify-between">
+                <button
+                  onClick={handlePrevious}
+                  disabled={currentLessonIndex <= 0}
+                  className="flex items-center gap-2 px-4 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700 disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  <ChevronLeft className="w-4 h-4" />
+                  Previous
+                </button>
+                <button
+                  onClick={handleNext}
+                  disabled={currentLessonIndex >= allLessons.length - 1}
+                  className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  Next
+                  <ChevronRight className="w-4 h-4" />
+                </button>
               </div>
             </div>
           </div>
+        </div>
 
-          <div className="space-y-2">
-            {(() => {
-              const q = searchQuery.trim().toLowerCase();
-              const filteredModules = (modules || [])
-                .map((module) => ({
-                  ...module,
-                  lessons: module.lessons.filter((lesson) =>
-                    lesson.title.toLowerCase().includes(q)
-                  ),
-                }))
-                .filter((m) => m.lessons.length > 0);
+        <div className="space-y-2">
+          {(() => {
+            const q = searchQuery.trim().toLowerCase();
+            const filteredModules = (modules || [])
+              .map((module) => ({
+                ...module,
+                lessons: module.lessons.filter((lesson) =>
+                  lesson.title.toLowerCase().includes(q)
+                ),
+              }))
+              .filter((m) => m.lessons.length > 0);
 
             if (q && filteredModules.length === 0) {
               return (
@@ -852,74 +822,72 @@ export default function Learning() {
               );
             }
 
-              return (
-                <div>
-                  {(filteredModules.length > 0 ? filteredModules : modules || []).map((module) => (
-                    <div
-                      key={module.id}
-                      className="border border-gray-200 rounded-lg"
+            return (
+              <div>
+                {(filteredModules.length > 0 ? filteredModules : modules || []).map((module) => (
+                  <div
+                    key={module.id}
+                    className="border border-gray-200 rounded-lg"
+                  >
+                    <button
+                      onClick={() => toggleModule(module.id)}
+                      className="w-full flex items-center justify-between p-4 text-left hover:bg-gray-50"
                     >
-                      <button
-                        onClick={() => toggleModule(module.id)}
-                        className="w-full flex items-center justify-between p-4 text-left hover:bg-gray-50"
-                      >
-                        <span className="font-medium text-gray-900">
-                          {module.title}
-                        </span>
-                        <ChevronDown
-                          className={`w-4 h-4 transition-transform ${
-                            expandedModule === module.id ? "rotate-180" : ""
+                      <span className="font-medium text-gray-900">
+                        {module.title}
+                      </span>
+                      <ChevronDown
+                        className={`w-4 h-4 transition-transform ${expandedModule === module.id ? "rotate-180" : ""
                           }`}
-                        />
-                      </button>
+                      />
+                    </button>
 
-                      {expandedModule === module.id && (
-                        <div className="px-4 pb-4 space-y-2">
-                          {module.lessons.map((lesson) => (
-                            <button
-                              key={lesson.id}
-                              onClick={() => handleLessonClick(lesson)}
-                              className={`w-full flex items-center gap-3 p-3 rounded-lg text-left hover:bg-gray-50 ${
-                                currentLesson?.id === lesson.id
-                                  ? "bg-blue-50 border border-blue-200"
-                                  : ""
+                    {expandedModule === module.id && (
+                      <div className="px-4 pb-4 space-y-2">
+                        {module.lessons.map((lesson) => (
+                          <button
+                            key={lesson.id}
+                            onClick={() => handleLessonClick(lesson)}
+                            className={`w-full flex items-center gap-3 p-3 rounded-lg text-left hover:bg-gray-50 ${currentLesson?.id === lesson.id
+                              ? "bg-blue-50 border border-blue-200"
+                              : ""
                               }`}
-                            >
-                              {lesson.type === "video" ? (
-                                <Play className="w-4 h-4 text-gray-400" />
-                              ) : (
-                                <FileText className="w-4 h-4 text-gray-400" />
-                              )}
-                              <div className="flex-1">
-                                <p className="text-sm font-medium text-gray-900">
-                                  {lesson.title}
-                                </p>
-                                <p className="text-xs text-gray-500">
-                                  {lesson.duration}
-                                </p>
-                              </div>
-                              {user?.purchasedCourses
-                                ?.find(
-                                  (course) => course.courseId === parseInt(courseId)
-                                )
-                                ?.progress?.completedLessons?.some(
-                                  (cl) => cl.lessonId === lesson.id
-                                ) ? (
-                                <Check className="w-4 h-4 text-green-500" />
-                              ) : (
-                                <Circle className="w-4 h-4 text-gray-300" />
-                              )}
-                            </button>
-                          ))}
-                        </div>
-                      )}
-                    </div>
-                  ))}
-                </div>
-              );
-            })()}
-          </div>
+                          >
+                            {lesson.type === "video" ? (
+                              <Play className="w-4 h-4 text-gray-400" />
+                            ) : (
+                              <FileText className="w-4 h-4 text-gray-400" />
+                            )}
+                            <div className="flex-1">
+                              <p className="text-sm font-medium text-gray-900">
+                                {lesson.title}
+                              </p>
+                              <p className="text-xs text-gray-500">
+                                {lesson.duration}
+                              </p>
+                            </div>
+                            {user?.purchasedCourses
+                              ?.find(
+                                (course) => course.courseId === parseInt(courseId)
+                              )
+                              ?.progress?.completedLessons?.some(
+                                (cl) => cl.lessonId === lesson.id
+                              ) ? (
+                              <Check className="w-4 h-4 text-green-500" />
+                            ) : (
+                              <Circle className="w-4 h-4 text-gray-300" />
+                            )}
+                          </button>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                ))}
+              </div>
+            );
+          })()}
         </div>
       </div>
-   );
- }
+    </div>
+  );
+}
