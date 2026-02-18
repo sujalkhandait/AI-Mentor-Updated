@@ -1,47 +1,42 @@
-# AI Service Setup Guide
+# AI Lesson Generator Service
 
-This service handles the generation of AI-powered lesson videos using Gemini for script generation, Edge-TTS for audio, and Wav2Lip for lip-syncing.
+This service generates AI-powered short video lessons using:
+- **Google Gemini** for script generation.
+- **pyttsx3** for offline Text-to-Speech (TTS).
+- **FFmpeg** for video processing and looping.
+- **FastAPI** for the backend API.
+
+The service currently generates a video by looping a source video (e.g., a celebrity clip) for the duration of the generated audio.
+
+---
 
 ## 🚀 Prerequisites
 
+Ensure you have the following installed:
 
-Before you begin, make sure that you have copied and pasted the `checkpoints` folder from the `.zip` file provided.
-
-Here is the link to the `.zip` file: https://drive.google.com/file/d/1bK-NgU7y5IahY7cecUacBaAF-IhMd76j/view?usp=drive_link.
-
-Before you begin, ensure you have the following installed on your system:
-
-1.  **Python 3.10+**: Recommended for compatibility with all dependencies.
-2.  **FFmpeg**: Essential for Wav2Lip to process audio and video.
-    *   **Windows (winget)**: Run `winget install ffmpeg` in CMD/PowerShell.
-    *   **Windows (Chocolatey)**: If you have [Chocolatey](https://chocolatey.org/) installed, run `choco install ffmpeg`.
+1.  **Python 3.10+**: Required for compatibility.
+2.  **FFmpeg**: Essential for video and audio processing.
+    *   **Windows (winget)**: `winget install ffmpeg`
     *   **Manual**: Download from [ffmpeg.org](https://ffmpeg.org/download.html), extract, and add the `bin` folder to your System PATH.
     *   **Verify**: Run `ffmpeg -version` in your terminal.
+
+---
 
 ## 📥 Installation
 
 Follow these steps to set up the environment:
 
 ### 1. Create a Virtual Environment
-Navigate to the `ai_service` directory and create a virtual environment:
+
+Navigate to the `ai_service` directory:
 
 ```bash
 cd ai_service
 python -m venv venv
 ```
 
-**Optional (Force any Python 3.10+ version if multiple versions are installed):**
-```bash
-py -3.10 -m venv venv
-```
-
-**Verify Version:**
-After creating the environment, check for the python version currently in use:
-```bash
-python --version
-```
-
 ### 2. Activate the Virtual Environment
+
 *   **Windows**:
     ```bash
     .\venv\Scripts\activate
@@ -51,66 +46,86 @@ python --version
     source venv/bin/activate
     ```
 
-### 3. Install Backend Dependencies
+### 3. Install Dependencies
 
-
-Navigate to the `backend` folder and install the required Python packages:
-
-```bash
-cd backend
-pip install fastapi uvicorn requests python-dotenv edge-tts pydantic
-```
-
-### 4. Install Wav2Lip Dependencies
-Navigate to the `Wav2Lip` directory and install its requirements:
+Install the required Python packages from `requirements_active.txt`:
 
 ```bash
-cd ../Wav2Lip
-pip install -r requirements.txt
+pip install -r backend/requirements_active.txt
 ```
 
-> **Note**: If you have an NVIDIA GPU and want faster generation, you may want to install the CUDA-enabled version of `torch` and `torchvision`.
+---
 
 ## ⚙️ Configuration
 
 ### 1. Environment Variables
+
 Create a `.env` file inside the `ai_service/backend` directory:
 
 ```env
 GEMINI_API_KEY=your_gemini_api_key_here
 ```
 
-### 2. Wav2Lip Checkpoints
-Ensure the pre-trained model is present in the checkpoints folder:
-*   File path: `ai_service/Wav2Lip/checkpoints/wav2lip_gan.pth`
-*   If missing, download it from the official [Wav2Lip repository](https://github.com/Rudrabha/Wav2Lip#model-checkpoints).
+### 2. Input Videos
 
-### 3. Assets
-Place celebrity images in `ai_service/assets/celebrities/`. 
-The files should be named in lowercase (e.g., `salman.jpg`, `modi.jpg`, `srk.jpg`).
+Place your source videos in `ai_service/backend/input/`.
+The service looks for videos matching the celebrity name (e.g., `modi.mp4`, `elon.mp4`).
+*   Default fallback: `modi.mp4`
+
+---
 
 ## 🏃 Running the Service
 
 Start the FastAPI server:
 
 ```bash
-cd ai_service/backend
-uvicorn api.py:app --reload --port 8000
+cd backend
+uvicorn api:app --reload --port 8000
 ```
 
 The service will be available at `http://localhost:8000`.
 
+### API Endpoint
+
+**POST** `/generate`
+
+**Body:**
+```json
+{
+  "course": "Physics",
+  "topic": "Newton's Laws",
+  "celebrity": "Einstein"
+}
+```
+
+**Response:**
+```json
+{
+  "status": "Processing started",
+  "filename": "Newtons_Laws_20240213_123045.mp4",
+  "text_file": "Newtons_Laws_20240213_123045.txt",
+  "audio_file": "Newtons_Laws_20240213_123045.wav"
+}
+```
+
+---
+
 ## 📂 Project Structure
 
-*   `backend/`: FastAPI application and logic.
-*   `Wav2Lip/`: Wav2Lip model and inference scripts.
-*   `assets/celebrities/`: Input images for the AI avatars.
-*   `outputs/`: Stores generated audio and video files.
-    *   `outputs/audio/`: Generated `.wav` scripts.
-    *   `outputs/video/`: Final synchronized `.mp4` lessons.
+*   `backend/`:
+    *   `api.py`: Main FastAPI application.
+    *   `gemini_api.py`: Interaction with Google Gemini.
+    *   `input/`: Source video files for looping.
+    *   `requirements_active.txt`: Active dependencies.
+*   `outputs/`: Generated files (auto-created).
+    *   `video/`: Final `.mp4` lessons.
+    *   `audio/`: Generated audio.
+    *   `text/`: Generated scripts.
+
+---
 
 ## 🛠 Troubleshooting
 
-*   **FFmpeg Error**: Ensure FFmpeg is in your system PATH.
-*   **ModuleNotFoundError**: Double-check that your virtual environment is active and all requirements are installed.
-*   **GPU Memory**: If you run out of memory, Wav2Lip might fail. Ensure you have enough VRAM or use the CPU version of torch.
+*   **FFmpeg Error**: Ensure FFmpeg is added to your system PATH.
+*   **Gemini Error**: Check your API key in `.env`.
+*   **ModuleNotFoundError**: Ensure your virtual environment is active (`venv`).

@@ -4,6 +4,7 @@ import { useNavigate, useParams } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import { getAIVideo } from "../service/aiService";
 import VideoPlayer from "../components/video/VideoPlayer";
+import VideoPlayer from "../components/video/VideoPlayer";
 
 import {
   ChevronLeft,
@@ -43,7 +44,11 @@ export default function Learning() {
   const celebrities = ["Salman Khan", "Modi ji", "SRK"];
 
   // map celebrities to videos and vtt files
+  // map celebrities to videos and vtt files
   const celebrityVideoMap = {
+    "Salman Khan": { video: "http://localhost:5000/videos/salman.mp4", vtt: "http://localhost:5000/videos/salman.vtt" },
+    "Modi ji": { video: "http://localhost:5000/videos/modi.mp4", vtt: "http://localhost:5000/videos/modi.vtt" },
+    SRK: { video: "http://localhost:5000/videos/srk.mp4", vtt: "http://localhost:5000/videos/srk.vtt" },
     "Salman Khan": { video: "http://localhost:5000/videos/salman.mp4", vtt: "http://localhost:5000/videos/salman.vtt" },
     "Modi ji": { video: "http://localhost:5000/videos/modi.mp4", vtt: "http://localhost:5000/videos/modi.vtt" },
     SRK: { video: "http://localhost:5000/videos/srk.mp4", vtt: "http://localhost:5000/videos/srk.vtt" },
@@ -65,6 +70,7 @@ export default function Learning() {
   const [isNavigating, setIsNavigating] = useState(false);
   const [aiVideoUrl, setAiVideoUrl] = useState(null);
   const [isAIVideoLoading, setIsAIVideoLoading] = useState(false);
+  const [generatedTextContent, setGeneratedTextContent] = useState("");
 
   const videoRef = useRef(null);
   const playerContainerRef = useRef(null);
@@ -132,11 +138,14 @@ export default function Learning() {
                   {
                     id: 1,
                     title: "Introduction to React",
+                    title: "Introduction to React",
                     type: "video",
                     duration: "0:10",
                     youtubeUrl: "https://www.youtube.com/watch?v=Ke90Tje7VS0",
+                    youtubeUrl: "https://www.youtube.com/watch?v=Ke90Tje7VS0",
                     content: {
                       introduction:
+                        "React is a JavaScript library for building user interfaces. It was developed by Facebook and is now maintained by Meta and the open-source community. React allows developers to create reusable UI components and manage the state of their applications efficiently.",
                         "React is a JavaScript library for building user interfaces. It was developed by Facebook and is now maintained by Meta and the open-source community. React allows developers to create reusable UI components and manage the state of their applications efficiently.",
                       keyConcepts: [],
                     },
@@ -144,11 +153,14 @@ export default function Learning() {
                   {
                     id: 2,
                     title: "React: Advanced Concepts",
+                    title: "React: Advanced Concepts",
                     type: "video",
                     duration: "0:12",
                     youtubeUrl: "https://www.youtube.com/watch?v=4UZrsTqkcW4",
+                    youtubeUrl: "https://www.youtube.com/watch?v=4UZrsTqkcW4",
                     content: {
                       introduction:
+                        "Advanced React concepts including hooks, context, and performance optimization techniques.",
                         "Advanced React concepts including hooks, context, and performance optimization techniques.",
                       keyConcepts: [],
                     },
@@ -184,6 +196,7 @@ export default function Learning() {
           error
         );
         // Use the same fallback as above
+        // Use the same fallback as above
         const fallback = {
           course: {
             id: parseInt(courseId),
@@ -196,11 +209,14 @@ export default function Learning() {
                 {
                   id: 1,
                   title: "Introduction to React",
+                  title: "Introduction to React",
                   type: "video",
                   duration: "0:10",
                   youtubeUrl: "https://www.youtube.com/watch?v=Ke90Tje7VS0",
+                  youtubeUrl: "https://www.youtube.com/watch?v=Ke90Tje7VS0",
                   content: {
                     introduction:
+                      "React is a JavaScript library for building user interfaces. It was developed by Facebook and is now maintained by Meta and the open-source community. React allows developers to create reusable UI components and manage the state of their applications efficiently.",
                       "React is a JavaScript library for building user interfaces. It was developed by Facebook and is now maintained by Meta and the open-source community. React allows developers to create reusable UI components and manage the state of their applications efficiently.",
                     keyConcepts: [],
                   },
@@ -208,11 +224,14 @@ export default function Learning() {
                 {
                   id: 2,
                   title: "React: Advanced Concepts",
+                  title: "React: Advanced Concepts",
                   type: "video",
                   duration: "0:12",
                   youtubeUrl: "https://www.youtube.com/watch?v=4UZrsTqkcW4",
+                  youtubeUrl: "https://www.youtube.com/watch?v=4UZrsTqkcW4",
                   content: {
                     introduction:
+                      "Advanced React concepts including hooks, context, and performance optimization techniques.",
                       "Advanced React concepts including hooks, context, and performance optimization techniques.",
                     keyConcepts: [],
                   },
@@ -222,6 +241,15 @@ export default function Learning() {
           ],
           currentLesson: {
             id: 1,
+            title: "Introduction to React",
+            type: "video",
+            duration: "0:10",
+            youtubeUrl: "https://www.youtube.com/watch?v=Ke90Tje7VS0",
+            content: {
+              introduction:
+                "React is a JavaScript library for building user interfaces. It was developed by Facebook and is now maintained by Meta and the open-source community. React allows developers to create reusable UI components and manage the state of their applications efficiently.",
+              keyConcepts: [],
+            },
             title: "Introduction to React",
             type: "video",
             duration: "0:10",
@@ -319,6 +347,7 @@ export default function Learning() {
     const loadVideo = async () => {
       if (selectedCelebrity) {
         setIsAIVideoLoading(true);
+        setGeneratedTextContent("");
         try {
           const payload = {
             celebrity: selectedCelebrity.split(" ")[0].toLowerCase(),
@@ -328,6 +357,7 @@ export default function Learning() {
           const data = await getAIVideo(payload);
           if (data && data.videoUrl) {
             setAiVideoUrl(data.videoUrl);
+            setGeneratedTextContent(data.textContent || "");
             v.pause();
             v.src = data.videoUrl;
             v.load();
@@ -340,6 +370,7 @@ export default function Learning() {
           }
         } catch (error) {
           console.error("Error generating AI video on lesson change:", error);
+          setGeneratedTextContent("");
           const src =
             celebrityVideoMap[selectedCelebrity]?.video ||
             learningData.currentLesson.videoUrl;
@@ -359,6 +390,7 @@ export default function Learning() {
         }
       } else {
         setIsAIVideoLoading(false);
+        setGeneratedTextContent("");
         const src = learningData.currentLesson.videoUrl;
         if (src) {
           v.pause();
@@ -584,6 +616,7 @@ export default function Learning() {
 
   return (
     <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gray-50">
       <Header sidebarOpen={sidebarOpen} setSidebarOpen={setSidebarOpen} />
 
       {/* Sidebar */}
@@ -631,15 +664,18 @@ export default function Learning() {
                         setSelectedCelebrity(c);
                       }
                     }}
-                    className={`w-full text-left px-4 py-3 rounded-lg border ${
-                      selectedCelebrity === c
-                        ? "bg-blue-600 text-white"
-                        : "bg-white text-gray-900"
-                    }`}
+                    className={`w-full text-left px-4 py-3 rounded-lg border ${selectedCelebrity === c
+                      ? "bg-blue-600 text-white"
+                      : "bg-white text-gray-900"
+                      }`}
                   >
                     {c}
                   </button>
                 ))}
+            </div>
+          </div>
+        </div>
+      </div>
             </div>
           </div>
         </div>
@@ -808,13 +844,13 @@ export default function Learning() {
                 }))
                 .filter((m) => m.lessons.length > 0);
 
-              if (q && filteredModules.length === 0) {
-                return (
-                  <p className="text-sm text-gray-500">
-                    No results for "{searchQuery}"
-                  </p>
-                );
-              }
+            if (q && filteredModules.length === 0) {
+              return (
+                <p className="text-sm text-gray-500">
+                  No results for "{searchQuery}"
+                </p>
+              );
+            }
 
               return (
                 <div>

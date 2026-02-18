@@ -8,7 +8,6 @@ export const getAIVideo = async (payload) => {
       body: JSON.stringify(payload),
     });
     const data = await response.json();
-    console.log(data);
     if (!response.ok) {
       throw new Error("Failed to fetch AI video");
     }
