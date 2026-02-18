@@ -3,7 +3,7 @@ export const getAIVideo = async (payload) => {
   console.log(payload);
 
   const response = await fetch(
-    "http://localhost:5000/api/ai/generate-video",
+    "/api/ai/generate-video",
     {
       method: "POST",
       headers: {

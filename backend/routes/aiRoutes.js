@@ -56,15 +56,37 @@ router.post("/generate-video", protect, async (req, res) => {
       throw new Error("AI service failed");
     }
 
-    const { filename } = await aiResponse.json();
+    const { filename, text_file } = await aiResponse.json();
 
     res.json({
       videoUrl: `/api/ai/video/${courseId}/${filename}`,
+      transcriptName: text_file
     });
 
   } catch (error) {
     console.error("AI GENERATE ERROR:", error);
     res.status(500).json({ message: "Failed to generate AI video" });
+  }
+});
+
+// ----------------------------------------------------
+// Proxy Transcript Content from Python
+// ----------------------------------------------------
+router.get("/transcript/:filename", async (req, res) => {
+  try {
+    const { filename } = req.params;
+    const pythonTranscriptUrl = `${process.env.AI_SERVICE_URL}/transcript/${filename}`;
+
+    const response = await fetch(pythonTranscriptUrl);
+    if (!response.ok) {
+      return res.status(404).json({ error: "Transcript not found" });
+    }
+
+    const data = await response.json();
+    res.json(data);
+  } catch (error) {
+    console.error("❌ Transcript Proxy Error:", error.message);
+    res.status(500).json({ error: "Failed to load transcript" });
   }
 });
 

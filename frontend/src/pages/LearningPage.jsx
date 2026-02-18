@@ -4,6 +4,7 @@ import { useNavigate, useParams } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import { getAIVideo } from "../service/aiService";
 import VideoPlayer from "../components/video/VideoPlayer";
+import AITranscript from "../components/video/AITranscript";
 
 import {
   ChevronLeft,
@@ -64,6 +65,7 @@ export default function Learning() {
   const [currentTime, setCurrentTime] = useState(0);
   const [isNavigating, setIsNavigating] = useState(false);
   const [aiVideoUrl, setAiVideoUrl] = useState(null);
+  const [aiTranscript, setAiTranscript] = useState(null);
   const [isAIVideoLoading, setIsAIVideoLoading] = useState(false);
 
   const videoRef = useRef(null);
@@ -347,13 +349,28 @@ useEffect(() => {
 
         const data = await getAIVideo(payload);
 
-        if (data && data.videoUrl) {
-          // Just use direct URL (no blob, no fetch)
-          setAiVideoUrl(data.videoUrl);
+          if (data && data.videoUrl) {
+            // Just use direct URL (no blob, no fetch)
+            setAiVideoUrl(data.videoUrl);
+            
+            // If transcript is available, fetch its content
+            if (data.transcriptName) {
+              try {
+                const trRes = await fetch(`/api/ai/transcript/${data.transcriptName}`, {
+                  headers: { Authorization: `Bearer ${localStorage.getItem("token")}` }
+                });
+                if (trRes.ok) {
+                  const trData = await trRes.json();
+                  setAiTranscript(trData.content);
+                }
+              } catch (trErr) {
+                console.error("Error fetching transcript:", trErr);
+              }
+            }
 
-          v.pause();
-          v.src = data.videoUrl;
-          v.load();
+            v.pause();
+            v.src = data.videoUrl;
+            v.load();
 
           const p = v.play();
           if (p && typeof p.then === "function") {
@@ -506,6 +523,7 @@ useEffect(() => {
 
   const handleLessonClick = (lesson) => {
     // update current lesson locally and let useEffect handle video loading
+    setAiTranscript(null);
     setLearningData((prev) => ({ ...prev, currentLesson: lesson }));
   };
 
@@ -656,7 +674,9 @@ useEffect(() => {
                         // Toggle off if same celebrity clicked again
                         setSelectedCelebrity(null);
                         setAiVideoUrl(null);
+                        setAiTranscript(null);
                       } else {
+                        setAiTranscript(null);
                         setSelectedCelebrity(c);
                       }
                     }}
@@ -754,12 +774,12 @@ useEffect(() => {
                   {currentLesson?.title || "Select a Lesson"}
                 </h3>
                 {/* Only show intro here if it's a video lesson, otherwise it's in the main area */}
-                {(currentLesson?.type === "video" || !currentLesson?.type) && currentLesson?.content?.introduction && (
-                  <div className="max-w-none">
-                    <p className="text-gray-700 text-sm leading-relaxed">
-                      {currentLesson.content.introduction}
-                    </p>
-                  </div>
+                {(currentLesson?.type === "video" || !currentLesson?.type) && (
+                  <AITranscript 
+                    aiTranscript={aiTranscript} 
+                    selectedCelebrity={selectedCelebrity} 
+                    introduction={currentLesson?.content?.introduction}
+                  />
                 )}
               </div>
 
