@@ -104,7 +104,11 @@ export default function Settings() {
   }, [user]);
 
   return (
+<<<<<<< HEAD
     <div className="min-h-screen bg-[#F6F8FA] flex flex-col">
+=======
+    <div className="min-h-screen bg-canvas-alt flex flex-col">
+>>>>>>> upstream/main
       <Header sidebarOpen={sidebarOpen} setSidebarOpen={setSidebarOpen} />
 
       <Sidebar
@@ -122,7 +126,11 @@ export default function Settings() {
       >
         <div className="flex flex-1 mt-15">
           {/* Settings Sidebar */}
+<<<<<<< HEAD
           <aside className="w-[280px] bg-white rounded-[24px] shadow-[0_4px_6px_0_rgba(0,0,0,0.10),0_10px_15px_0_rgba(0,0,0,0.10)] m-6 mr-0">
+=======
+          <aside className="w-[280px] bg-card rounded-[24px] shadow-[0_4px_6px_0_rgba(0,0,0,0.10),0_10px_15px_0_rgba(0,0,0,0.10)] m-6 mr-0">
+>>>>>>> upstream/main
             <nav className="p-6">
               <div className="space-y-2">
                 {settingsNavItems.map((item) => {
@@ -133,8 +141,13 @@ export default function Settings() {
                       key={item.label}
                       className={`w-full flex items-center gap-4 px-6 py-4 rounded-2xl text-left transition-colors ${
                         activeSetting === item.label
+<<<<<<< HEAD
                           ? "bg-[#E8F9F7] text-[#374151]"
                           : "text-[#374151] hover:bg-gray-50"
+=======
+                          ? "bg-teal-50 dark:bg-teal-900/20 text-main"
+                          : "text-muted hover:bg-canvas-alt"
+>>>>>>> upstream/main
                       }`}
                     >
                       <IconComponent
@@ -160,16 +173,27 @@ export default function Settings() {
               <div className="max-w-[896px]">
                 {/* Header */}
                 <div className="mb-8">
+<<<<<<< HEAD
                   <h1 className="text-[30px] font-bold text-[#1F2937] font-[Inter] mb-2">
                     Profile Settings
                   </h1>
                   <p className="text-[16px] text-[#4B5563] font-[Inter]">
+=======
+                  <h1 className="text-[30px] font-bold text-main font-[Inter] mb-2">
+                    Profile Settings
+                  </h1>
+                  <p className="text-[16px] text-muted font-[Inter]">
+>>>>>>> upstream/main
                     Manage your account information and preferences
                   </p>
                 </div>
 
                 {/* Settings Card */}
+<<<<<<< HEAD
                 <div className="bg-white rounded-[24px] shadow-[0_4px_6px_0_rgba(0,0,0,0.10),0_10px_15px_0_rgba(0,0,0,0.10)] p-8">
+=======
+                <div className="bg-card rounded-[24px] shadow-[0_4px_6px_0_rgba(0,0,0,0.10),0_10px_15px_0_rgba(0,0,0,0.10)] p-8">
+>>>>>>> upstream/main
                   <div className="flex gap-8 mb-8">
                     {/* Avatar Section */}
                     <div className="flex flex-col items-center">
@@ -183,10 +207,17 @@ export default function Settings() {
                           <Camera className="w-[14px] h-[14px] text-white" />
                         </button>
                       </div>
+<<<<<<< HEAD
                       <h2 className="text-[20px] font-semibold text-[#1F2937] font-[Inter] mb-1">
                         {formData.firstName} {formData.lastName}
                       </h2>
                       <p className="text-[16px] text-[#6B7280] font-[Inter]">
+=======
+                      <h2 className="text-[20px] font-semibold text-main font-[Inter] mb-1">
+                        {formData.firstName} {formData.lastName}
+                      </h2>
+                      <p className="text-[16px] text-muted font-[Inter]">
+>>>>>>> upstream/main
                         Premium Member
                       </p>
                     </div>
@@ -196,7 +227,11 @@ export default function Settings() {
                       {/* First and Last Name */}
                       <div className="grid grid-cols-2 gap-6">
                         <div className="relative">
+<<<<<<< HEAD
                           <label className="absolute -top-2 left-4 bg-white px-2 text-[14px] text-[#475569] font-medium font-[Inter]">
+=======
+                          <label className="absolute -top-2 left-4 bg-card px-2 text-[14px] text-muted font-medium font-[Inter]">
+>>>>>>> upstream/main
                             First Name
                           </label>
                           <input
@@ -205,11 +240,19 @@ export default function Settings() {
                             onChange={(e) =>
                               handleInputChange("firstName", e.target.value)
                             }
+<<<<<<< HEAD
                             className="w-full h-[50px] px-4 rounded-xl border border-[#D1D5DB] text-[16px] font-[Inter] focus:ring-2 focus:ring-[#00BEA5] focus:border-[#00BEA5] bg-white"
                           />
                         </div>
                         <div className="relative">
                           <label className="absolute -top-2 left-4 bg-white px-2 text-[14px] text-[#475569] font-medium font-[Inter]">
+=======
+                            className="w-full h-[50px] px-4 rounded-xl border border-border text-[16px] font-[Inter] focus:ring-2 focus:ring-primary focus:border-primary bg-input text-main"
+                          />
+                        </div>
+                        <div className="relative">
+                          <label className="absolute -top-2 left-4 bg-card px-2 text-[14px] text-muted font-medium font-[Inter]">
+>>>>>>> upstream/main
                             Last Name
                           </label>
                           <input
@@ -218,14 +261,22 @@ export default function Settings() {
                             onChange={(e) =>
                               handleInputChange("lastName", e.target.value)
                             }
+<<<<<<< HEAD
                             className="w-full h-[50px] px-4 rounded-xl border border-[#D1D5DB] text-[16px] font-[Inter] focus:ring-2 focus:ring-[#00BEA5] focus:border-[#00BEA5] bg-white"
+=======
+                            className="w-full h-[50px] px-4 rounded-xl border border-border text-[16px] font-[Inter] focus:ring-2 focus:ring-primary focus:border-primary bg-input text-main"
+>>>>>>> upstream/main
                           />
                         </div>
                       </div>
 
                       {/* Email */}
                       <div className="relative">
+<<<<<<< HEAD
                         <label className="absolute -top-2 left-4 bg-white px-2 text-[14px] text-[#475569] font-medium font-[Inter]">
+=======
+                        <label className="absolute -top-2 left-4 bg-card px-2 text-[14px] text-muted font-medium font-[Inter]">
+>>>>>>> upstream/main
                           Email Address
                         </label>
                         <input
@@ -234,13 +285,21 @@ export default function Settings() {
                           onChange={(e) =>
                             handleInputChange("email", e.target.value)
                           }
+<<<<<<< HEAD
                           className="w-full h-[50px] px-4 rounded-xl border border-[#D1D5DB] text-[16px] font-[Inter] focus:ring-2 focus:ring-[#00BEA5] focus:border-[#00BEA5] bg-white"
+=======
+                          className="w-full h-[50px] px-4 rounded-xl border border-border text-[16px] font-[Inter] focus:ring-2 focus:ring-primary focus:border-primary bg-input text-main"
+>>>>>>> upstream/main
                         />
                       </div>
 
                       {/* Bio */}
                       <div className="relative">
+<<<<<<< HEAD
                         <label className="absolute -top-2 left-4 bg-white px-2 text-[14px] text-[#475569] font-medium font-[Inter]">
+=======
+                        <label className="absolute -top-2 left-4 bg-card px-2 text-[14px] text-muted font-medium font-[Inter]">
+>>>>>>> upstream/main
                           Bio
                         </label>
                         <textarea
@@ -248,24 +307,39 @@ export default function Settings() {
                           onChange={(e) =>
                             handleInputChange("bio", e.target.value)
                           }
+<<<<<<< HEAD
                           className="w-full min-h-[122px] px-4 py-3 rounded-xl border border-[#D1D5DB] text-[16px] font-[Inter] resize-none focus:ring-2 focus:ring-[#00BEA5] focus:border-[#00BEA5] bg-white text-[#ADAEBC]"
+=======
+                          className="w-full min-h-[122px] px-4 py-3 rounded-xl border border-border text-[16px] font-[Inter] resize-none focus:ring-2 focus:ring-primary focus:border-primary bg-input text-main"
+>>>>>>> upstream/main
                         />
                       </div>
                     </div>
                   </div>
 
                   {/* Action Buttons */}
+<<<<<<< HEAD
                   <div className="flex justify-end gap-4 pt-6 border-t border-[#E5E7EB]">
                     <button
                       type="button"
                       className="h-[50px] px-6 rounded-xl border border-[#D1D5DB] bg-white text-[#374151] text-[16px] font-medium font-[Inter] hover:bg-gray-50"
+=======
+                  <div className="flex justify-end gap-4 pt-6 border-t border-border">
+                    <button
+                      type="button"
+                      className="h-[50px] px-6 rounded-xl border border-border bg-card text-main text-[16px] font-medium font-[Inter] hover:bg-canvas-alt"
+>>>>>>> upstream/main
                     >
                       Cancel
                     </button>
                     <button
                       onClick={handleSaveChanges}
                       disabled={loading}
+<<<<<<< HEAD
                       className="h-[50px] px-6 rounded-xl bg-gradient-to-r from-[#00BEA5] to-[#00BEA5] text-white text-[16px] font-medium font-[Inter] hover:opacity-90 disabled:opacity-50"
+=======
+                      className="h-[50px] px-6 rounded-xl bg-gradient-to-r from-primary to-primary text-white text-[16px] font-medium font-[Inter] hover:opacity-90 disabled:opacity-50"
+>>>>>>> upstream/main
                     >
                       {loading ? "Saving..." : "Save Changes"}
                     </button>
@@ -277,6 +351,7 @@ export default function Settings() {
             {activeSetting === "Notifications" && (
               <div className="max-w-[896px]">
                 <div className="mb-8">
+<<<<<<< HEAD
                   <h1 className="text-[30px] font-bold text-[#1F2937] font-[Inter] mb-2">
                     Notification Settings
                   </h1>
@@ -292,6 +367,23 @@ export default function Settings() {
                           Email Notifications
                         </h3>
                         <p className="text-[14px] text-[#6B7280] font-[Inter]">
+=======
+                  <h1 className="text-[30px] font-bold text-main font-[Inter] mb-2">
+                    Notification Settings
+                  </h1>
+                  <p className="text-[16px] text-muted font-[Inter]">
+                    Choose how you want to be notified about updates
+                  </p>
+                </div>
+                <div className="bg-card rounded-[24px] shadow-[0_4px_6px_0_rgba(0,0,0,0.10),0_10px_15px_0_rgba(0,0,0,0.10)] p-8">
+                  <div className="space-y-6">
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <h3 className="text-[16px] font-semibold text-main font-[Inter]">
+                          Email Notifications
+                        </h3>
+                        <p className="text-[14px] text-muted font-[Inter]">
+>>>>>>> upstream/main
                           Receive notifications via email
                         </p>
                       </div>
@@ -312,16 +404,27 @@ export default function Settings() {
                           }
                           className="sr-only peer"
                         />
+<<<<<<< HEAD
                         <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-[#00BEA5]/25 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-[#00BEA5]"></div>
+=======
+                        <div className="w-11 h-6 bg-gray-200 dark:bg-gray-700 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-primary/25 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary"></div>
+>>>>>>> upstream/main
                       </label>
                     </div>
 
                     <div className="flex items-center justify-between">
                       <div>
+<<<<<<< HEAD
                         <h3 className="text-[16px] font-semibold text-[#1F2937] font-[Inter]">
                           Push Notifications
                         </h3>
                         <p className="text-[14px] text-[#6B7280] font-[Inter]">
+=======
+                        <h3 className="text-[16px] font-semibold text-main font-[Inter]">
+                          Push Notifications
+                        </h3>
+                        <p className="text-[14px] text-muted font-[Inter]">
+>>>>>>> upstream/main
                           Receive push notifications in your browser
                         </p>
                       </div>
@@ -340,16 +443,27 @@ export default function Settings() {
                           }
                           className="sr-only peer"
                         />
+<<<<<<< HEAD
                         <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-[#00BEA5]/25 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-[#00BEA5]"></div>
+=======
+                        <div className="w-11 h-6 bg-gray-200 dark:bg-gray-700 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-primary/25 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary"></div>
+>>>>>>> upstream/main
                       </label>
                     </div>
 
                     <div className="flex items-center justify-between">
                       <div>
+<<<<<<< HEAD
                         <h3 className="text-[16px] font-semibold text-[#1F2937] font-[Inter]">
                           Course Updates
                         </h3>
                         <p className="text-[14px] text-[#6B7280] font-[Inter]">
+=======
+                        <h3 className="text-[16px] font-semibold text-main font-[Inter]">
+                          Course Updates
+                        </h3>
+                        <p className="text-[14px] text-muted font-[Inter]">
+>>>>>>> upstream/main
                           Get notified about new lessons and course updates
                         </p>
                       </div>
@@ -368,16 +482,27 @@ export default function Settings() {
                           }
                           className="sr-only peer"
                         />
+<<<<<<< HEAD
                         <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-[#00BEA5]/25 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-[#00BEA5]"></div>
+=======
+                        <div className="w-11 h-6 bg-gray-200 dark:bg-gray-700 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-primary/25 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary"></div>
+>>>>>>> upstream/main
                       </label>
                     </div>
 
                     <div className="flex items-center justify-between">
                       <div>
+<<<<<<< HEAD
                         <h3 className="text-[16px] font-semibold text-[#1F2937] font-[Inter]">
                           Discussion Replies
                         </h3>
                         <p className="text-[14px] text-[#6B7280] font-[Inter]">
+=======
+                        <h3 className="text-[16px] font-semibold text-main font-[Inter]">
+                          Discussion Replies
+                        </h3>
+                        <p className="text-[14px] text-muted font-[Inter]">
+>>>>>>> upstream/main
                           Get notified when someone replies to your discussions
                         </p>
                       </div>
@@ -396,15 +521,26 @@ export default function Settings() {
                           }
                           className="sr-only peer"
                         />
+<<<<<<< HEAD
                         <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-[#00BEA5]/25 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-[#00BEA5]"></div>
+=======
+                        <div className="w-11 h-6 bg-gray-200 dark:bg-gray-700 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-primary/25 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary"></div>
+>>>>>>> upstream/main
                       </label>
                     </div>
                   </div>
 
+<<<<<<< HEAD
                   <div className="flex justify-end gap-4 pt-6 border-t border-[#E5E7EB] mt-6">
                     <button
                       type="button"
                       className="h-[50px] px-6 rounded-xl border border-[#D1D5DB] bg-white text-[#374151] text-[16px] font-medium font-[Inter] hover:bg-gray-50"
+=======
+                  <div className="flex justify-end gap-4 pt-6 border-t border-border mt-6">
+                    <button
+                      type="button"
+                      className="h-[50px] px-6 rounded-xl border border-border bg-card text-main text-[16px] font-medium font-[Inter] hover:bg-canvas-alt"
+>>>>>>> upstream/main
                     >
                       Cancel
                     </button>
@@ -427,7 +563,11 @@ export default function Settings() {
                         }
                       }}
                       disabled={loading}
+<<<<<<< HEAD
                       className="h-[50px] px-6 rounded-xl bg-gradient-to-r from-[#00BEA5] to-[#00BEA5] text-white text-[16px] font-medium font-[Inter] hover:opacity-90 disabled:opacity-50"
+=======
+                      className="h-[50px] px-6 rounded-xl bg-gradient-to-r from-primary to-primary text-white text-[16px] font-medium font-[Inter] hover:opacity-90 disabled:opacity-50"
+>>>>>>> upstream/main
                     >
                       {loading ? "Saving..." : "Save Changes"}
                     </button>
@@ -439,6 +579,7 @@ export default function Settings() {
             {activeSetting === "Password & Security" && (
               <div className="max-w-[896px]">
                 <div className="mb-8">
+<<<<<<< HEAD
                   <h1 className="text-[30px] font-bold text-[#1F2937] font-[Inter] mb-2">
                     Password & Security
                   </h1>
@@ -454,6 +595,23 @@ export default function Settings() {
                           Two-Factor Authentication
                         </h3>
                         <p className="text-[14px] text-[#6B7280] font-[Inter]">
+=======
+                  <h1 className="text-[30px] font-bold text-main font-[Inter] mb-2">
+                    Password & Security
+                  </h1>
+                  <p className="text-[16px] text-muted font-[Inter]">
+                    Manage your password and security preferences
+                  </p>
+                </div>
+                <div className="bg-card rounded-[24px] shadow-[0_4px_6px_0_rgba(0,0,0,0.10),0_10px_15px_0_rgba(0,0,0,0.10)] p-8">
+                  <div className="space-y-6">
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <h3 className="text-[16px] font-semibold text-main font-[Inter]">
+                          Two-Factor Authentication
+                        </h3>
+                        <p className="text-[14px] text-muted font-[Inter]">
+>>>>>>> upstream/main
                           Add an extra layer of security to your account
                         </p>
                       </div>
@@ -472,16 +630,27 @@ export default function Settings() {
                           }
                           className="sr-only peer"
                         />
+<<<<<<< HEAD
                         <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-[#00BEA5]/25 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-[#00BEA5]"></div>
+=======
+                        <div className="w-11 h-6 bg-gray-200 dark:bg-gray-700 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-primary/25 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary"></div>
+>>>>>>> upstream/main
                       </label>
                     </div>
 
                     <div className="flex items-center justify-between">
                       <div>
+<<<<<<< HEAD
                         <h3 className="text-[16px] font-semibold text-[#1F2937] font-[Inter]">
                           Login Alerts
                         </h3>
                         <p className="text-[14px] text-[#6B7280] font-[Inter]">
+=======
+                        <h3 className="text-[16px] font-semibold text-main font-[Inter]">
+                          Login Alerts
+                        </h3>
+                        <p className="text-[14px] text-muted font-[Inter]">
+>>>>>>> upstream/main
                           Get notified when your account is accessed from a new
                           device
                         </p>
@@ -501,20 +670,35 @@ export default function Settings() {
                           }
                           className="sr-only peer"
                         />
+<<<<<<< HEAD
                         <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-[#00BEA5]/25 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-[#00BEA5]"></div>
                       </label>
                     </div>
 
                     <div className="border-t border-[#E5E7EB] pt-6">
                       <h3 className="text-[18px] font-semibold text-[#1F2937] font-[Inter]  mb-4">
+=======
+                        <div className="w-11 h-6 bg-gray-200 dark:bg-gray-700 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-primary/25 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary"></div>
+                      </label>
+                    </div>
+
+                    <div className="border-t border-border pt-6">
+                      <h3 className="text-[18px] font-semibold text-main font-[Inter]  mb-4">
+>>>>>>> upstream/main
                         Change Password
                       </h3>
                       <div className="space-y-5">
                         <div className="relative">
+<<<<<<< HEAD
                           <label className="absolute -top-2 left-4 bg-white px-2 text-[14px] text-[#475569] font-medium font-[Inter]">
                             Current Password
                           </label>
                           <div className="relative">
+=======
+                          <label className="absolute -top-2 left-4 bg-card px-2 text-[14px] text-muted font-medium font-[Inter]">
+                            Current Password
+                          </label>
+>>>>>>> upstream/main
                             <input
                               type={showCurrentPassword ? "text" : "password"}
                               value={passwordData.currentPassword}
@@ -524,14 +708,22 @@ export default function Settings() {
                                   currentPassword: e.target.value,
                                 }))
                               }
+<<<<<<< HEAD
                               className="w-full h-[50px] px-4 pr-12 rounded-xl border border-[#D1D5DB] text-[16px] font-[Inter] focus:ring-2 focus:ring-[#00BEA5] focus:border-[#00BEA5] bg-white"
+=======
+                              className="w-full h-[50px] px-4 pr-12 rounded-xl border border-border text-[16px] font-[Inter] focus:ring-2 focus:ring-primary focus:border-primary bg-input text-main"
+>>>>>>> upstream/main
                             />
                             <button
                               type="button"
                               onClick={() =>
                                 setShowCurrentPassword(!showCurrentPassword)
                               }
+<<<<<<< HEAD
                               className="absolute right-3 top-1/2 transform -translate-y-1/2 text-[#6B7280] hover:text-[#374151]"
+=======
+                              className="absolute right-3 top-1/2 transform -translate-y-1/2 text-muted hover:text-main"
+>>>>>>> upstream/main
                             >
                               {showCurrentPassword ? (
                                 <EyeOff className="w-5 h-5" />
@@ -539,6 +731,7 @@ export default function Settings() {
                                 <Eye className="w-5 h-5" />
                               )}
                             </button>
+<<<<<<< HEAD
                           </div>
                         </div>
 
@@ -547,6 +740,14 @@ export default function Settings() {
                             New Password
                           </label>
                           <div className="relative">
+=======
+                        </div>
+
+                        <div className="relative">
+                          <label className="absolute -top-2 left-4 bg-card px-2 text-[14px] text-muted font-medium font-[Inter]">
+                            New Password
+                          </label>
+>>>>>>> upstream/main
                             <input
                               type={showNewPassword ? "text" : "password"}
                               value={passwordData.newPassword}
@@ -556,14 +757,22 @@ export default function Settings() {
                                   newPassword: e.target.value,
                                 }))
                               }
+<<<<<<< HEAD
                               className="w-full h-[50px] px-4 pr-12 rounded-xl border border-[#D1D5DB] text-[16px] font-[Inter] focus:ring-2 focus:ring-[#00BEA5] focus:border-[#00BEA5] bg-white"
+=======
+                              className="w-full h-[50px] px-4 pr-12 rounded-xl border border-border text-[16px] font-[Inter] focus:ring-2 focus:ring-primary focus:border-primary bg-input text-main"
+>>>>>>> upstream/main
                             />
                             <button
                               type="button"
                               onClick={() =>
                                 setShowNewPassword(!showNewPassword)
                               }
+<<<<<<< HEAD
                               className="absolute right-3 top-1/2 transform -translate-y-1/2 text-[#6B7280] hover:text-[#374151]"
+=======
+                              className="absolute right-3 top-1/2 transform -translate-y-1/2 text-muted hover:text-main"
+>>>>>>> upstream/main
                             >
                               {showNewPassword ? (
                                 <EyeOff className="w-5 h-5" />
@@ -571,11 +780,19 @@ export default function Settings() {
                                 <Eye className="w-5 h-5" />
                               )}
                             </button>
+<<<<<<< HEAD
                           </div>
                         </div>
 
                         <div className="relative">
                           <label className="absolute -top-2 left-4 bg-white px-2 text-[14px] text-[#475569] font-medium font-[Inter]">
+=======
+                          
+                        </div>
+
+                        <div className="relative">
+                          <label className="absolute -top-2 left-4 bg-card px-2 text-[14px] text-muted font-medium font-[Inter]">
+>>>>>>> upstream/main
                             Confirm New Password
                           </label>
                           <input
@@ -587,17 +804,28 @@ export default function Settings() {
                                 confirmPassword: e.target.value,
                               }))
                             }
+<<<<<<< HEAD
                             className="w-full h-[50px] px-4 rounded-xl border border-[#D1D5DB] text-[16px] font-[Inter] focus:ring-2 focus:ring-[#00BEA5] focus:border-[#00BEA5] bg-white"
+=======
+                            className="w-full h-[50px] px-4 rounded-xl border border-border text-[16px] font-[Inter] focus:ring-2 focus:ring-primary focus:border-primary bg-input text-main"
+>>>>>>> upstream/main
                           />
                         </div>
                       </div>
                     </div>
                   </div>
 
+<<<<<<< HEAD
                   <div className="flex justify-end gap-4 pt-6 border-t border-[#E5E7EB] mt-6">
                     <button
                       type="button"
                       className="h-[50px] px-6 rounded-xl border border-[#D1D5DB] bg-white text-[#374151] text-[16px] font-medium font-[Inter] hover:bg-gray-50"
+=======
+                  <div className="flex justify-end gap-4 pt-6 border-t border-border mt-6">
+                    <button
+                      type="button"
+                      className="h-[50px] px-6 rounded-xl border border-border bg-card text-main text-[16px] font-medium font-[Inter] hover:bg-canvas-alt"
+>>>>>>> upstream/main
                     >
                       Cancel
                     </button>
@@ -632,7 +860,11 @@ export default function Settings() {
                         }
                       }}
                       disabled={loading}
+<<<<<<< HEAD
                       className="h-[50px] px-6 rounded-xl bg-gradient-to-r from-[#00BEA5] to-[#00BEA5] text-white text-[16px] font-medium font-[Inter] hover:opacity-90 disabled:opacity-50"
+=======
+                      className="h-[50px] px-6 rounded-xl bg-gradient-to-r from-primary to-primary text-white text-[16px] font-medium font-[Inter] hover:opacity-90 disabled:opacity-50"
+>>>>>>> upstream/main
                     >
                       {loading ? "Saving..." : "Save Changes"}
                     </button>
@@ -644,6 +876,7 @@ export default function Settings() {
             {activeSetting === "Appearance" && (
               <div className="max-w-[896px]">
                 <div className="mb-8">
+<<<<<<< HEAD
                   <h1 className="text-[30px] font-bold text-[#1F2937] font-[Inter] mb-2">
                     Appearance Settings
                   </h1>
@@ -655,6 +888,19 @@ export default function Settings() {
                   <div className="space-y-6">
                     <div>
                       <h3 className="text-[16px] font-semibold text-[#1F2937] font-[Inter] mb-3">
+=======
+                  <h1 className="text-[30px] font-bold text-main font-[Inter] mb-2">
+                    Appearance Settings
+                  </h1>
+                  <p className="text-[16px] text-muted font-[Inter]">
+                    Customize the look and feel of your interface
+                  </p>
+                </div>
+                <div className="bg-card rounded-[24px] shadow-[0_4px_6px_0_rgba(0,0,0,0.10),0_10px_15px_0_rgba(0,0,0,0.10)] p-8">
+                  <div className="space-y-6">
+                    <div>
+                      <h3 className="text-[16px] font-semibold text-main font-[Inter] mb-3">
+>>>>>>> upstream/main
                         Theme
                       </h3>
                       <div className="grid grid-cols-3 gap-4">
@@ -676,12 +922,21 @@ export default function Settings() {
                             }
                             className={`p-4 rounded-xl border-2 transition-colors ${
                               settingsData.appearance.theme === theme.value
+<<<<<<< HEAD
                                 ? "border-[#00BEA5] bg-[#E8F9F7]"
                                 : "border-[#D1D5DB] hover:border-[#00BEA5]"
                             }`}
                           >
                             <div className="text-2xl mb-2">{theme.icon}</div>
                             <div className="text-[14px] font-medium text-[#1F2937] font-[Inter]">
+=======
+                                ? "border-primary bg-teal-50 dark:bg-teal-900/20 text-main"
+                                : "border-border hover:border-primary text-muted hover:text-main"
+                            }`}
+                          >
+                            <div className="text-2xl mb-2">{theme.icon}</div>
+                            <div className="text-[14px] font-medium font-[Inter]">
+>>>>>>> upstream/main
                               {theme.label}
                             </div>
                           </button>
@@ -690,7 +945,11 @@ export default function Settings() {
                     </div>
 
                     <div>
+<<<<<<< HEAD
                       <h3 className="text-[16px] font-semibold text-[#1F2937] font-[Inter] mb-3">
+=======
+                      <h3 className="text-[16px] font-semibold text-main font-[Inter] mb-3">
+>>>>>>> upstream/main
                         Language
                       </h3>
                       <select
@@ -704,7 +963,11 @@ export default function Settings() {
                             },
                           }))
                         }
+<<<<<<< HEAD
                         className="w-full h-[50px] px-4 rounded-xl border border-[#D1D5DB] text-[16px] font-[Inter] focus:ring-2 focus:ring-[#00BEA5] focus:border-[#00BEA5] bg-white"
+=======
+                        className="w-full h-[50px] px-4 rounded-xl border border-border text-[16px] font-[Inter] focus:ring-2 focus:ring-primary focus:border-primary bg-input text-main"
+>>>>>>> upstream/main
                       >
                         <option value="en">English</option>
                         <option value="es">Español</option>
@@ -720,10 +983,17 @@ export default function Settings() {
                     </div>
                   </div>
 
+<<<<<<< HEAD
                   <div className="flex justify-end gap-4 pt-6 border-t border-[#E5E7EB] mt-6">
                     <button
                       type="button"
                       className="h-[50px] px-6 rounded-xl border border-[#D1D5DB] bg-white text-[#374151] text-[16px] font-medium font-[Inter] hover:bg-gray-50"
+=======
+                  <div className="flex justify-end gap-4 pt-6 border-t border-border mt-6">
+                    <button
+                      type="button"
+                      className="h-[50px] px-6 rounded-xl border border-border bg-card text-main text-[16px] font-medium font-[Inter] hover:bg-canvas-alt"
+>>>>>>> upstream/main
                     >
                       Cancel
                     </button>
@@ -746,7 +1016,11 @@ export default function Settings() {
                         }
                       }}
                       disabled={loading}
+<<<<<<< HEAD
                       className="h-[50px] px-6 rounded-xl bg-gradient-to-r from-[#00BEA5] to-[#00BEA5] text-white text-[16px] font-medium font-[Inter] hover:opacity-90 disabled:opacity-50"
+=======
+                      className="h-[50px] px-6 rounded-xl bg-gradient-to-r from-primary to-primary text-white text-[16px] font-medium font-[Inter] hover:opacity-90 disabled:opacity-50"
+>>>>>>> upstream/main
                     >
                       {loading ? "Saving..." : "Save Changes"}
                     </button>
@@ -758,6 +1032,7 @@ export default function Settings() {
             {activeSetting === "Language" && (
               <div className="max-w-[896px]">
                 <div className="mb-8">
+<<<<<<< HEAD
                   <h1 className="text-[30px] font-bold text-[#1F2937] font-[Inter] mb-2">
                     Language Settings
                   </h1>
@@ -769,6 +1044,19 @@ export default function Settings() {
                   <div className="space-y-6">
                     <div>
                       <h3 className="text-[16px] font-semibold text-[#1F2937] font-[Inter] mb-3">
+=======
+                  <h1 className="text-[30px] font-bold text-main font-[Inter] mb-2">
+                    Language Settings
+                  </h1>
+                  <p className="text-[16px] text-muted font-[Inter]">
+                    Choose your preferred language for the interface
+                  </p>
+                </div>
+                <div className="bg-card rounded-[24px] shadow-[0_4px_6px_0_rgba(0,0,0,0.10),0_10px_15px_0_rgba(0,0,0,0.10)] p-8">
+                  <div className="space-y-6">
+                    <div>
+                      <h3 className="text-[16px] font-semibold text-main font-[Inter] mb-3">
+>>>>>>> upstream/main
                         Interface Language
                       </h3>
                       <select
@@ -782,7 +1070,11 @@ export default function Settings() {
                             },
                           }))
                         }
+<<<<<<< HEAD
                         className="w-full h-[50px] px-4 rounded-xl border border-[#D1D5DB] text-[16px] font-[Inter] focus:ring-2 focus:ring-[#00BEA5] focus:border-[#00BEA5] bg-white"
+=======
+                        className="w-full h-[50px] px-4 rounded-xl border border-border text-[16px] font-[Inter] focus:ring-2 focus:ring-primary focus:border-primary bg-input text-main"
+>>>>>>> upstream/main
                       >
                         <option value="en">English</option>
                         <option value="es">Español</option>
@@ -798,10 +1090,17 @@ export default function Settings() {
                     </div>
                   </div>
 
+<<<<<<< HEAD
                   <div className="flex justify-end gap-4 pt-6 border-t border-[#E5E7EB] mt-6">
                     <button
                       type="button"
                       className="h-[50px] px-6 rounded-xl border border-[#D1D5DB] bg-white text-[#374151] text-[16px] font-medium font-[Inter] hover:bg-gray-50"
+=======
+                  <div className="flex justify-end gap-4 pt-6 border-t border-border mt-6">
+                    <button
+                      type="button"
+                      className="h-[50px] px-6 rounded-xl border border-border bg-card text-main text-[16px] font-medium font-[Inter] hover:bg-canvas-alt"
+>>>>>>> upstream/main
                     >
                       Cancel
                     </button>

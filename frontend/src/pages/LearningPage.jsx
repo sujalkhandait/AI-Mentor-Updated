@@ -44,7 +44,11 @@ export default function Learning() {
 
   // map celebrities to videos and vtt files
   const celebrityVideoMap = {
+<<<<<<< HEAD
     "Salman Khan": { video: "http://localhost:5000/videos/salman.mp4" },
+=======
+    "Salman Khan": { video: "http://localhost:5000/videos/salman.mp4", vtt: "http://localhost:5000/videos/salman.vtt" },
+>>>>>>> upstream/main
     "Modi ji": { video: "http://localhost:5000/videos/modi.mp4", vtt: "http://localhost:5000/videos/modi.vtt" },
     SRK: { video: "http://localhost:5000/videos/srk.mp4", vtt: "http://localhost:5000/videos/srk.vtt" },
   };
@@ -583,6 +587,7 @@ export default function Learning() {
   };
 
   return (
+<<<<<<< HEAD
     <div className="min-h-screen bg-gray-50">
       <Header sidebarOpen={sidebarOpen} setSidebarOpen={setSidebarOpen} />
 
@@ -591,18 +596,36 @@ export default function Learning() {
         <div className="p-6 h-full overflow-y-auto">
           <div className="flex items-center justify-between mb-6">
             <h2 className="text-xl font-bold text-gray-900">
+=======
+    <div className="min-h-screen bg-canvas-alt flex">
+      <Header sidebarOpen={sidebarOpen} setSidebarOpen={setSidebarOpen} />
+
+      {/* Sidebar */}
+      <div className="fixed left-0 top-16 bottom-0 w-80 text-main bg-card border-r border-border overflow-y-auto z-10">
+        <div className="p-6 h-full overflow-y-auto">
+          <div className="flex items-center justify-between mb-6">
+            <h2 className="text-xl font-bold text-main">
+>>>>>>> upstream/main
               {learningData?.course?.title || learningData?.title || "Course"}
             </h2>
             <button
               onClick={() => navigate("/courses")}
+<<<<<<< HEAD
               className="text-gray-400 hover:text-gray-600"
+=======
+              className="text-muted hover:text-main"
+>>>>>>> upstream/main
             >
               <ChevronLeft className="w-5 h-5" />
             </button>
           </div>
 
           <div className="mb-4">
+<<<<<<< HEAD
             <h3 className="text-sm font-semibold text-gray-700 mb-3">
+=======
+            <h3 className="text-sm font-semibold text-main mb-3">
+>>>>>>> upstream/main
               Celebrities
             </h3>
             <div className="mb-3">
@@ -611,7 +634,11 @@ export default function Learning() {
                 placeholder="Search celebrities..."
                 value={celebritySearch}
                 onChange={(e) => setCelebritySearch(e.target.value)}
+<<<<<<< HEAD
                 className="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500"
+=======
+                className="w-full px-3 py-2 border border-border bg-input rounded-lg focus:outline-none focus:ring-2 focus:ring-primary text-main placeholder-muted"
+>>>>>>> upstream/main
               />
             </div>
             <div className="flex flex-col gap-2">
@@ -631,10 +658,17 @@ export default function Learning() {
                         setSelectedCelebrity(c);
                       }
                     }}
+<<<<<<< HEAD
                     className={`w-full text-left px-4 py-3 rounded-lg border ${
                       selectedCelebrity === c
                         ? "bg-blue-600 text-white"
                         : "bg-white text-gray-900"
+=======
+                    className={`w-full text-left px-4 py-3 rounded-lg border border-border ${
+                      selectedCelebrity === c
+                        ? "bg-primary text-white"
+                        : "bg-input text-main"
+>>>>>>> upstream/main
                     }`}
                   >
                     {c}
@@ -664,6 +698,7 @@ export default function Learning() {
               });
               return (
                 <>
+<<<<<<< HEAD
                   <div className="w-full bg-gray-200 rounded-full h-2">
                     <div
                       className="bg-blue-600 h-2 rounded-full"
@@ -671,6 +706,15 @@ export default function Learning() {
                     ></div>
                   </div>
                   <p className="text-sm text-gray-600 mt-2">
+=======
+                  <div className="w-full bg-border rounded-full h-2">
+                    <div
+                      className="bg-primary h-2 rounded-full"
+                      style={{ width: `${progressPercent}%` }}
+                    ></div>
+                  </div>
+                  <p className="text-sm text-muted mt-2">
+>>>>>>> upstream/main
                     {Math.round(progressPercent)}% Complete
                   </p>
                 </>
@@ -695,13 +739,22 @@ export default function Learning() {
 
             {/* Lesson Content */}
             <div className="xl:col-span-1 space-y-6">
+<<<<<<< HEAD
               <div className="bg-white rounded-lg p-6 shadow-sm">
                 <h3 className="text-lg font-semibold text-gray-900 mb-4">
+=======
+              <div className="bg-card rounded-lg p-6 shadow-sm">
+                <h3 className="text-lg font-semibold text-main mb-4">
+>>>>>>> upstream/main
                   {currentLesson?.title || "Select a Lesson"}
                 </h3>
                 {currentLesson?.content?.introduction && (
                   <div className="prose prose-sm max-w-none">
+<<<<<<< HEAD
                     <p className="text-gray-700">
+=======
+                    <p className="text-muted">
+>>>>>>> upstream/main
                       {currentLesson.content.introduction}
                     </p>
                   </div>
@@ -709,7 +762,11 @@ export default function Learning() {
               </div>
 
               {/* Custom Controls */}
+<<<<<<< HEAD
               <div className="bg-white rounded-lg p-6 shadow-sm">
+=======
+              <div className="bg-card rounded-lg p-6 shadow-sm">
+>>>>>>> upstream/main
                 <div className="flex items-center justify-between mb-4">
                   <button
                     onClick={togglePlay}
@@ -773,7 +830,11 @@ export default function Learning() {
               </div>
 
               {/* Navigation */}
+<<<<<<< HEAD
               <div className="bg-white rounded-lg p-6 shadow-sm">
+=======
+              <div className="bg-card rounded-lg p-6 shadow-sm">
+>>>>>>> upstream/main
                 <div className="flex justify-between">
                   <button
                     onClick={handlePrevious}
@@ -810,7 +871,11 @@ export default function Learning() {
 
               if (q && filteredModules.length === 0) {
                 return (
+<<<<<<< HEAD
                   <p className="text-sm text-gray-500">
+=======
+                  <p className="text-sm text-muted">
+>>>>>>> upstream/main
                     No results for "{searchQuery}"
                   </p>
                 );
@@ -821,6 +886,7 @@ export default function Learning() {
                   {(filteredModules.length > 0 ? filteredModules : modules || []).map((module) => (
                     <div
                       key={module.id}
+<<<<<<< HEAD
                       className="border border-gray-200 rounded-lg"
                     >
                       <button
@@ -828,6 +894,15 @@ export default function Learning() {
                         className="w-full flex items-center justify-between p-4 text-left hover:bg-gray-50"
                       >
                         <span className="font-medium text-gray-900">
+=======
+                      className="border border-border rounded-lg"
+                    >
+                      <button
+                        onClick={() => toggleModule(module.id)}
+                        className="w-full flex items-center justify-between p-4 text-left bg-input  transition-colors"
+                      >
+                        <span className="font-medium text-main">
+>>>>>>> upstream/main
                           {module.title}
                         </span>
                         <ChevronDown
@@ -838,20 +913,31 @@ export default function Learning() {
                       </button>
 
                       {expandedModule === module.id && (
+<<<<<<< HEAD
                         <div className="px-4 pb-4 space-y-2">
+=======
+                        <div className="p-4 space-y-2">
+>>>>>>> upstream/main
                           {module.lessons.map((lesson) => (
                             <button
                               key={lesson.id}
                               onClick={() => handleLessonClick(lesson)}
+<<<<<<< HEAD
                               className={`w-full flex items-center gap-3 p-3 rounded-lg text-left hover:bg-gray-50 ${
                                 currentLesson?.id === lesson.id
                                   ? "bg-blue-50 border border-blue-200"
+=======
+                              className={`w-full flex items-center gap-3 p-3 rounded-lg text-left hover:bg-input transition-colors ${
+                                currentLesson?.id === lesson.id
+                                  ? "bg-input border border-primary"
+>>>>>>> upstream/main
                                   : ""
                               }`}
                             >
                               {lesson.type === "video" ? (
                                 <Play className="w-4 h-4 text-gray-400" />
                               ) : (
+<<<<<<< HEAD
                                 <FileText className="w-4 h-4 text-gray-400" />
                               )}
                               <div className="flex-1">
@@ -859,6 +945,15 @@ export default function Learning() {
                                   {lesson.title}
                                 </p>
                                 <p className="text-xs text-gray-500">
+=======
+                                <FileText className="w-4 h-4 text-main" />
+                              )}
+                              <div className="flex-1">
+                                <p className="text-sm font-medium text-main">
+                                  {lesson.title}
+                                </p>
+                                <p className="text-xs text-muted">
+>>>>>>> upstream/main
                                   {lesson.duration}
                                 </p>
                               </div>

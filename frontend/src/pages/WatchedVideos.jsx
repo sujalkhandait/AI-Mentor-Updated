@@ -65,7 +65,11 @@ const WatchedVideos = () => {
 
   if (loading) {
     return (
+<<<<<<< HEAD
       <div className="min-h-screen bg-gray-50 flex">
+=======
+      <div className="min-h-screen bg-canvas-alt flex">
+>>>>>>> upstream/main
         <Sidebar
           sidebarOpen={sidebarOpen}
           setSidebarOpen={setSidebarOpen}
@@ -82,7 +86,11 @@ const WatchedVideos = () => {
           <main className="flex-1 p-4 md:p-6 lg:p-8 flex items-center justify-center">
             <div className="text-center">
               <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-orange-500 mx-auto mb-4"></div>
+<<<<<<< HEAD
               <p className="text-slate-500">Loading watched videos...</p>
+=======
+              <p className="text-muted">Loading watched videos...</p>
+>>>>>>> upstream/main
             </div>
           </main>
         </div>
@@ -139,6 +147,7 @@ const WatchedVideos = () => {
   const MetricsCards = () => (
     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
       {/* Total Hours */}
+<<<<<<< HEAD
       <div className="bg-white rounded-xl border border-gray-200 p-6 shadow-sm">
         <div className="flex items-center justify-between">
           <div>
@@ -150,12 +159,26 @@ const WatchedVideos = () => {
             </p>
           </div>
           <div className="w-12 h-12 bg-blue-50 rounded-lg flex items-center justify-center">
+=======
+      <div className="bg-card rounded-xl border border-border p-6 shadow-sm">
+        <div className="flex items-center justify-between">
+          <div>
+            <p className="text-muted text-sm font-normal mb-1">
+              Total Hours
+            </p>
+            <p className="text-main text-2xl font-bold">
+              {metrics.totalHours}h
+            </p>
+          </div>
+          <div className="w-12 h-12 bg-blue-50 dark:bg-blue-900/20 rounded-lg flex items-center justify-center">
+>>>>>>> upstream/main
             <Clock className="w-4 h-4 text-blue-600" />
           </div>
         </div>
       </div>
 
       {/* Videos Completed */}
+<<<<<<< HEAD
       <div className="bg-white rounded-xl border border-gray-200 p-6 shadow-sm">
         <div className="flex items-center justify-between">
           <div>
@@ -167,12 +190,26 @@ const WatchedVideos = () => {
             </p>
           </div>
           <div className="w-12 h-12 bg-green-50 rounded-lg flex items-center justify-center">
+=======
+      <div className="bg-card rounded-xl border border-border p-6 shadow-sm">
+        <div className="flex items-center justify-between">
+          <div>
+            <p className="text-muted text-sm font-normal mb-1">
+              Videos Completed
+            </p>
+            <p className="text-main text-2xl font-bold">
+              {metrics.videosCompleted}
+            </p>
+          </div>
+          <div className="w-12 h-12 bg-green-50 dark:bg-green-900/20 rounded-lg flex items-center justify-center">
+>>>>>>> upstream/main
             <CheckCircle className="w-4 h-4 text-green-600" />
           </div>
         </div>
       </div>
 
       {/* Avg Session */}
+<<<<<<< HEAD
       <div className="bg-white rounded-xl border border-gray-200 p-6 shadow-sm">
         <div className="flex items-center justify-between">
           <div>
@@ -184,12 +221,26 @@ const WatchedVideos = () => {
             </p>
           </div>
           <div className="w-12 h-12 bg-purple-50 rounded-lg flex items-center justify-center">
+=======
+      <div className="bg-card rounded-xl border border-border p-6 shadow-sm">
+        <div className="flex items-center justify-between">
+          <div>
+            <p className="text-muted text-sm font-normal mb-1">
+              Avg Session
+            </p>
+            <p className="text-main text-2xl font-bold">
+              {metrics.avgSession}
+            </p>
+          </div>
+          <div className="w-12 h-12 bg-purple-50 dark:bg-purple-900/20 rounded-lg flex items-center justify-center">
+>>>>>>> upstream/main
             <TrendingUp className="w-4 h-4 text-indigo-600" />
           </div>
         </div>
       </div>
 
       {/* Learning Streak */}
+<<<<<<< HEAD
       <div className="bg-white rounded-xl border border-gray-200 p-6 shadow-sm">
         <div className="flex items-center justify-between">
           <div>
@@ -201,6 +252,19 @@ const WatchedVideos = () => {
             </p>
           </div>
           <div className="w-12 h-12 bg-orange-50 rounded-lg flex items-center justify-center">
+=======
+      <div className="bg-card rounded-xl border border-border p-6 shadow-sm">
+        <div className="flex items-center justify-between">
+          <div>
+            <p className="text-muted text-sm font-normal mb-1">
+              Learning Streak
+            </p>
+            <p className="text-main text-2xl font-bold">
+              {metrics.learningStreak}
+            </p>
+          </div>
+          <div className="w-12 h-12 bg-orange-50 dark:bg-orange-900/20 rounded-lg flex items-center justify-center">
+>>>>>>> upstream/main
             <Flame className="w-4 h-4 text-orange-600" />
           </div>
         </div>
@@ -209,6 +273,7 @@ const WatchedVideos = () => {
   );
 
   const SearchAndFilters = () => (
+<<<<<<< HEAD
     <div className="bg-white rounded-xl border border-gray-200 p-4 md:p-6 shadow-sm mb-6 lg:mb-8">
       <div className="flex flex-col lg:flex-row gap-4 items-start lg:items-center justify-between">
         {/* Search Input */}
@@ -218,6 +283,17 @@ const WatchedVideos = () => {
             type="text"
             placeholder="Search videos..."
             className="w-full h-[42px] pl-10 pr-4 border border-gray-200 rounded-lg text-slate-600 placeholder-slate-400"
+=======
+    <div className="bg-card rounded-xl border border-border p-4 md:p-6 shadow-sm mb-6 lg:mb-8">
+      <div className="flex flex-col lg:flex-row gap-4 items-start lg:items-center justify-between">
+        {/* Search Input */}
+        <div className="relative w-full lg:flex-1 lg:max-w-md">
+          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-muted" />
+          <input
+            type="text"
+            placeholder="Search videos..."
+            className="w-full h-[42px] pl-10 pr-4 border border-border rounded-lg bg-input text-main placeholder-muted"
+>>>>>>> upstream/main
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
           />
@@ -226,7 +302,11 @@ const WatchedVideos = () => {
         {/* Filters */}
         <div className="flex flex-col sm:flex-row gap-3 w-full lg:w-auto">
           <select
+<<<<<<< HEAD
             className="h-[43px] px-3 pr-8 border border-gray-200 rounded-lg bg-white text-black w-full sm:min-w-[160px]"
+=======
+            className="h-[43px] px-3 pr-8 border border-border rounded-lg bg-card text-main w-full sm:min-w-[160px]"
+>>>>>>> upstream/main
             value={courseFilter}
             onChange={(e) => setCourseFilter(e.target.value)}
           >
@@ -238,7 +318,11 @@ const WatchedVideos = () => {
             ))}
           </select>
           <select
+<<<<<<< HEAD
             className="h-[43px] px-3 pr-8 border border-gray-200 rounded-lg bg-white text-black w-full sm:min-w-[120px]"
+=======
+            className="h-[43px] px-3 pr-8 border border-border rounded-lg bg-card text-main w-full sm:min-w-[120px]"
+>>>>>>> upstream/main
             value={statusFilter}
             onChange={(e) => setStatusFilter(e.target.value)}
           >
@@ -247,7 +331,11 @@ const WatchedVideos = () => {
             <option>In Progress</option>
           </select>
           <select
+<<<<<<< HEAD
             className="h-[43px] px-3 pr-8 border border-gray-200 rounded-lg bg-white text-black w-full sm:min-w-[140px]"
+=======
+            className="h-[43px] px-3 pr-8 border border-border rounded-lg bg-card text-main w-full sm:min-w-[140px]"
+>>>>>>> upstream/main
             value={sortBy}
             onChange={(e) => setSortBy(e.target.value)}
           >
@@ -262,7 +350,11 @@ const WatchedVideos = () => {
   );
 
   const VideoCard = ({ video }) => (
+<<<<<<< HEAD
     <div className="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
+=======
+    <div className="bg-card rounded-xl border border-border shadow-sm overflow-hidden">
+>>>>>>> upstream/main
       {/* Video Thumbnail */}
       <div className="relative">
         <img
@@ -270,11 +362,19 @@ const WatchedVideos = () => {
           alt={video.title}
           className="w-full h-48 object-cover"
         />
+<<<<<<< HEAD
         <div className="absolute top-3 right-3 bg-black bg-opacity-50 text-white text-xs px-2 py-1 rounded">
           {video.duration}
         </div>
         {/* Progress Bar */}
         <div className="absolute bottom-0 left-0 w-full h-1 bg-gray-300">
+=======
+        <div className="absolute top-3 right-3 bg-black/60 backdrop-blur-sm text-white text-xs px-2 py-1 rounded">
+          {video.duration}
+        </div>
+        {/* Progress Bar */}
+        <div className="absolute bottom-0 left-0 w-full h-1 bg-gray-300 dark:bg-gray-700">
+>>>>>>> upstream/main
           <div
             className={`h-full ${
               video.status === "completed"
@@ -290,12 +390,21 @@ const WatchedVideos = () => {
 
       {/* Video Info */}
       <div className="p-4">
+<<<<<<< HEAD
         <h3 className="text-slate-900 text-base font-semibold mb-1 line-clamp-1">
           {video.title}
         </h3>
         <p className="text-slate-500 text-sm mb-3">{video.course}</p>
 
         <div className="flex justify-between items-center text-xs text-slate-500 mb-4">
+=======
+        <h3 className="text-main text-base font-semibold mb-1 line-clamp-1">
+          {video.title}
+        </h3>
+        <p className="text-muted text-sm mb-3">{video.course}</p>
+
+        <div className="flex justify-between items-center text-xs text-muted mb-4">
+>>>>>>> upstream/main
           <span
             className={
               video.status === "completed" ? "text-green-600 font-medium" : ""
@@ -313,7 +422,11 @@ const WatchedVideos = () => {
           <button
             className={`flex-1 h-10 rounded-lg text-sm font-medium ${
               video.status === "completed"
+<<<<<<< HEAD
                 ? "bg-gray-100 text-slate-900"
+=======
+                ? "bg-canvas text-main hover:bg-canvas-alt"
+>>>>>>> upstream/main
                 : "bg-orange-500 text-white"
             }`}
             onClick={() =>
@@ -326,7 +439,11 @@ const WatchedVideos = () => {
             {video.status === "completed" ? "Rewatch" : "Resume"}
           </button>
           <button
+<<<<<<< HEAD
             className="w-7 h-10 flex items-center justify-center text-slate-500"
+=======
+            className="w-7 h-10 flex items-center justify-center text-muted hover:text-main"
+>>>>>>> upstream/main
             onClick={() => console.log("More options for", video.title)}
           >
             <MoreVertical className="w-4 h-4" />
@@ -337,7 +454,14 @@ const WatchedVideos = () => {
   );
 
   return (
+<<<<<<< HEAD
     <div className="min-h-screen bg-gray-50 flex">
+=======
+    <div className="min-h-screen bg-canvas-alt flex">
+      {/* Header */}
+      <Header sidebarOpen={sidebarOpen} setSidebarOpen={setSidebarOpen}/>
+
+>>>>>>> upstream/main
       {/* Sidebar */}
       <Sidebar
         sidebarOpen={sidebarOpen}
@@ -353,6 +477,7 @@ const WatchedVideos = () => {
           sidebarCollapsed ? "lg:ml-20" : "lg:ml-80"
         }`}
       >
+<<<<<<< HEAD
         {/* Header */}
         <Header />
 
@@ -362,12 +487,25 @@ const WatchedVideos = () => {
           <div className="mb-6 lg:mb-8">
             <h1
               className="text-slate-900 text-2xl md:text-3xl font-bold mb-1"
+=======
+
+        {/* Main Dashboard Content */}
+        <main className="flex-1 p-4 mt-16 md:p-6 lg:p-8">
+          {/* Page Title */}
+          <div className="mb-6 lg:mb-8">
+            <h1
+              className="text-main text-2xl md:text-3xl font-bold mb-1"
+>>>>>>> upstream/main
               style={{ fontFamily: "Poppins, sans-serif" }}
             >
               Watched Videos
             </h1>
             <p
+<<<<<<< HEAD
               className="text-slate-500 text-sm md:text-base"
+=======
+              className="text-muted text-sm md:text-base"
+>>>>>>> upstream/main
               style={{ fontFamily: "Poppins, sans-serif" }}
             >
               Track your learning progress and manage your video history

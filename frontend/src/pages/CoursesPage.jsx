@@ -90,14 +90,30 @@ const CoursesPage = () => {
 
   if (!user) {
     return (
+<<<<<<< HEAD
       <div className="min-h-screen flex items-center justify-center">
         Please login to access courses
+=======
+      <div className="min-h-screen bg-canvas-alt flex items-center justify-center">
+        <div className="text-center">
+          <h1 className="text-2xl font-bold text-main mb-4">
+            Please Login
+          </h1>
+          <p className="text-muted">
+            You need to be logged in to access the courses page.
+          </p>
+        </div>
+>>>>>>> upstream/main
       </div>
     );
   }
 
   return (
+<<<<<<< HEAD
     <div className="min-h-screen bg-[#F8FAFC] flex flex-col">
+=======
+    <div className="min-h-screen bg-canvas-alt flex flex-col">
+>>>>>>> upstream/main
       <Header sidebarOpen={sidebarOpen} setSidebarOpen={setSidebarOpen} />
 
       <Sidebar
@@ -117,22 +133,39 @@ const CoursesPage = () => {
           <div className="max-w-7xl mx-auto space-y-10">
             {/* HEADER */}
             <div>
+<<<<<<< HEAD
               <h1 className="text-3xl font-bold text-slate-900">
                 Learning Hub
               </h1>
               <p className="text-slate-500 mt-1">
+=======
+              <h1 className="text-3xl font-bold text-main">
+                Learning Hub
+              </h1>
+              <p className="text-muted mt-1">
+>>>>>>> upstream/main
                 Discover and continue your learning journey
               </p>
             </div>
 
+<<<<<<< HEAD
             {/* TABS */}
             <div className="bg-white rounded-xl p-2 inline-flex border">
+=======
+            {/* Tabs */}
+            <div className="bg-card rounded-xl p-2 inline-flex border border-border shadow-sm">
+>>>>>>> upstream/main
               <button
                 onClick={() => setActiveTab("my-courses")}
                 className={`px-6 py-2 rounded-lg font-semibold ${
                   activeTab === "my-courses"
+<<<<<<< HEAD
                     ? "bg-[#2DD4BF] text-white"
                     : "text-slate-500"
+=======
+                    ? "bg-[#2DD4BF] text-white shadow"
+                    : "text-muted"
+>>>>>>> upstream/main
                 }`}
               >
                 My Courses
@@ -141,8 +174,13 @@ const CoursesPage = () => {
                 onClick={() => setActiveTab("explore")}
                 className={`px-6 py-2 rounded-lg font-semibold ${
                   activeTab === "explore"
+<<<<<<< HEAD
                     ? "bg-[#2DD4BF] text-white"
                     : "text-slate-500"
+=======
+                    ? "bg-[#2DD4BF] text-white shadow"
+                    : "text-muted"
+>>>>>>> upstream/main
                 }`}
               >
                 Explore Courses
@@ -161,7 +199,11 @@ const CoursesPage = () => {
                 {myCourses.map((course) => (
                   <div
                     key={course.id}
+<<<<<<< HEAD
                     className="bg-white rounded-3xl border border-slate-100 shadow-sm overflow-hidden"
+=======
+                    className="bg-card rounded-3xl border border-border overflow-hidden shadow-sm"
+>>>>>>> upstream/main
                   >
                     <img
                       src={course.image}
@@ -170,7 +212,11 @@ const CoursesPage = () => {
                     />
 
                     <div className="p-6 space-y-4">
+<<<<<<< HEAD
                       <h3 className="font-semibold text-slate-900">
+=======
+                      <h3 className="text-lg font-semibold text-main">
+>>>>>>> upstream/main
                         {course.title}
                       </h3>
 
@@ -198,7 +244,11 @@ const CoursesPage = () => {
                   .map((course) => (
                     <div
                       key={course.id}
+<<<<<<< HEAD
                       className="bg-white rounded-2xl border shadow-sm overflow-hidden"
+=======
+                      className="bg-card rounded-3xl border border-border overflow-hidden shadow-sm"
+>>>>>>> upstream/main
                     >
                       <div className="relative h-40">
                         <img
@@ -217,14 +267,24 @@ const CoursesPage = () => {
                           {course.title}
                         </h3>
 
+<<<<<<< HEAD
                         <p className="text-xs text-slate-400">
                           {course.lessons} • {course.level}
                         </p>
+=======
+                      <p className="text-xs text-muted">
+                        {course.lessons} lessons • {course.level}
+                      </p>
+>>>>>>> upstream/main
 
                         <div className="flex justify-between items-center">
                           <div>
                             <span className="line-through text-sm text-slate-400 mr-2">
+<<<<<<< HEAD
                               ₹{course.price}
+=======
+                              {course.price}
+>>>>>>> upstream/main
                             </span>
                             <span className="font-bold text-green-600">₹0</span>
                           </div>
@@ -273,7 +333,11 @@ const CoursesPage = () => {
 
             <div className="flex justify-between items-center mt-4">
               <span className="line-through text-slate-400">
+<<<<<<< HEAD
                 ₹{selectedCourse.price}
+=======
+                {selectedCourse.price}
+>>>>>>> upstream/main
               </span>
               <span className="text-lg font-bold text-green-600">₹0</span>
             </div>

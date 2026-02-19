@@ -1,5 +1,10 @@
 @import "tailwindcss";
 
+<<<<<<< HEAD
+=======
+@custom-variant dark (&:where(.dark, .dark *));
+
+>>>>>>> upstream/main
 .text-gradient {
   background: linear-gradient(90deg, #4facfe, #7846aa);
   -webkit-background-clip: text;

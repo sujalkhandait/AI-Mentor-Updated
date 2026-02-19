@@ -211,7 +211,11 @@ const AdminPage = () => {
   };
 
   return (
+<<<<<<< HEAD
     <div className="min-h-screen bg-gray-50 flex flex-col">
+=======
+    <div className="min-h-screen bg-canvas-alt flex flex-col">
+>>>>>>> upstream/main
       <Header sidebarOpen={sidebarOpen} setSidebarOpen={setSidebarOpen} />
       <Sidebar
         sidebarOpen={sidebarOpen}
@@ -221,6 +225,7 @@ const AdminPage = () => {
         activePage="admin"
       />
       <div className={`flex-1 flex flex-col overflow-hidden transition-all duration-300 ${sidebarCollapsed ? 'lg:ml-20' : 'lg:ml-80'}`}>
+<<<<<<< HEAD
         <main className="flex-1 mt-16 overflow-x-hidden overflow-y-auto bg-gray-50 p-8">
           <div className="max-w-7xl mx-auto space-y-8">
             <h1 className="text-3xl font-bold text-gray-900">Admin Panel - Course Management</h1>
@@ -238,19 +243,46 @@ const AdminPage = () => {
                 <input type="text" name="lessons" value={newCourse.lessons} onChange={handleInputChange} placeholder="Lessons (e.g., 15 lessons)" required className="p-2 border rounded" />
                 <input type="text" name="price" value={newCourse.price} onChange={handleInputChange} placeholder="Price (e.g., ₹999)" required className="p-2 border rounded" />
                 <input type="text" name="image" value={newCourse.image} onChange={handleInputChange} placeholder="Image URL" required className="p-2 border rounded col-span-1 md:col-span-2" />
+=======
+        <main className="flex-1 mt-16 overflow-x-hidden overflow-y-auto bg-canvas-alt p-8">
+          <div className="max-w-7xl mx-auto space-y-8">
+            <h1 className="text-3xl font-bold text-main">Admin Panel - Course Management</h1>
+
+            {/* Add Course Form */}
+            <div className="bg-card p-6 rounded-lg shadow">
+              <h2 className="text-xl font-semibold mb-4">Add New Course</h2>
+              <form onSubmit={handleAddCourse} className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                <input type="number" name="id" value={newCourse.id} onChange={handleInputChange} placeholder="Course ID (e.g., 4)" required className="p-2 border border-border rounded bg-input text-main" />
+                <input type="text" name="title" value={newCourse.title} onChange={handleInputChange} placeholder="Title" required className="p-2 border border-border rounded bg-input text-main" />
+                <input type="text" name="category" value={newCourse.category} onChange={handleInputChange} placeholder="Category" required className="p-2 border border-border rounded bg-input text-main" />
+                <input type="text" name="level" value={newCourse.level} onChange={handleInputChange} placeholder="Level" required className="p-2 border border-border rounded bg-input text-main" />
+                <input type="number" step="0.1" name="rating" value={newCourse.rating} onChange={handleInputChange} placeholder="Rating" required className="p-2 border border-border rounded bg-input text-main" />
+                <input type="text" name="students" value={newCourse.students} onChange={handleInputChange} placeholder="Students (e.g., 1.2k students)" required className="p-2 border border-border rounded bg-input text-main" />
+                <input type="text" name="lessons" value={newCourse.lessons} onChange={handleInputChange} placeholder="Lessons (e.g., 15 lessons)" required className="p-2 border border-border rounded bg-input text-main" />
+                <input type="text" name="price" value={newCourse.price} onChange={handleInputChange} placeholder="Price (e.g., ₹999)" required className="p-2 border border-border rounded bg-input text-main" />
+                <input type="text" name="image" value={newCourse.image} onChange={handleInputChange} placeholder="Image URL" required className="p-2 border border-border rounded bg-input text-main col-span-1 md:col-span-2" />
+>>>>>>> upstream/main
                 <button type="submit" className="bg-blue-600 text-white p-2 rounded hover:bg-blue-700 col-span-1 md:col-span-3">Add Course</button>
               </form>
             </div>
 
             {/* Course List */}
+<<<<<<< HEAD
             <div className="bg-white p-6 rounded-lg shadow">
+=======
+            <div className="bg-card p-6 rounded-lg shadow">
+>>>>>>> upstream/main
               <h2 className="text-xl font-semibold mb-4">Existing Courses</h2>
               <div className="space-y-4">
                 {courses.map((course) => (
                   <div key={course.id} className="flex items-center justify-between p-4 border rounded-lg">
                     <div>
                       <h3 className="font-bold">{course.title} (ID: {course.id})</h3>
+<<<<<<< HEAD
                       <p className="text-sm text-gray-600">{course.category}</p>
+=======
+                      <p className="text-sm text-muted">{course.category}</p>
+>>>>>>> upstream/main
                     </div>
                     <div className="flex gap-2">
                       <button onClick={() => handleManageCourse(course.id)} className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">
@@ -268,10 +300,17 @@ const AdminPage = () => {
             {/* Course Management Modal */}
             {selectedCourse && (
               <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+<<<<<<< HEAD
                 <div className="bg-white p-6 rounded-lg shadow-lg max-w-4xl w-full max-h-[90vh] overflow-y-auto">
                   <div className="flex justify-between items-center mb-4">
                     <h2 className="text-2xl font-bold">Manage Course: {selectedCourse.title}</h2>
                     <button onClick={() => setSelectedCourse(null)} className="text-gray-500 hover:text-gray-700">×</button>
+=======
+                <div className="bg-card p-6 rounded-lg shadow-lg max-w-4xl w-full max-h-[90vh] overflow-y-auto">
+                  <div className="flex justify-between items-center mb-4">
+                    <h2 className="text-2xl font-bold">Manage Course: {selectedCourse.title}</h2>
+                    <button onClick={() => setSelectedCourse(null)} className="text-muted hover:text-gray-700">×</button>
+>>>>>>> upstream/main
                   </div>
 
                   {/* Tabs */}
@@ -298,7 +337,11 @@ const AdminPage = () => {
                                 updatedModules[index].id = e.target.value;
                                 setNewModules(updatedModules);
                               }}
+<<<<<<< HEAD
                               className="w-full p-2 border rounded mb-2"
+=======
+                              className="w-full p-2 border border-border rounded bg-input text-main mb-2"
+>>>>>>> upstream/main
                             />
                             <input
                               type="text"
@@ -309,7 +352,11 @@ const AdminPage = () => {
                                 updatedModules[index].title = e.target.value;
                                 setNewModules(updatedModules);
                               }}
+<<<<<<< HEAD
                               className="w-full p-2 border rounded"
+=======
+                              className="w-full p-2 border border-border rounded bg-input text-main"
+>>>>>>> upstream/main
                             />
                           </div>
                         ))}
@@ -346,7 +393,11 @@ const AdminPage = () => {
                     <div>
                       <h3 className="text-lg font-semibold mb-4">Update Lesson Video URLs</h3>
                       <div className="space-y-4">
+<<<<<<< HEAD
                         <select value={selectedLesson} onChange={(e) => setSelectedLesson(e.target.value)} className="w-full p-2 border rounded">
+=======
+                        <select value={selectedLesson} onChange={(e) => setSelectedLesson(e.target.value)} className="w-full p-2 border border-border rounded bg-input text-main">
+>>>>>>> upstream/main
                           <option value="">Select a lesson</option>
                           {selectedCourse.modules?.map(module =>
                             module.lessons?.map(lesson => (
@@ -359,7 +410,11 @@ const AdminPage = () => {
                           value={videoUrl}
                           onChange={(e) => setVideoUrl(e.target.value)}
                           placeholder="Enter YouTube URL"
+<<<<<<< HEAD
                           className="w-full p-2 border rounded"
+=======
+                          className="w-full p-2 border border-border rounded bg-input text-main"
+>>>>>>> upstream/main
                         />
                         <button onClick={handleUpdateVideo} className="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700">
                           Update Video URL
@@ -380,46 +435,74 @@ const AdminPage = () => {
                               placeholder="Subtopic Title"
                               value={subtopic.title}
                               onChange={(e) => handleSubtopicChange(index, 'title', e.target.value)}
+<<<<<<< HEAD
                               className="w-full p-2 border rounded mb-2"
+=======
+                              className="w-full p-2 border border-border rounded bg-input text-main mb-2"
+>>>>>>> upstream/main
                             />
                             <input
                               type="text"
                               placeholder="Goal"
                               value={subtopic.goal}
                               onChange={(e) => handleSubtopicChange(index, 'goal', e.target.value)}
+<<<<<<< HEAD
                               className="w-full p-2 border rounded mb-2"
+=======
+                              className="w-full p-2 border border-border rounded bg-input text-main mb-2"
+>>>>>>> upstream/main
                             />
                             <textarea
                               placeholder="Topics (comma separated)"
                               value={subtopic.topics.join(', ')}
                               onChange={(e) => handleSubtopicChange(index, 'topics', e.target.value.split(',').map(s => s.trim()))}
+<<<<<<< HEAD
                               className="w-full p-2 border rounded mb-2"
+=======
+                              className="w-full p-2 border border-border rounded bg-input text-main mb-2"
+>>>>>>> upstream/main
                             />
                             <textarea
                               placeholder="Tools (comma separated)"
                               value={subtopic.tools.join(', ')}
                               onChange={(e) => handleSubtopicChange(index, 'tools', e.target.value.split(',').map(s => s.trim()))}
+<<<<<<< HEAD
                               className="w-full p-2 border rounded mb-2"
+=======
+                              className="w-full p-2 border border-border rounded bg-input text-main mb-2"
+>>>>>>> upstream/main
                             />
                             <textarea
                               placeholder="Activities (comma separated)"
                               value={subtopic.activities.join(', ')}
                               onChange={(e) => handleSubtopicChange(index, 'activities', e.target.value.split(',').map(s => s.trim()))}
+<<<<<<< HEAD
                               className="w-full p-2 border rounded mb-2"
+=======
+                              className="w-full p-2 border border-border rounded bg-input text-main mb-2"
+>>>>>>> upstream/main
                             />
                             <input
                               type="text"
                               placeholder="Assignment"
                               value={subtopic.assignment}
                               onChange={(e) => handleSubtopicChange(index, 'assignment', e.target.value)}
+<<<<<<< HEAD
                               className="w-full p-2 border rounded mb-2"
+=======
+                              className="w-full p-2 border border-border rounded bg-input text-main mb-2"
+>>>>>>> upstream/main
                             />
                             <input
                               type="text"
                               placeholder="Activity"
                               value={subtopic.activity}
                               onChange={(e) => handleSubtopicChange(index, 'activity', e.target.value)}
+<<<<<<< HEAD
                               className="w-full p-2 border rounded"
+=======
+                              className="w-full p-2 border border-border rounded bg-input text-main"
+>>>>>>> upstream/main
                             />
                           </div>
                         ))}
@@ -434,7 +517,11 @@ const AdminPage = () => {
                     <div>
                       <h3 className="text-lg font-semibold mb-4">Add Lessons to Module</h3>
                       <div className="space-y-4">
+<<<<<<< HEAD
                         <select value={selectedModule} onChange={(e) => setSelectedModule(e.target.value)} className="w-full p-2 border rounded">
+=======
+                        <select value={selectedModule} onChange={(e) => setSelectedModule(e.target.value)} className="w-full p-2 border border-border rounded bg-input text-main">
+>>>>>>> upstream/main
                           <option value="">Select a module</option>
                           {selectedCourse.modules?.map(module => (
                             <option key={module.id} value={module.id}>{module.title}</option>
@@ -447,21 +534,33 @@ const AdminPage = () => {
                               placeholder="Lesson ID"
                               value={lesson.id}
                               onChange={(e) => handleLessonChange(index, 'id', e.target.value)}
+<<<<<<< HEAD
                               className="w-full p-2 border rounded mb-2"
+=======
+                              className="w-full p-2 border border-border rounded bg-input text-main mb-2"
+>>>>>>> upstream/main
                             />
                             <input
                               type="text"
                               placeholder="Lesson Title"
                               value={lesson.title}
                               onChange={(e) => handleLessonChange(index, 'title', e.target.value)}
+<<<<<<< HEAD
                               className="w-full p-2 border rounded mb-2"
+=======
+                              className="w-full p-2 border border-border rounded bg-input text-main mb-2"
+>>>>>>> upstream/main
                             />
                             <input
                               type="text"
                               placeholder="Duration"
                               value={lesson.duration}
                               onChange={(e) => handleLessonChange(index, 'duration', e.target.value)}
+<<<<<<< HEAD
                               className="w-full p-2 border rounded"
+=======
+                              className="w-full p-2 border border-border rounded bg-input text-main"
+>>>>>>> upstream/main
                             />
                           </div>
                         ))}

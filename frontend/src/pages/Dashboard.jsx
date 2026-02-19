@@ -287,7 +287,11 @@ const Dashboard = () => {
 
   if (loading) {
     return (
+<<<<<<< HEAD
       <div className="min-h-screen bg-gray-50 flex flex-col">
+=======
+      <div className="min-h-screen bg-canvas-alt flex flex-col">
+>>>>>>> upstream/main
         <Header sidebarOpen={sidebarOpen} setSidebarOpen={setSidebarOpen} />
         <Sidebar
           sidebarOpen={sidebarOpen}
@@ -301,9 +305,15 @@ const Dashboard = () => {
             sidebarCollapsed ? "lg:ml-20" : "lg:ml-80"
           }`}
         >
+<<<<<<< HEAD
           <main className="flex-1 mt-10 overflow-x-hidden overflow-y-auto bg-gray-50 p-6">
             <div className="flex items-center justify-center h-64">
               <div className="text-gray-500">Loading dashboard...</div>
+=======
+          <main className="flex-1 mt-10 overflow-x-hidden overflow-y-auto bg-canvas-alt p-6">
+            <div className="flex items-center justify-center h-64">
+              <div className="text-muted">Loading dashboard...</div>
+>>>>>>> upstream/main
             </div>
           </main>
         </div>
@@ -312,7 +322,11 @@ const Dashboard = () => {
   }
 
   return (
+<<<<<<< HEAD
     <div className="min-h-screen bg-gray-50 flex flex-col">
+=======
+    <div className="min-h-screen bg-canvas-alt flex flex-col">
+>>>>>>> upstream/main
       <Header sidebarOpen={sidebarOpen} setSidebarOpen={setSidebarOpen} />
 
       <Sidebar
@@ -326,12 +340,17 @@ const Dashboard = () => {
       {/* Main Content */}
       <div
         className={`flex-1 flex flex-col overflow-hidden transition-all duration-300 ${
+<<<<<<< HEAD
           sidebarOpen ? "lg:ml-64" : "lg:ml-20"
+=======
+          sidebarCollapsed ? "lg:ml-20" : "lg:ml-80"
+>>>>>>> upstream/main
         }`}
       >
         {/* Header */}
 
         {/* Dashboard Content */}
+<<<<<<< HEAD
         <main className="flex-1 mt-24 overflow-x-hidden overflow-y-auto bg-gray-50 p-8">
           <div className="max-w-7xl mx-auto space-y-12">
             {/* Stats Cards */}
@@ -340,6 +359,16 @@ const Dashboard = () => {
                 <div
                   key={index}
                   className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100"
+=======
+        <main className="flex-1 mt-10 overflow-x-hidden overflow-y-auto bg-canvas-alt p-6">
+          <div className="max-w-7xl pt-16 mx-auto space-y-8">
+            {/* Stats Cards */}
+            <div className="grid grid-cols-1  sm:grid-cols-2 lg:grid-cols-4 gap-6">
+              {dynamicStatsCards.map((card, index) => (
+                <div
+                  key={index}
+                  className="bg-card rounded-2xl p-6 shadow-sm border border-border"
+>>>>>>> upstream/main
                 >
                   <div className="flex items-center justify-between mb-4">
                     <div className={`p-3 rounded-xl ${card.iconBg}`}>
@@ -349,34 +378,59 @@ const Dashboard = () => {
                       {card.change}
                     </span>
                   </div>
+<<<<<<< HEAD
                   <div className="text-2xl font-bold text-gray-900 mb-1">
                     {card.value}
                   </div>
                   <div className="text-sm text-gray-600">{card.label}</div>
+=======
+                  <div className="text-2xl font-bold text-main mb-1">
+                    {card.value}
+                  </div>
+                  <div className="text-sm text-muted">{card.label}</div>
+>>>>>>> upstream/main
                 </div>
               ))}
             </div>
 
+<<<<<<< HEAD
             <div className="grid grid-cols-1 xl:grid-cols-3 gap-12" style={{ width: '1111px', height: '398px' }}>
               {/* Popular Courses */}
               <div className="xl:col-span-2">
                 <h2 className="text-xl font-bold text-gray-900 mb-6">
+=======
+            <div className="grid grid-cols-1 xl:grid-cols-3 gap-8">
+              {/* Popular Courses */}
+              <div className="xl:col-span-2">
+                <h2 className="text-xl font-bold text-main mb-6">
+>>>>>>> upstream/main
                   Popular Courses
                 </h2>
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                   {coursesData.allCourses.slice(0, 3).map((course, index) => (
                     <Link to={`/learning/${course.id}`} key={index}>
+<<<<<<< HEAD
                       <div className="bg-white rounded-xl border border-gray-200 overflow-hidden shadow-sm h-full">
+=======
+                      <div className="bg-card rounded-xl border border-border overflow-hidden shadow-sm h-full">
+>>>>>>> upstream/main
                         <div className="relative">
                           <img
                             src={course.image}
                             alt={course.title}
                             className="w-full h-40 object-cover"
                           />
+<<<<<<< HEAD
                           <div className="absolute top-3 right-3 bg-white rounded-full p-2">
                             <Bookmark className="w-4 h-4 text-teal-600" />
                           </div>
                           <div className="absolute bottom-3 right-3 bg-white rounded-full px-2 py-1 flex items-center space-x-1">
+=======
+                          <div className="absolute top-3 right-3 bg-card rounded-full p-2">
+                            <Bookmark className="w-4 h-4 text-teal-600" />
+                          </div>
+                          <div className="absolute bottom-3 right-3 bg-card rounded-full px-2 py-1 flex items-center space-x-1">
+>>>>>>> upstream/main
                             <Star className="w-3 h-3 fill-yellow-400 text-yellow-400" />
                             <span className="text-xs font-medium">
                               {course.rating}
@@ -389,6 +443,7 @@ const Dashboard = () => {
                           >
                             {course.category}
                           </div>
+<<<<<<< HEAD
                           <h3 className="font-semibold text-gray-900 mb-2 line-clamp-2">
                             {course.title}
                           </h3>
@@ -400,6 +455,19 @@ const Dashboard = () => {
                               {course.price}
                             </span>
                             <span className="text-xs text-gray-500">
+=======
+                          <h3 className="font-semibold text-main mb-2 line-clamp-2">
+                            {course.title}
+                          </h3>
+                          <p className="text-sm text-muted mb-4">
+                            {course.lessons}
+                          </p>
+                          <div className="flex items-center justify-between">
+                            <span className="text-lg font-bold text-main">
+                              {course.price}
+                            </span>
+                            <span className="text-xs text-muted">
+>>>>>>> upstream/main
                               {course.students}
                             </span>
                           </div>
@@ -411,8 +479,13 @@ const Dashboard = () => {
               </div>
 
               {/* Course Topics Chart */}
+<<<<<<< HEAD
               <div className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100">
                 <h2 className="text-xl font-bold text-gray-900 mb-6">
+=======
+              <div className="bg-card rounded-2xl p-6 shadow-sm border border-border">
+                <h2 className="text-xl font-bold text-main mb-6">
+>>>>>>> upstream/main
                   Course Topics
                 </h2>
                 <div className="relative flex items-center justify-center mb-6">
@@ -455,13 +528,18 @@ const Dashboard = () => {
                     </svg>
                     <div className="absolute inset-0 flex flex-col items-center justify-center">
                       <div className="text-2xl font-bold">15</div>
+<<<<<<< HEAD
                       <div className="text-xs text-gray-500">Total course</div>
+=======
+                      <div className="text-xs text-muted">Total course</div>
+>>>>>>> upstream/main
                     </div>
                   </div>
                 </div>
                 <div className="space-y-3">
                   <div className="flex items-center">
                     <div className="w-3 h-3 rounded-full bg-orange-400 mr-3"></div>
+<<<<<<< HEAD
                     <span className="text-sm text-gray-600">Code (70%)</span>
                   </div>
                   <div className="flex items-center">
@@ -471,11 +549,23 @@ const Dashboard = () => {
                   <div className="flex items-center">
                     <div className="w-3 h-3 rounded-full bg-orange-300 mr-3"></div>
                     <span className="text-sm text-gray-600">Design (10%)</span>
+=======
+                    <span className="text-sm text-muted">Code (70%)</span>
+                  </div>
+                  <div className="flex items-center">
+                    <div className="w-3 h-3 rounded-full bg-orange-200 mr-3"></div>
+                    <span className="text-sm text-muted">Data (20%)</span>
+                  </div>
+                  <div className="flex items-center">
+                    <div className="w-3 h-3 rounded-full bg-orange-300 mr-3"></div>
+                    <span className="text-sm text-muted">Design (10%)</span>
+>>>>>>> upstream/main
                   </div>
                 </div>
               </div>
             </div>
 
+<<<<<<< HEAD
             <div className="grid grid-cols-1 xl:grid-cols-3 gap-12" style={{ width: '1105px', height: '362px' }}>
               {/* My Courses Table */}
               <div className="xl:col-span-2">
@@ -497,13 +587,40 @@ const Dashboard = () => {
                             Lessons
                           </th>
                           <th className="px-4 py-4 text-left text-sm font-medium text-gray-600">
+=======
+            <div className="grid grid-cols-1 xl:grid-cols-3 gap-8">
+              {/* My Courses Table */}
+              <div className="xl:col-span-2">
+                <h2 className="text-xl font-bold text-main mb-6">
+                  My Courses
+                </h2>
+                <div className="bg-card rounded-xl border border-border overflow-hidden">
+                  <div className="overflow-x-auto">
+                    <table className="w-full">
+                      <thead className="bg-canvas-alt">
+                        <tr>
+                          <th className="px-4 py-4 text-left text-sm font-medium text-muted">
+                            Course
+                          </th>
+                          <th className="px-4 py-4 text-left text-sm font-medium text-muted">
+                            Progress
+                          </th>
+                          <th className="px-4 py-4 text-left text-sm font-medium text-muted">
+                            Lessons
+                          </th>
+                          <th className="px-4 py-4 text-left text-sm font-medium text-muted">
+>>>>>>> upstream/main
                             Level
                           </th>
                         </tr>
                       </thead>
                       <tbody className="divide-y divide-gray-200">
                         {myCourses.map((course, index) => (
+<<<<<<< HEAD
                           <tr key={index} className="hover:bg-gray-50">
+=======
+                          <tr key={index} className="hover:bg-canvas-alt">
+>>>>>>> upstream/main
                             <td className="px-4 py-4">
                               <Link
                                 to={`/learning/${course.id}`}
@@ -515,27 +632,46 @@ const Dashboard = () => {
                                   className="w-12 h-12 rounded-lg mr-4"
                                 />
                                 <div>
+<<<<<<< HEAD
                                   <div className="font-medium text-gray-900 hover:text-indigo-600">
                                     {course.title}
                                   </div>
                                   <div className="text-sm text-gray-600">
+=======
+                                  <div className="font-medium text-main hover:text-indigo-600">
+                                    {course.title}
+                                  </div>
+                                  <div className="text-sm text-muted">
+>>>>>>> upstream/main
                                     {course.subtitle}
                                   </div>
                                 </div>
                               </Link>
                             </td>
                             <td className="px-4 py-4">
+<<<<<<< HEAD
                               <div className="w-20 bg-gray-200 rounded-full h-2 mb-1">
+=======
+                              <div className="w-20 bg-border rounded-full h-2 mb-1">
+>>>>>>> upstream/main
                                 <div
                                   className={`h-2 rounded-full ${course.progressColor}`}
                                   style={{ width: `${course.progress}%` }}
                                 ></div>
                               </div>
+<<<<<<< HEAD
                               <div className="text-sm text-gray-600">
                                 {course.progress}%
                               </div>
                             </td>
                             <td className="px-4 py-4 text-gray-600">
+=======
+                              <div className="text-sm text-muted">
+                                {course.progress}%
+                              </div>
+                            </td>
+                            <td className="px-4 py-4 text-muted">
+>>>>>>> upstream/main
                               {course.lessons}
                             </td>
                             <td className="px-4 py-4">
@@ -555,14 +691,22 @@ const Dashboard = () => {
 
               {/* Continue Learning */}
               <div>
+<<<<<<< HEAD
                 <h2 className="text-xl font-bold text-gray-900 mb-6">
+=======
+                <h2 className="text-xl font-bold text-main mb-6">
+>>>>>>> upstream/main
                   Continue Learning
                 </h2>
                 <div className="space-y-4">
                   {continueLearning.map((item, index) => (
                     <div
                       key={index}
+<<<<<<< HEAD
                       className="bg-white rounded-xl p-4 border border-gray-200 shadow-sm hover:shadow-md transition-shadow"
+=======
+                      className="bg-card rounded-xl p-4 border border-border shadow-sm hover:shadow-md transition-shadow"
+>>>>>>> upstream/main
                     >
                       <div className="flex items-center">
                         <Link
@@ -575,6 +719,7 @@ const Dashboard = () => {
                             className="w-12 h-12 rounded-lg mr-4"
                           />
                           <div className="flex-1">
+<<<<<<< HEAD
                             <h3 className="font-medium text-gray-900 mb-1 hover:text-teal-600">
                               {item.title}
                             </h3>
@@ -582,6 +727,15 @@ const Dashboard = () => {
                               {item.lesson}
                             </p>
                             <div className="w-full bg-gray-200 rounded-full h-2 mb-2">
+=======
+                            <h3 className="font-medium text-main mb-1 hover:text-teal-600">
+                              {item.title}
+                            </h3>
+                            <p className="text-sm text-muted mb-2">
+                              {item.lesson}
+                            </p>
+                            <div className="w-full bg-border rounded-full h-2 mb-2">
+>>>>>>> upstream/main
                               <div
                                 className={`h-2 rounded-full ${item.progressColor}`}
                                 style={{ width: `${item.progress}%` }}
@@ -602,6 +756,91 @@ const Dashboard = () => {
               </div>
             </div>
 
+<<<<<<< HEAD
+=======
+            <div className="grid grid-cols-1 xl:grid-cols-4 gap-8">
+              {/* Calendar */}
+              <div className="xl:col-span-3 bg-card rounded-xl p-6 border border-border">
+                <div className="flex items-center justify-between mb-6">
+                  <h2 className="text-xl font-bold text-main">
+                    Class Calendar
+                  </h2>
+                  <div className="flex items-center space-x-4">
+                    <button className="p-2 bg-gray-100 text-black rounded-lg">
+                      <ChevronLeftIcon className="w-4 h-4" />
+                    </button>
+                    <span className="text-lg font-medium">December 2024</span>
+                    <button className="p-2 bg-gray-100 text-black rounded-lg">
+                      <ChevronRight className="w-4 h-4" />
+                    </button>
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-7 gap-px mb-4">
+                  {["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"].map(
+                    (day) => (
+                      <div
+                        key={day}
+                        className="p-3 text-center text-sm font-medium text-muted"
+                      >
+                        {day}
+                      </div>
+                    ),
+                  )}
+                </div>
+
+                <div className="grid grid-cols-7 gap-px">
+                  {Array.from({ length: 31 }, (_, i) => (
+                    <div
+                      key={i + 1}
+                      className={`p-3 text-center text-sm ${
+                        [3, 5, 9, 12, 16, 19, 23].includes(i + 1)
+                          ? "bg-blue-50 dark:bg-blue-100 text-blue-900 rounded-lg"
+                          : "text-main hover:bg-canvas-alt rounded-lg"
+                      }`}
+                    >
+                      {i + 1}
+                    </div>
+                  ))}
+                </div>
+
+                <div className="flex items-center space-x-6 mt-6 text-sm">
+                  <div className="flex items-center">
+                    <div className="w-3 h-3 bg-blue-500 rounded-full mr-2"></div>
+                    <span className="text-muted">Upcoming</span>
+                  </div>
+                  <div className="flex items-center">
+                    <div className="w-3 h-3 bg-green-500 rounded-full mr-2"></div>
+                    <span className="text-muted">Completed</span>
+                  </div>
+                  <div className="flex items-center">
+                    <div className="w-3 h-3 bg-red-500 rounded-full mr-2"></div>
+                    <span className="text-muted">Missed</span>
+                  </div>
+                </div>
+              </div>
+
+              {/* Today's Schedule */}
+              <div className="bg-card rounded-xl p-6 border border-border">
+                <h3 className="text-lg font-semibold text-main mb-4">
+                  Today's Schedule
+                </h3>
+                <div className="space-y-3">
+                  {schedule.map((item, index) => (
+                    <div
+                      key={index}
+                      className={`p-3 rounded-lg border-l-4 ${item.color}`}
+                    >
+                      <h4 className="font-medium text-black mb-1">
+                        {item.title}
+                      </h4>
+                      <p className="text-sm text-muted">{item.time}</p>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+>>>>>>> upstream/main
           </div>
         </main>
       </div>

@@ -30,21 +30,32 @@ const SocialLogin = () => {
 
       // Use existing AuthContext login
       login(data, true);
+<<<<<<< HEAD
     } catch (err) {  // ✅ FIXED: Removed TypeScript ": any"
+=======
+    } catch (err) {
+>>>>>>> upstream/main
       alert(err.message || "Google sign-in error");
     }
   };
 
   return (
+<<<<<<< HEAD
     <div className="d-grid gap-2 mt-4">
       <button
         className="btn btn-outline-secondary d-flex align-items-center justify-content-center"
+=======
+    <div className="flex flex-col gap-2.5 mt-4">
+      <button
+        className="flex items-center justify-center w-full px-3 py-2 bg-white border border-gray-300 rounded-lg text-sm text-gray-700 font-medium hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#00BEA5] transition-all dark:bg-[#0f172a] dark:border-gray-700 dark:text-gray-300 dark:hover:bg-gray-800 cursor-pointer"
+>>>>>>> upstream/main
         type="button"
         onClick={handleGoogleLogin}
       >
         <img
           src={logoGoogle}
           alt="Google"
+<<<<<<< HEAD
           style={{ width: "20px", height: "20px" }}
           className="me-2"
         />
@@ -53,16 +64,31 @@ const SocialLogin = () => {
 
       <button
         className="btn btn-outline-secondary d-flex align-items-center justify-content-center"
+=======
+          className="w-4 h-4 mr-2.5 object-contain"
+        />
+        <span className="text-sm">Sign in with Google</span>
+      </button>
+
+      <button
+        className="flex items-center justify-center w-full px-3 py-2 bg-white border border-gray-300 rounded-lg text-sm text-gray-700 font-medium hover:bg-gray-50 opacity-60 cursor-not-allowed dark:bg-[#0f172a] dark:border-gray-700 dark:text-gray-300"
+>>>>>>> upstream/main
         type="button"
         disabled
       >
         <img
           src={logoApple}
           alt="Apple"
+<<<<<<< HEAD
           style={{ width: "20px", height: "20px" }}
           className="me-2"
         />
         <span>Sign in with Apple</span>
+=======
+          className="w-4 h-4 mr-2.5 object-contain"
+        />
+        <span className="text-sm">Sign in with Apple</span>
+>>>>>>> upstream/main
       </button>
     </div>
   );

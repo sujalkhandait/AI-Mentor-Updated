@@ -1,7 +1,11 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
+<<<<<<< HEAD
 import { ChevronRight, ChevronLeft } from "lucide-react";
+=======
+import { ChevronRight } from "lucide-react";
+>>>>>>> upstream/main
 import API_BASE_URL from "../lib/api";
 
 const Sidebar = ({
@@ -15,6 +19,7 @@ const Sidebar = ({
   const navigate = useNavigate();
   const [navigationItems, setNavigationItems] = useState([]);
 
+<<<<<<< HEAD
   // Generate initials from user name
   const getInitials = (name) => {
     if (!name) return "U";
@@ -34,6 +39,8 @@ const Sidebar = ({
     return colors[index];
   };
 
+=======
+>>>>>>> upstream/main
   const handleLogout = () => {
     logout();
     navigate("/login");
@@ -76,13 +83,18 @@ const Sidebar = ({
     <>
       {sidebarOpen && (
         <div
+<<<<<<< HEAD
           className="fixed inset-0 bg-black bg-opacity-50 z-40 lg:hidden"
+=======
+          className="fixed inset-0 bg-black/50 backdrop-blur-sm z-40 lg:hidden"
+>>>>>>> upstream/main
           onClick={() => setSidebarOpen(false)}
         />
       )}
 
       <div
         className={`
+<<<<<<< HEAD
         fixed lg:fixed top-16 left-0 z-50 bg-white border-r border-gray-200
         transform transition-all duration-300 ease-in-out
         ${sidebarOpen ? "translate-x-0" : "translate-x-0"}
@@ -92,6 +104,26 @@ const Sidebar = ({
           width: sidebarOpen ? '248px' : '80px'
         }}
       >
+=======
+        fixed lg:fixed top-18.5 left-0 z-50 bg-card border-r border-border
+        transform transition-all duration-300 ease-in-out lg:translate-x-0
+        ${sidebarOpen ? "translate-x-0" : "-translate-x-full lg:translate-x-0"}
+        ${sidebarCollapsed ? "lg:w-20" : "lg:w-80"}
+        w-80 h-[calc(100vh-4rem)]
+      `}
+      >
+        <button
+          className="hidden lg:block absolute -right-5 -top-5 w-10 h-10 bg-card border border-border rounded-full hover:bg-canvas-alt z-10"
+          onClick={() => setSidebarCollapsed(!sidebarCollapsed)}
+        >
+          <ChevronRight
+            className={`w-5 h-5 text-muted transition-transform duration-300 ${
+              sidebarCollapsed ? "rotate-180" : ""
+            }`}
+          />
+        </button>
+
+>>>>>>> upstream/main
         <nav className="mt-8 px-4">
           <div className="space-y-2">
             {navigationItems.map((item) => {
@@ -104,6 +136,7 @@ const Sidebar = ({
                   role="button"
                   tabIndex={0}
                   onKeyDown={(e) => e.key === "Enter" && navigate(item.path)}
+<<<<<<< HEAD
                   className={`cursor-pointer flex items-center px-3 py-2 my-2 rounded-xl group relative
                     ${
                       isActive
@@ -146,6 +179,29 @@ const Sidebar = ({
                   </div>
                   {!sidebarOpen && (
                     <div className="absolute left-full ml-2 px-2 py-1 bg-gray-900 text-white text-sm rounded-md opacity-0 group-hover:opacity-100 pointer-events-none whitespace-nowrap">
+=======
+                  className={`cursor-pointer flex items-center px-3 py-3 rounded-xl group relative
+                    ${sidebarCollapsed ? "justify-center" : ""}
+                    ${
+                      isActive
+                        ? "bg-teal-50 text-teal-600"
+                        : "text-muted hover:bg-canvas-alt"
+                    }
+                  `}
+                >
+                  <img
+                    src={item.icon}
+                    alt={item.label}
+                    className="w-5 h-5 flex-shrink-0"
+                  />
+                  {!sidebarCollapsed && (
+                    <span className={`ml-3 ${isActive ? "font-medium" : ""}`}>
+                      {item.label}
+                    </span>
+                  )}
+                  {sidebarCollapsed && (
+                    <div className="absolute left-full ml-2 px-2 py-1 bg-gray-900 text-white text-sm rounded-md opacity-0 group-hover:opacity-100 pointer-events-none">
+>>>>>>> upstream/main
                       {item.label}
                     </div>
                   )}
@@ -155,6 +211,7 @@ const Sidebar = ({
           </div>
         </nav>
 
+<<<<<<< HEAD
         {sidebarOpen && (
           <div className="absolute bottom-4 left-4 right-4">
             <div className="bg-gradient-to-r from-purple-50 to-blue-50 rounded-xl p-4 border border-purple-100">
@@ -170,6 +227,24 @@ const Sidebar = ({
                     {user?.name}
                   </div>
                   <div className="text-xs text-gray-500 truncate">{user?.email}</div>
+=======
+        {!sidebarCollapsed ? (
+          <div className="absolute bottom-4 left-4 right-4">
+            <div className="bg-gradient-to-r from-purple-50 to-blue-50 dark:from-slate-800 dark:to-slate-900 rounded-xl p-4 border border-purple-100 dark:border-slate-700">
+              <div className="flex items-center">
+                <img
+                  src={`https://api.dicebear.com/8.x/initials/svg?seed=${
+                    user?.firstName || "Eliza"
+                  }%20${user?.lastName || "Chris"}`}
+                  alt={user?.name || "User"}
+                  className="w-8 h-8 rounded-full"
+                />
+                <div className="ml-3 flex-1">
+                  <div className="text-sm font-medium text-main">
+                    {user?.name}
+                  </div>
+                  <div className="text-xs text-muted">{user?.email}</div>
+>>>>>>> upstream/main
                 </div>
                 <button
                   onClick={handleLogout}
@@ -180,6 +255,7 @@ const Sidebar = ({
               </div>
             </div>
           </div>
+<<<<<<< HEAD
         )}
         {!sidebarOpen && (
           <div className="absolute bottom-4 left-4 right-4 flex justify-center">
@@ -210,6 +286,20 @@ const Sidebar = ({
         )}
       </button>
 
+=======
+        ) : (
+          <div className="absolute bottom-4 left-4 right-4 flex justify-center">
+            <img
+              src={`https://api.dicebear.com/8.x/initials/svg?seed=${
+                user?.firstName || "Eliza"
+              }%20${user?.lastName || "Chris"}`}
+              alt={user?.name || "User"}
+              className="w-10 h-10 rounded-full border-2 border-purple-200"
+            />
+          </div>
+        )}
+      </div>
+>>>>>>> upstream/main
     </>
   );
 };
