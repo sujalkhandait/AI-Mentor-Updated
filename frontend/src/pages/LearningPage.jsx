@@ -7,18 +7,13 @@ import VideoPlayer from "../components/video/VideoPlayer";
 
 import {
   ChevronLeft,
-  Pause,
-  Play,
-  Volume2,
-  VolumeX,
-  Maximize,
-  Minimize,
   ChevronRight,
   ChevronDown,
   Check,
   Circle,
   FileText,
   CloudCog,
+  Play,
 } from "lucide-react";
 
 const getYouTubeVideoId = (url) => {
@@ -69,7 +64,26 @@ export default function Learning() {
 
   const videoRef = useRef(null);
   const playerContainerRef = useRef(null);
+  const transcriptContainerRef = useRef(null);
+  const activeCaptionRef = useRef(null);
 
+  // Auto-scroll transcript to keep active caption visible
+  useEffect(() => {
+    if (activeCaptionRef.current && transcriptContainerRef.current) {
+      const container = transcriptContainerRef.current;
+      const activeElement = activeCaptionRef.current;
+
+      const containerTop = container.scrollTop;
+      const containerBottom = containerTop + container.clientHeight;
+      const elementTop = activeElement.offsetTop - container.offsetTop;
+      const elementBottom = elementTop + activeElement.clientHeight;
+
+      // Scroll if element is not fully visible
+      if (elementTop < containerTop || elementBottom > containerBottom) {
+        activeElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      }
+    }
+  }, [currentTime]);
 
 
   useEffect(() => {
@@ -259,58 +273,91 @@ export default function Learning() {
   // Load and parse VTT captions (simple parser) when selectedCelebrity changes
   useEffect(() => {
     const loadCaptions = async () => {
+      console.log("🔍 Loading captions for celebrity:", selectedCelebrity);
       try {
-        const vttPath =
-          (selectedCelebrity &&
-            celebrityVideoMap[selectedCelebrity] &&
-            celebrityVideoMap[selectedCelebrity].vtt) ||
-          "/vdo_subtitles.vtt";
-        const res = await fetch(vttPath);
-        if (!res.ok) {
-          setCaptions([]);
+        // Prioritize AI-generated text if available
+        if (generatedTextContent && videoRef.current?.duration) {
+          console.log("🤖 Generating captions from AI text");
+          const sentences = generatedTextContent
+            .split(/[.!?]+/)
+            .map(s => s.trim())
+            .filter(Boolean);
+
+          const videoDuration = videoRef.current.duration;
+          const timePerSentence = videoDuration / sentences.length;
+
+          const generatedCaptions = sentences.map((sentence, index) => ({
+            start: index * timePerSentence,
+            end: (index + 1) * timePerSentence,
+            text: sentence,
+          }));
+
+          console.log(`✅ Generated ${generatedCaptions.length} captions from AI text`);
+          setCaptions(generatedCaptions);
           return;
         }
-        const text = await res.text();
-        const blocks = text.replace(/\r\n/g, "\n").split(/\n\n+/).slice(1); // skip WEBVTT header
-        const cues = blocks
-          .map((block) => {
-            const lines = block
-              .split("\n")
-              .map((l) => l.trim())
+
+        // Fallback to VTT file if AI text not available
+        const vttPath =
+          selectedCelebrity &&
+          celebrityVideoMap[selectedCelebrity] &&
+          celebrityVideoMap[selectedCelebrity].vtt;
+
+        if (vttPath) {
+          console.log("📄 Trying to load VTT from:", vttPath);
+          const res = await fetch(vttPath);
+          if (res.ok) {
+            console.log("✅ VTT file loaded successfully");
+            const text = await res.text();
+            const blocks = text.replace(/\r\n/g, "\n").split(/\n\n+/).slice(1); // skip WEBVTT header
+            const cues = blocks
+              .map((block) => {
+                const lines = block
+                  .split("\n")
+                  .map((l) => l.trim())
+                  .filter(Boolean);
+                if (lines.length < 2) return null;
+                const timeLine = lines[0];
+                const textLines = lines.slice(1).join(" ");
+                const match = timeLine.match(
+                  /(\d{2}:\d{2}:\d{2}\.\d{3})\s*-->\s*(\d{2}:\d{2}:\d{2}\.\d{3})/
+                );
+                if (!match) return null;
+                const toSeconds = (s) => {
+                  const [hh, mm, rest] = s.split(":");
+                  const [ss, ms] = rest.split(".");
+                  return (
+                    parseInt(hh) * 3600 +
+                    parseInt(mm) * 60 +
+                    parseInt(ss) +
+                    parseFloat("0." + ms)
+                  );
+                };
+                return {
+                  start: toSeconds(match[1]),
+                  end: toSeconds(match[2]),
+                  text: textLines,
+                };
+              })
               .filter(Boolean);
-            if (lines.length < 2) return null;
-            const timeLine = lines[0];
-            const textLines = lines.slice(1).join(" ");
-            const match = timeLine.match(
-              /(\d{2}:\d{2}:\d{2}\.\d{3})\s*-->\s*(\d{2}:\d{2}:\d{2}\.\d{3})/
-            );
-            if (!match) return null;
-            const toSeconds = (s) => {
-              const [hh, mm, rest] = s.split(":");
-              const [ss, ms] = rest.split(".");
-              return (
-                parseInt(hh) * 3600 +
-                parseInt(mm) * 60 +
-                parseInt(ss) +
-                parseFloat("0." + ms)
-              );
-            };
-            return {
-              start: toSeconds(match[1]),
-              end: toSeconds(match[2]),
-              text: textLines,
-            };
-          })
-          .filter(Boolean);
-        setCaptions(cues);
+            console.log(`✅ Parsed ${cues.length} captions from VTT`);
+            setCaptions(cues);
+            return;
+          } else {
+            console.log("⚠️ VTT file not found");
+          }
+        }
+
+        console.log("❌ No captions available - no AI text and no VTT");
+        setCaptions([]);
       } catch (err) {
-        console.warn("Could not load captions:", err);
+        console.warn("❌ Could not load captions:", err);
         setCaptions([]);
       }
     };
 
     loadCaptions();
-  }, [selectedCelebrity]);
+  }, [selectedCelebrity, generatedTextContent, videoRef.current?.duration]);
 
   // Ensure when currentLesson changes we load its video into the player
   useEffect(() => {
@@ -376,6 +423,44 @@ export default function Learning() {
 
     loadVideo();
   }, [learningData?.currentLesson, selectedCelebrity]);
+
+  // Generate captions when video metadata loads
+  useEffect(() => {
+    const v = videoRef.current;
+    if (!v) return;
+
+    const handleMetadataLoaded = () => {
+      if (generatedTextContent && v.duration && !captions.length) {
+        const sentences = generatedTextContent
+          .split(/[.!?]+/)
+          .map(s => s.trim())
+          .filter(Boolean);
+
+        const videoDuration = v.duration;
+        const timePerSentence = videoDuration / sentences.length;
+
+        const generatedCaptions = sentences.map((sentence, index) => ({
+          start: index * timePerSentence,
+          end: (index + 1) * timePerSentence,
+          text: sentence,
+        }));
+
+        setCaptions(generatedCaptions);
+      }
+    };
+
+    v.addEventListener('loadedmetadata', handleMetadataLoaded);
+
+    // Also try to generate immediately if metadata already loaded
+    if (v.duration && generatedTextContent && !captions.length) {
+      handleMetadataLoaded();
+    }
+
+    return () => {
+      v.removeEventListener('loadedmetadata', handleMetadataLoaded);
+    };
+  }, [generatedTextContent]);
+
 
   // If selectedCelebrity is Salman Khan and the user wants the Reactjs paragraph
   // shown word-by-word, create per-word cues when video metadata (duration) is available.
@@ -685,120 +770,86 @@ export default function Learning() {
         {/* Main Content Grid */}
         <div className="grid grid-cols-1 xl:grid-cols-3 gap-6">
           {/* Video Player */}
-          <VideoPlayer
-            currentLesson={currentLesson}
-            aiVideoUrl={aiVideoUrl}
-            selectedCelebrity={selectedCelebrity}
-            celebrityVideoMap={celebrityVideoMap}
-            activeCaption={activeCaption}
-            playerContainerRef={playerContainerRef}
-            videoRef={videoRef}
-            handleProgress={handleProgress}
-            getYouTubeVideoId={getYouTubeVideoId}
-          />
+          <div className="xl:col-span-2 space-y-4 mt-3">
+            <VideoPlayer
+              currentLesson={currentLesson}
+              aiVideoUrl={aiVideoUrl}
+              selectedCelebrity={selectedCelebrity}
+              celebrityVideoMap={celebrityVideoMap}
+              activeCaption={activeCaption}
+              playerContainerRef={playerContainerRef}
+              videoRef={videoRef}
+              handleProgress={handleProgress}
+              getYouTubeVideoId={getYouTubeVideoId}
+              isPlaying={isPlaying}
+              volume={volume}
+              isMuted={isMuted}
+              progress={progress}
+              isFullscreen={isFullscreen}
+              duration={duration}
+              currentTime={currentTime}
+              togglePlay={togglePlay}
+              handleVolumeChange={handleVolumeChange}
+              toggleMute={toggleMute}
+              handleSeek={handleSeek}
+              toggleFullscreen={toggleFullscreen}
+              formatTime={formatTime}
+              handlePrevious={handlePrevious}
+              handleNext={handleNext}
+              currentLessonIndex={currentLessonIndex}
+              allLessonsLength={allLessons.length}
+            />
+          </div>
 
           {/* Lesson Content */}
           <div className="xl:col-span-1 space-y-6">
-            <div className="bg-white rounded-lg p-6 shadow-sm">
-              <h3 className="text-lg font-semibold text-gray-900 mb-4">
+            <div className="bg-white rounded-lg p-6 shadow-sm mt-3">
+              <h3 className="text-lg font-semibold text-gray-900 mb-0">
                 {currentLesson?.title || "Select a Lesson"}
               </h3>
-              <div className="prose prose-sm max-w-none">
-                <p className="text-gray-700">
-                  {(() => {
-                    const displayText = generatedTextContent ||
-                      currentLesson?.content?.introduction
-                    return displayText;
-                  })()}
-                </p>
-              </div>
             </div>
-
-            {/* Custom Controls */}
-            <div className="bg-white rounded-lg p-6 shadow-sm">
-              <div className="flex items-center justify-between mb-4">
-                <button
-                  onClick={togglePlay}
-                  className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
-                >
-                  {isPlaying ? (
-                    <Pause className="w-4 h-4" />
-                  ) : (
-                    <Play className="w-4 h-4" />
-                  )}
-                  {isPlaying ? "Pause" : "Play"}
-                </button>
-                <button
-                  onClick={toggleFullscreen}
-                  className="flex items-center gap-2 px-4 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700"
-                >
-                  {isFullscreen ? (
-                    <Minimize className="w-4 h-4" />
-                  ) : (
-                    <Maximize className="w-4 h-4" />
-                  )}
-                </button>
-              </div>
-
-              {/* Progress Bar */}
-              <div className="mb-4">
+            {/* Transcript Section */}
+            {captions.length > 0 && !currentLesson?.youtubeUrl && (
+              <div className="bg-white rounded-lg p-6 shadow-sm">
+                <h3 className="text-lg font-semibold text-gray-900 mb-4">
+                  Transcript
+                </h3>
                 <div
-                  className="w-full bg-gray-200 rounded-full h-2 cursor-pointer"
-                  onClick={handleSeek}
+                  ref={transcriptContainerRef}
+                  className="max-h-96 overflow-y-auto space-y-2 pr-2 scroll-smooth"
                 >
-                  <div
-                    className="bg-blue-600 h-2 rounded-full"
-                    style={{ width: `${progress}%` }}
-                  ></div>
+                  {captions.map((caption, index) => {
+                    const isActive = currentTime >= caption.start && currentTime <= caption.end;
+                    return (
+                      <div
+                        key={index}
+                        ref={isActive ? activeCaptionRef : null}
+                        className={`p-3 rounded-lg cursor-pointer transition-all ${isActive
+                            ? 'bg-blue-50 border-l-4 border-blue-600'
+                            : 'hover:bg-gray-50'
+                          }`}
+                        onClick={() => {
+                          if (videoRef.current) {
+                            videoRef.current.currentTime = caption.start;
+                          }
+                        }}
+                      >
+                        <div className="flex gap-3">
+                          <span className={`text-xs font-mono ${isActive ? 'text-blue-600 font-semibold' : 'text-gray-500'
+                            }`}>
+                            {formatTime(caption.start)}
+                          </span>
+                          <p className={`text-sm flex-1 ${isActive ? 'text-gray-900 font-medium' : 'text-gray-700'
+                            }`}>
+                            {caption.text}
+                          </p>
+                        </div>
+                      </div>
+                    );
+                  })}
                 </div>
-                <div className="flex justify-between text-xs text-gray-500 mt-1">
-                  <span>{formatTime(currentTime)}</span>
-                  <span>{formatTime(duration)}</span>
-                </div>
               </div>
-
-              {/* Volume Control */}
-              <div className="flex items-center gap-2">
-                <button onClick={toggleMute} className="text-gray-600">
-                  {isMuted || volume === 0 ? (
-                    <VolumeX className="w-4 h-4" />
-                  ) : (
-                    <Volume2 className="w-4 h-4" />
-                  )}
-                </button>
-                <input
-                  type="range"
-                  min="0"
-                  max="1"
-                  step="0.1"
-                  value={volume}
-                  onChange={handleVolumeChange}
-                  className="flex-1"
-                />
-              </div>
-            </div>
-
-            {/* Navigation */}
-            <div className="bg-white rounded-lg p-6 shadow-sm">
-              <div className="flex justify-between">
-                <button
-                  onClick={handlePrevious}
-                  disabled={currentLessonIndex <= 0}
-                  className="flex items-center gap-2 px-4 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700 disabled:opacity-50 disabled:cursor-not-allowed"
-                >
-                  <ChevronLeft className="w-4 h-4" />
-                  Previous
-                </button>
-                <button
-                  onClick={handleNext}
-                  disabled={currentLessonIndex >= allLessons.length - 1}
-                  className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed"
-                >
-                  Next
-                  <ChevronRight className="w-4 h-4" />
-                </button>
-              </div>
-            </div>
+            )}
           </div>
         </div>
 
