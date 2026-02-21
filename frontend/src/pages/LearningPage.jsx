@@ -559,7 +559,7 @@ export default function Learning() {
   };
 
   const handleCourseComplete = async () =>{
-
+    
   }
 
   const handleNext = async () => {
@@ -570,7 +570,6 @@ export default function Learning() {
     const nextLesson = allLessons[currentLessonIndex + 1];
     handleLessonClick(nextLesson);
     setIsNavigating(false);
-  };
   };
 
   const togglePlay = () => {
