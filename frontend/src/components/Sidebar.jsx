@@ -76,7 +76,7 @@ const Sidebar = ({
           onClick={() => setSidebarCollapsed(!sidebarCollapsed)}
         >
           <ChevronRight
-            className={`w-5 h-5 text-muted transition-transform duration-300 ${
+            className={`mx-auto w-5 h-5 text-muted transition-transform duration-300 ${
               sidebarCollapsed ? "rotate-180" : ""
             }`}
           />

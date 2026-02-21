@@ -1,3 +1,4 @@
+// frontend/src/pages/Settings.jsx
 import { useState, useEffect } from "react";
 import { useAuth } from "../context/AuthContext";
 import Header from "../components/Header";
@@ -14,6 +15,11 @@ import {
 } from "lucide-react";
 import axios from "axios";
 
+
+// change02 
+import { useTheme } from "../context/ThemeContext";
+
+
 const settingsNavItems = [
   { icon: User, label: "Profile" },
   { icon: Bell, label: "Notifications" },
@@ -23,6 +29,10 @@ const settingsNavItems = [
 ];
 
 export default function Settings() {
+  // change02 
+  const { theme, setTheme } = useTheme();
+
+
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [activeSetting, setActiveSetting] = useState("Profile");
@@ -662,17 +672,28 @@ export default function Settings() {
                         ].map((theme) => (
                           <button
                             key={theme.value}
-                            onClick={() =>
-                              setSettingsData((prev) => ({
-                                ...prev,
-                                appearance: {
-                                  ...prev.appearance,
-                                  theme: theme.value,
-                                },
-                              }))
-                            }
+
+
+                            // change02
+                            // onClick={() =>
+                            //   setSettingsData((prev) => ({
+                            //     ...prev,
+                            //     appearance: {
+                            //       ...prev.appearance,
+                            //       theme: theme.value,
+                            //     },
+                            //   }))
+                            // }
+                            onClick={() => setTheme(theme.value)}
+
+
                             className={`p-4 rounded-xl border-2 transition-colors ${
-                              settingsData.appearance.theme === theme.value
+
+                              // change02
+                              // settingsData.appearance.theme === theme.value
+                              theme === theme.value
+
+
                                 ? "border-primary bg-teal-50 dark:bg-teal-900/20 text-main"
                                 : "border-border hover:border-primary text-muted hover:text-main"
                             }`}

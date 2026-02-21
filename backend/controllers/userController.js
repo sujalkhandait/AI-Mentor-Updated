@@ -235,8 +235,43 @@ const updateUserSettings = async (req, res) => {
 };
 
 const updateUserProfile = async (req, res) => {
-  res.status(501).json({ message: "updateUserProfile not implemented yet" });
+  try {
+    if (!req.user) {
+      return res.status(401).json({ message: "Not authorized" });
+    }
+
+    const user = await User.findByPk(req.user.id);
+
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    // Update only provided fields
+    user.firstName = req.body.firstName ?? user.firstName;
+    user.lastName = req.body.lastName ?? user.lastName;
+    user.name = `${user.firstName} ${user.lastName}`.trim();
+    user.email = req.body.email ?? user.email;
+    user.bio = req.body.bio ?? user.bio;
+
+    await user.save();
+
+    res.status(200).json({
+      id: user.id,
+      firstName: user.firstName,
+      lastName: user.lastName,
+      name: user.name,
+      email: user.email,
+      role: user.role,
+      bio: user.bio,
+      purchasedCourses: user.purchasedCourses,
+    });
+
+  } catch (error) {
+    console.error("UPDATE PROFILE ERROR:", error);
+    res.status(500).json({ message: "Server error" });
+  }
 };
+
 
 // ❗ DEV / ADMIN ONLY
 const removePurchasedCourse = async (req, res) => {
