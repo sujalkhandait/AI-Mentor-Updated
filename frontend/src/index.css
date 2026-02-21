@@ -21,6 +21,7 @@
   /* Input background (gray-50) */
   --color-primary: #00BEA5;
   /* Primary accent color */
+  --color-transcript-bg: var(--color-blue-50);
 }
 
 .dark {
@@ -39,6 +40,8 @@
   /* Zinc-700 - Subtle borders */
   --color-input-bg: #3f3f46;
   /* Zinc-700 - Distinct input background */
+  --color-transcript-bg: #162456;
+
 }
 
 @theme {
@@ -50,6 +53,7 @@
   --color-border: var(--color-border);
   --color-input: var(--color-input-bg);
   --color-primary: var(--color-primary);
+  --color-transcript-bg: var(--color-transcript-bg);
 }
 
 body {

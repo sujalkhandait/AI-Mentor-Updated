@@ -84,6 +84,9 @@ export default function Learning() {
   const transcriptContainerRef = useRef(null);
   const activeCaptionRef = useRef(null);
   const modalRef = useRef(null);
+  const lastLessonIdRef = useRef(null);
+  const lastCelebrityRef = useRef(null);
+  const hasRestoredProgressRef = useRef(false);
 
   // Auto-scroll transcript to keep active caption visible
   useEffect(() => {
@@ -167,12 +170,23 @@ export default function Learning() {
             // Do NOT setExpandedModule here; dropdown should be closed by default
             // Set current lesson based on progress
             const currentLesson = userProgress.currentLesson;
-            if (currentLesson) {
+            if (currentLesson && !hasRestoredProgressRef.current) {
               // Find and set the current lesson
               const lesson = courseData.modules
                 .flatMap((module) => module.lessons)
                 .find((l) => l.id === currentLesson.lessonId);
+              
               if (lesson) {
+                hasRestoredProgressRef.current = true;
+                // Restore saved AI content if it exists
+                const savedData = userProgress.lessonData?.[lesson.id];
+                if (savedData?.generatedTextContent) {
+                  setGeneratedTextContent(savedData.generatedTextContent);
+                  if (savedData.aiVideoUrl) {
+                    setAiVideoUrl(savedData.aiVideoUrl);
+                  }
+                }
+
                 setLearningData((prev) => ({
                   ...prev,
                   currentLesson: lesson,
@@ -188,22 +202,30 @@ export default function Learning() {
       }
     };
     fetchLearningData();
-  }, [courseId, user, navigate]);
+  }, [courseId]);
 
-  // Load and parse VTT captions (simple parser) when selectedCelebrity changes
+  // Reset restore flag when course changes
+  useEffect(() => {
+    hasRestoredProgressRef.current = false;
+  }, [courseId]);
+
+  // Load and parse VTT captions (simple parser) when selectedCelebrity or generatedTextContent changes
   useEffect(() => {
     const loadCaptions = async () => {
       console.log("🔍 Loading captions for celebrity:", selectedCelebrity);
       try {
+        const v = videoRef.current;
+        const duration = v?.duration;
+
         // Prioritize AI-generated text if available
-        if (generatedTextContent && videoRef.current?.duration) {
-          console.log("🤖 Generating captions from AI text");
+        if (generatedTextContent && duration) {
+          console.log("🤖 Generating captions from AI text, duration:", duration);
           const sentences = generatedTextContent
             .split(/[.!?]+/)
             .map(s => s.trim())
             .filter(Boolean);
 
-          const videoDuration = videoRef.current.duration;
+          const videoDuration = duration;
           const timePerSentence = videoDuration / sentences.length;
 
           const generatedCaptions = sentences.map((sentence, index) => ({
@@ -277,15 +299,49 @@ export default function Learning() {
     };
 
     loadCaptions();
-  }, [selectedCelebrity, generatedTextContent, videoRef.current?.duration]);
+  }, [selectedCelebrity, generatedTextContent, duration]);
 
   // Ensure when currentLesson changes we load its video into the player
   useEffect(() => {
     const v = videoRef.current;
     if (!v || !learningData?.currentLesson) return;
 
+    // Prevent redundant calls when user state updates but lesson/celebrity haven't changed
+    const lessonChanged = lastLessonIdRef.current !== learningData.currentLesson.id;
+    const celebrityChanged = lastCelebrityRef.current !== selectedCelebrity;
+
+    if (!lessonChanged && !celebrityChanged && v.src) {
+      return;
+    }
+
+    lastLessonIdRef.current = learningData.currentLesson.id;
+    lastCelebrityRef.current = selectedCelebrity;
+
     const loadVideo = async () => {
+      // Clear existing captions only when changing lesson/celebrity
+      setCaptions([]);
+      setActiveCaption("");
+
       if (selectedCelebrity) {
+        // Check if we already have saved content for this lesson and celebrity
+        const savedData = user?.purchasedCourses
+          ?.find(c => c.courseId === parseInt(courseId))
+          ?.progress?.lessonData?.[learningData.currentLesson.id];
+
+        if (savedData?.generatedTextContent && savedData?.celebrity === selectedCelebrity) {
+          console.log("♻️ Using saved AI content for this lesson");
+          setGeneratedTextContent(savedData.generatedTextContent);
+          setAiVideoUrl(savedData.aiVideoUrl);
+
+          // Only update src if it's different to avoid reloading the same video
+          if (v.src !== savedData.aiVideoUrl) {
+            v.pause();
+            v.src = savedData.aiVideoUrl;
+            v.load();
+          }
+          return;
+        }
+
         setIsAIVideoLoading(true);
         setGeneratedTextContent("");
         try {
@@ -298,15 +354,25 @@ export default function Learning() {
           if (data && data.videoUrl) {
             setAiVideoUrl(data.videoUrl);
             setGeneratedTextContent(data.textContent || "");
-            v.pause();
-            v.src = data.videoUrl;
-            v.load();
-            const p = v.play();
-            if (p && typeof p.then === "function") {
-              p.then(() => setIsPlaying(true)).catch(() => setIsPlaying(false));
-            } else {
-              setIsPlaying(true);
+
+            if (v.src !== data.videoUrl) {
+              v.pause();
+              v.src = data.videoUrl;
+              v.load();
+              const p = v.play();
+              if (p && typeof p.then === "function") {
+                p.then(() => setIsPlaying(true)).catch(() => setIsPlaying(false));
+              } else {
+                setIsPlaying(true);
+              }
             }
+
+            // Save the generated content to the backend
+            saveLessonData(learningData.currentLesson.id, {
+              generatedTextContent: data.textContent || "",
+              aiVideoUrl: data.videoUrl,
+              celebrity: selectedCelebrity
+            });
           }
         } catch (error) {
           console.error("Error generating AI video on lesson change:", error);
@@ -314,7 +380,7 @@ export default function Learning() {
           const src =
             celebrityVideoMap[selectedCelebrity]?.video ||
             learningData.currentLesson.videoUrl;
-          if (src) {
+          if (src && v.src !== src) {
             v.pause();
             v.src = src;
             v.load();
@@ -332,7 +398,7 @@ export default function Learning() {
         setIsAIVideoLoading(false);
         setGeneratedTextContent("");
         const src = learningData.currentLesson.videoUrl;
-        if (src) {
+        if (src && v.src !== src) {
           v.pause();
           v.src = src;
           v.load();
@@ -342,44 +408,9 @@ export default function Learning() {
     };
 
     loadVideo();
-    }, [learningData?.currentLesson, selectedCelebrity]);
+  }, [learningData?.currentLesson, selectedCelebrity]);
 
-  // Generate captions when video metadata loads
-  useEffect(() => {
-    const v = videoRef.current;
-    if (!v) return;
 
-    const handleMetadataLoaded = () => {
-      if (generatedTextContent && v.duration && !captions.length) {
-        const sentences = generatedTextContent
-          .split(/[.!?]+/)
-          .map(s => s.trim())
-          .filter(Boolean);
-
-        const videoDuration = v.duration;
-        const timePerSentence = videoDuration / sentences.length;
-
-        const generatedCaptions = sentences.map((sentence, index) => ({
-          start: index * timePerSentence,
-          end: (index + 1) * timePerSentence,
-          text: sentence,
-        }));
-
-        setCaptions(generatedCaptions);
-      }
-    };
-
-    v.addEventListener('loadedmetadata', handleMetadataLoaded);
-
-    // Also try to generate immediately if metadata already loaded
-    if (v.duration && generatedTextContent && !captions.length) {
-      handleMetadataLoaded();
-    }
-
-    return () => {
-      v.removeEventListener('loadedmetadata', handleMetadataLoaded);
-    };
-  }, [generatedTextContent]);
 
 
   // If selectedCelebrity is Salman Khan and the user wants the Reactjs paragraph
@@ -435,6 +466,39 @@ export default function Learning() {
     (lesson) => lesson.id === currentLesson?.id
   );
 
+  const saveLessonData = async (lessonId, data) => {
+    try {
+      const token = localStorage.getItem("token");
+      const res = await fetch("/api/users/course-progress", {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({
+          courseId: parseInt(courseId),
+          lessonData: {
+            lessonId,
+            data
+          },
+          currentLesson: {
+            lessonId,
+            moduleTitle: expandedModule || ""
+          }
+        }),
+      });
+      if (res.ok) {
+        const result = await res.json();
+        // Update user context to reflect changes
+        if (updateUser && result.purchasedCourses) {
+          updateUser({ purchasedCourses: result.purchasedCourses });
+        }
+      }
+    } catch (error) {
+      console.error("Error saving lesson data:", error);
+    }
+  };
+
   const completeLesson = async (lessonId) => {
     // Check if lesson is already completed
     const courseProgress = user?.purchasedCourses?.find(
@@ -451,7 +515,7 @@ export default function Learning() {
 
     try {
       const token = localStorage.getItem("token");
-      await fetch("/api/users/course-progress", {
+      const res = await fetch("/api/users/course-progress", {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",
@@ -460,29 +524,19 @@ export default function Learning() {
         body: JSON.stringify({
           courseId: parseInt(courseId),
           completedLesson: { lessonId },
-        }),
-      });
-    } catch (error) {
-      console.error("Error marking lesson completed:", error);
-    }
-
-    // Also update current lesson pointer
-    try {
-      const token = localStorage.getItem("token");
-      await fetch("/api/users/course-progress", {
-        method: "PUT",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify({
-          courseId: parseInt(courseId),
           currentLesson: {
             lessonId,
             moduleTitle: expandedModule,
           },
         }),
       });
+
+      if (res.ok) {
+        const result = await res.json();
+        if (updateUser && result.purchasedCourses) {
+          updateUser({ purchasedCourses: result.purchasedCourses });
+        }
+      }
     } catch (error) {
       console.error("Error updating progress:", error);
     }
@@ -504,6 +558,10 @@ export default function Learning() {
     }
   };
 
+  const handleCourseComplete = async () =>{
+
+  }
+
   const handleNext = async () => {
     if (currentLessonIndex >= allLessons.length - 1) return;
     setIsNavigating(true);
@@ -512,6 +570,7 @@ export default function Learning() {
     const nextLesson = allLessons[currentLessonIndex + 1];
     handleLessonClick(nextLesson);
     setIsNavigating(false);
+  };
   };
 
   const togglePlay = () => {
@@ -556,17 +615,26 @@ export default function Learning() {
 
   const handleProgress = () => {
     if (videoRef.current) {
-      const duration = videoRef.current.duration;
-      const currentTime = videoRef.current.currentTime;
-      setDuration(duration);
-      setCurrentTime(currentTime);
-      setProgress((currentTime / duration) * 100);
+      const vidDuration = videoRef.current.duration;
+      const vidCurrentTime = videoRef.current.currentTime;
+
+      // Only update duration if it's a valid number and has changed
+      if (isFinite(vidDuration) && vidDuration > 0 && Math.abs(duration - vidDuration) > 0.1) {
+        setDuration(vidDuration);
+      }
+
+      setCurrentTime(vidCurrentTime);
+      setProgress(vidDuration > 0 ? (vidCurrentTime / vidDuration) * 100 : 0);
+
       // update visible caption overlay
       if (captions.length > 0) {
         const cue = captions.find(
-          (c) => currentTime >= c.start && currentTime <= c.end
+          (c) => vidCurrentTime >= c.start && vidCurrentTime <= c.end
         );
-        setActiveCaption(cue ? cue.text : "");
+        const targetText = cue ? cue.text : "";
+        if (activeCaption !== targetText) {
+          setActiveCaption(targetText);
+        }
       }
     }
   };
@@ -618,7 +686,7 @@ export default function Learning() {
           }`}
       >
         {/* Breadcrumb */}
-        <div className="bg-card border-b border-border px-6 py-3 mt-20">
+        <div className="bg-card border-b border-border px-6 py-3 mt-20 grid grid-flow-col-dense">
           <div className="flex items-center gap-2 text-sm text-muted mt-2">
             <button
               onClick={() => navigate("/")}
@@ -653,6 +721,8 @@ export default function Learning() {
               {currentLesson?.title}
             </span>
           </div>
+
+
         </div>
 
         {/* Content Selector with AI Button */}
@@ -727,6 +797,39 @@ export default function Learning() {
                   ))}
                 </div>
               </div>
+            </div>
+
+            {/* Course Progress Bar */}
+            <div className="w-full">
+              {(() => {
+                const completedCount =
+                  user?.purchasedCourses?.find(
+                    (course) => course.courseId === parseInt(courseId)
+                  )?.progress?.completedLessons?.length || 0;
+                const totalCount = allLessons.length;
+                const progressPercent = Math.min(
+                  (completedCount / totalCount) * 100,
+                  100
+                );
+                console.log("Progress calculation:", {
+                  completedCount,
+                  totalCount,
+                  progressPercent,
+                });
+                return (
+                  <div className="w-2/4 mt-0 mb-0 ml-auto mr-auto">
+                    <div className="w-full bg-border rounded-full h-2 ">
+                      <div
+                        className="bg-primary h-2 rounded-full"
+                        style={{ width: `${progressPercent}%` }}
+                      ></div>
+                    </div>
+                    <p className="text-sm text-muted mt-2">
+                      {Math.round(progressPercent)}% Complete
+                    </p>
+                  </div>
+                );
+              })()}
             </div>
 
             <div className="flex items-center gap-3">
@@ -940,8 +1043,8 @@ export default function Learning() {
           </div>
 
           {/* Transcript Section - Takes 1 column */}
-          <div ref={transcriptContainerRef} className="lg:col-span-1 bg-card border-l border-border overflow-y-auto max-h-[calc(100vh-180px)]">
-            <div className="sticky top-0 bg-white dark:bg-gray-900 border-b border-border px-6 py-4 z-20">
+          <div className="lg:col-span-1 bg-card border-l border-border overflow-y-auto max-h-[calc(100vh-180px)]">
+            <div className="sticky top-0 bg-card border-b border-border px-6 py-4 z-10">
               <h2 className="text-lg font-semibold text-main">
                 Transcript
               </h2>
@@ -949,6 +1052,7 @@ export default function Learning() {
             <div
               className="px-6 py-4 space-y-4 scroll-smooth"
             >
+
               {captions.length > 0 ? (
                 captions.map((caption, index) => {
                   const isActive = currentTime >= caption.start && currentTime <= caption.end;
@@ -956,21 +1060,20 @@ export default function Learning() {
                     <div
                       key={index}
                       ref={isActive ? activeCaptionRef : null}
-                      className={`py-3 border-l-4 pl-4 rounded-r cursor-pointer transition-all ${
-                        isActive
-                          ? "border-blue-600 bg-blue-600 dark:bg-blue-950"
-                          : "border-transparent hover:bg-canvas-alt hover:border-border"
-                      }`}
+                      className={`py-3 border-l-4 pl-4 rounded-r cursor-pointer transition-all ${isActive
+                        ? "border-blue-500 bg-transcript-bg border-border"
+                        : "border-transparent bg-card hover:bg-color-transcript-bg hover:border-border"
+                        }`}
                       onClick={() => {
                         if (videoRef.current) {
                           videoRef.current.currentTime = caption.start;
                         }
                       }}
                     >
-                      <div className={`text-xs font-medium mb-1 ${isActive ? "text-white" : "text-muted"}`}>
+                      <div className={`text-xs font-medium mb-1 text-muted`}>
                         {formatTime(caption.start)}
                       </div>
-                      <div className={`text-sm leading-relaxed ${isActive ? "text-white font-medium" : "text-muted"}`}>
+                      <div className={`text-sm leading-relaxed text-muted`}>
                         {caption.text}
                       </div>
                     </div>
