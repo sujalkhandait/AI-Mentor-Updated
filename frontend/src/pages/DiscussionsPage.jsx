@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import Header from "../components/Header";
 import Sidebar from "../components/Sidebar";
 import { useAuth } from "../context/AuthContext";
@@ -22,6 +22,8 @@ const DiscussionsPage = () => {
   const [replyText, setReplyText] = useState("");
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const [uploadedImages, setUploadedImages] = useState([]);
+  const fileInputRef = useRef(null);
 
   const tabs = ["Recent", "Unanswered", "My Doubts", "Popular"];
 
@@ -93,7 +95,7 @@ const DiscussionsPage = () => {
 
       const updatedDiscussion = await response.json();
       setDiscussions(
-        discussions.map((d) => (d._id === discussionId ? updatedDiscussion : d))
+        discussions.map((d) => (d.id === discussionId ? updatedDiscussion : d))
       );
     } catch (err) {
       setError(err.message);
@@ -124,15 +126,19 @@ const DiscussionsPage = () => {
       return purchasedCourses
         .map((purchasedCourse, index) => {
           const courseCard = coursesData.find(
-            (card) => card.id === purchasedCourse.courseId
+            (card) => card.id == purchasedCourse.courseId
           );
           if (!courseCard) return null;
 
           const completedLessons =
             purchasedCourse.progress?.completedLessons?.length || 0;
           const totalLessons =
-            parseInt(courseCard.lessons.split(" of ")[1]) || 1;
-          const progress = Math.round((completedLessons / totalLessons) * 100);
+            courseCard.lessonsCount ||
+            (courseCard.lessons.includes(" of ")
+              ? parseInt(courseCard.lessons.split(" of ")[1])
+              : parseInt(courseCard.lessons.split(" ")[0])) ||
+            1;
+          const progress = Math.min(Math.round((completedLessons / totalLessons) * 100), 100);
 
           const currentLesson = purchasedCourse.progress?.currentLesson;
           const subtitle = currentLesson
@@ -192,6 +198,40 @@ const DiscussionsPage = () => {
     await createDiscussion(questionTitle, questionDescription);
     setQuestionTitle("");
     setQuestionDescription("");
+    setUploadedImages([]);
+  };
+
+  const insertImagePlaceholder = () => {
+    fileInputRef.current?.click();
+  };
+
+  const handleImageUpload = (e) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onload = (event) => {
+        const imageUrl = event.target?.result;
+        setUploadedImages((prev) => [...prev, { id: Date.now(), url: imageUrl, name: file.name }]);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  const removeImage = (id) => {
+    setUploadedImages((prev) => prev.filter((img) => img.id !== id));
+  };
+
+  const insertCodeBlock = () => {
+    setQuestionDescription(
+      (prev) => prev + "\n```\n// Your code here\n```\n"
+    );
+  };
+
+  const insertMention = () => {
+    const userName = prompt("Enter the user to mention:");
+    if (userName) {
+      setQuestionDescription((prev) => prev + ` @${userName} `);
+    }
   };
 
   const handleReply = async (discussionId) => {
@@ -199,6 +239,25 @@ const DiscussionsPage = () => {
     await addReply(discussionId, replyText);
     setReplyText("");
   };
+
+  // Filter discussions based on active tab
+  const getFilteredDiscussions = () => {
+    if (!discussions) return [];
+
+    switch (activeTab) {
+      case "Unanswered":
+        return discussions.filter((d) => (d.replies?.length || 0) === 0);
+      case "My Doubts":
+        return discussions.filter((d) => d.userId === user?.id);
+      case "Popular":
+        return [...discussions].sort((a, b) => (b.likes?.length || 0) - (a.likes?.length || 0));
+      case "Recent":
+      default:
+        return discussions;
+    }
+  };
+
+  const filteredDiscussions = getFilteredDiscussions();
 
   return (
     <div className="min-h-screen bg-canvas-alt flex flex-col">
@@ -214,9 +273,8 @@ const DiscussionsPage = () => {
 
       {/* Main Content */}
       <div
-        className={`flex-1 flex transition-all duration-300 mt-10 ${
-          sidebarCollapsed ? "lg:ml-20" : "lg:ml-80"
-        }`}
+        className={`flex-1 flex transition-all duration-300 mt-10 ${sidebarCollapsed ? "lg:ml-20" : "lg:ml-80"
+          }`}
       >
         {/* Discussion Content */}
         <main className="flex-1 bg-canvas-alt p-4 sm:p-6">
@@ -241,10 +299,38 @@ const DiscussionsPage = () => {
                   rows={4}
                   className="w-full px-4 py-3 bg-input border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent resize-none text-main placeholder-muted"
                 />
+                {uploadedImages.length > 0 && (
+                  <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+                    {uploadedImages.map((img) => (
+                      <div key={img.id} className="relative group">
+                        <img
+                          src={img.url}
+                          alt={img.name}
+                          className="w-full h-24 object-cover rounded-lg border border-border"
+                        />
+                        <button
+                          type="button"
+                          onClick={() => removeImage(img.id)}
+                          className="absolute top-1 right-1 bg-red-500 text-white rounded-full w-6 h-6 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity text-sm font-bold"
+                        >
+                          ✕
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                )}
+                <input
+                  ref={fileInputRef}
+                  type="file"
+                  accept="image/*"
+                  onChange={handleImageUpload}
+                  className="hidden"
+                />
                 <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between space-y-3 sm:space-y-0">
                   <div className="flex items-center space-x-2 sm:space-x-4">
                     <button
                       type="button"
+                      onClick={insertImagePlaceholder}
                       className="flex items-center space-x-1 sm:space-x-2 text-muted hover:text-main"
                     >
                       <ImageIcon className="w-4 h-4" />
@@ -252,6 +338,7 @@ const DiscussionsPage = () => {
                     </button>
                     <button
                       type="button"
+                      onClick={insertCodeBlock}
                       className="flex items-center space-x-1 sm:space-x-2 text-muted hover:text-main"
                     >
                       <Code className="w-4 h-4" />
@@ -259,6 +346,7 @@ const DiscussionsPage = () => {
                     </button>
                     <button
                       type="button"
+                      onClick={insertMention}
                       className="flex items-center space-x-1 sm:space-x-2 text-muted hover:text-main"
                     >
                       <AtSign className="w-4 h-4" />
@@ -282,11 +370,10 @@ const DiscussionsPage = () => {
                   <button
                     key={tab}
                     onClick={() => setActiveTab(tab)}
-                    className={`flex-1 px-4 py-2 text-sm font-medium rounded-lg transition-colors ${
-                      activeTab === tab
-                        ? "bg-gradient-to-r from-orange-500 to-teal-500 text-white"
-                        : "text-muted hover:text-main hover:bg-canvas-alt"
-                    }`}
+                    className={`flex-1 px-4 py-2 text-sm font-medium rounded-lg transition-colors ${activeTab === tab
+                      ? "bg-gradient-to-r from-orange-500 to-teal-500 text-white"
+                      : "text-muted hover:text-main hover:bg-canvas-alt"
+                      }`}
                   >
                     {tab}
                   </button>
@@ -300,34 +387,39 @@ const DiscussionsPage = () => {
                 <div className="text-center py-8">Loading discussions...</div>
               ) : error ? (
                 <div className="text-center py-8 text-red-500">{error}</div>
-              ) : discussions.length === 0 ? (
+              ) : filteredDiscussions.length === 0 ? (
                 <div className="text-center py-8 text-muted">
-                  No discussions yet. Be the first to ask a question!
+                  {activeTab === "Unanswered" && "No unanswered discussions yet."}
+                  {activeTab === "My Doubts" && "You haven't asked any questions yet."}
+                  {activeTab === "Popular" && "No popular discussions yet."}
+                  {activeTab === "Recent" && "No discussions yet. Be the first to ask a question!"}
                 </div>
               ) : (
-                discussions.map((discussion) => (
+                filteredDiscussions.map((discussion, dIndex) => (
                   <div
-                    key={discussion._id}
+                    key={discussion.id || dIndex}
                     className="bg-card rounded-xl border border-border p-4 sm:p-6 shadow-sm"
                   >
                     {/* Discussion Header */}
                     <div className="flex items-start space-x-3 sm:space-x-4 mb-4">
                       <img
                         src="/ui/avatar-4.png"
-                        alt={discussion.user.name}
+                        alt={discussion.user?.name || "User"}
                         className="w-8 h-8 sm:w-10 sm:h-10 rounded-full flex-shrink-0"
                       />
                       <div className="flex-1 min-w-0">
                         <div className="flex flex-col sm:flex-row sm:items-center space-y-1 sm:space-y-0 sm:space-x-2 mb-1">
                           <span className="font-medium text-main">
-                            {discussion.user.name}
+                            {discussion.user?.name || "Unknown"}
                           </span>
                           <div className="flex items-center space-x-2">
                             <span className="px-2 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
                               Beginner
                             </span>
                             <span className="text-sm text-muted">
-                              {new Date(discussion.createdAt).toLocaleString()}
+                              {discussion.createdAt
+                                ? new Date(discussion.createdAt).toLocaleString()
+                                : ""}
                             </span>
                           </div>
                         </div>
@@ -341,13 +433,13 @@ const DiscussionsPage = () => {
                           <button className="flex items-center space-x-2 text-muted hover:text-red-500">
                             <Heart className="w-4 h-4" />
                             <span className="text-sm">
-                              {discussion.likes.length}
+                              {discussion.likes?.length || 0}
                             </span>
                           </button>
                           <button className="flex items-center space-x-2 text-muted hover:text-blue-500">
                             <Reply className="w-4 h-4" />
                             <span className="text-sm">
-                              {discussion.replies.length} replies
+                              {discussion.replies?.length || 0} replies
                             </span>
                           </button>
                           <button className="flex items-center space-x-2 text-muted hover:text-yellow-500">
@@ -381,26 +473,28 @@ const DiscussionsPage = () => {
                     {discussion.replies &&
                       discussion.replies.map((reply, index) => (
                         <div
-                          key={index}
+                          key={reply.id || `${discussion.id || dIndex}-reply-${index}`}
                           className="ml-4 sm:ml-8 border-l-2 border-border pl-4 sm:pl-6 mb-4"
                         >
                           <div className="flex items-start space-x-3">
                             <img
                               src="/ui/avatar-4.png"
-                              alt={reply.user.name}
+                              alt={reply.user?.name || "User"}
                               className="w-6 h-6 sm:w-8 sm:h-8 rounded-full flex-shrink-0"
                             />
                             <div className="flex-1 min-w-0">
                               <div className="flex flex-col sm:flex-row sm:items-center space-y-1 sm:space-y-0 sm:space-x-2 mb-1">
                                 <span className="font-medium text-main">
-                                  {reply.user.name}
+                                  {reply.user?.name || "Unknown"}
                                 </span>
                                 <div className="flex items-center space-x-2">
                                   <span className="px-2 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
                                     Beginner
                                   </span>
                                   <span className="text-sm text-muted">
-                                    {new Date(reply.createdAt).toLocaleString()}
+                                    {reply.createdAt
+                                      ? new Date(reply.createdAt).toLocaleString()
+                                      : ""}
                                   </span>
                                 </div>
                               </div>
@@ -409,7 +503,7 @@ const DiscussionsPage = () => {
                                 <button className="flex items-center space-x-1 text-muted hover:text-red-500">
                                   <Heart className="w-3 h-3" />
                                   <span className="text-xs">
-                                    {reply.likes.length}
+                                    {reply.likes?.length || 0}
                                   </span>
                                 </button>
                                 <button className="text-xs text-muted hover:text-blue-500">
@@ -438,7 +532,7 @@ const DiscussionsPage = () => {
                         />
                         <div className="flex justify-end mt-2">
                           <button
-                            onClick={() => handleReply(discussion._id)}
+                            onClick={() => handleReply(discussion.id)}
                             className="px-4 py-2 bg-gradient-to-r from-indigo-500 to-purple-600 text-white text-sm font-medium rounded-lg hover:opacity-90 transition-opacity"
                           >
                             Reply
@@ -460,11 +554,10 @@ const DiscussionsPage = () => {
             {myCourses.map((course, index) => (
               <div
                 key={index}
-                className={`rounded-xl p-4 border shadow-sm ${
-                  course.isActive
-                    ? "bg-teal-50 dark:bg-teal-900/20 border-teal-200 dark:border-teal-800"
-                    : "bg-card border-border"
-                }`}
+                className={`rounded-xl p-4 border shadow-sm ${course.isActive
+                  ? "bg-teal-50 dark:bg-teal-900/20 border-teal-200 dark:border-teal-800"
+                  : "bg-card border-border"
+                  }`}
               >
                 <div className="flex items-center space-x-3">
                   <img
