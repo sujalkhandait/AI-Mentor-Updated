@@ -1,9 +1,71 @@
 @import url("https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap");
 @import "tailwindcss";
+
+@custom-variant dark (&:where(.dark, .dark *));
+
+:root {
+  /* Light Mode */
+  --color-canvas: #ffffff;
+  /* Page background */
+  --color-canvas-alt: #f9fafb;
+  /* Alternative background (gray-50) */
+  --color-card: #ffffff;
+  /* Component background */
+  --color-text-main: #111827;
+  /* Primary text (gray-900) */
+  --color-text-muted: #6b7280;
+  /* Secondary text (gray-500) */
+  --color-border: #e5e7eb;
+  /* Borders (gray-200) */
+  --color-input-bg: #f9fafb;
+  /* Input background (gray-50) */
+  --color-primary: #00BEA5;
+  /* Primary accent color */
+  --color-transcript-bg: var(--color-blue-50);
+}
+
+.dark {
+  /* Dark Mode - Carbon/Graphite Palette */
+  --color-canvas: #18181b;
+  /* Zinc-900 - Deep Matte Grey for Background */
+  --color-canvas-alt: rgb(26,26,26);
+  /* Same as canvas for unified background */
+  --color-card: #27272a;
+  /* Zinc-800 - Lighter Grey for Cards/Sidebar to pop */
+  --color-text-main: #ffffff;
+  /* White text for crisp contrast */
+  --color-text-muted: #a1a1aa;
+  /* Zinc-400 - Soft gray for secondary text */
+  --color-border: #3f3f46;
+  /* Zinc-700 - Subtle borders */
+  --color-input-bg: #3f3f46;
+  /* Zinc-700 - Distinct input background */
+  --color-transcript-bg: #162456;
+
+}
+
+@theme {
+  --color-canvas: var(--color-canvas);
+  --color-canvas-alt: var(--color-canvas-alt);
+  --color-card: var(--color-card);
+  --color-main: var(--color-text-main);
+  --color-muted: var(--color-text-muted);
+  --color-border: var(--color-border);
+  --color-input: var(--color-input-bg);
+  --color-primary: var(--color-primary);
+  --color-transcript-bg: var(--color-transcript-bg);
+}
+
 body {
   font-family: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto",
     "Oxygen", "Ubuntu", "Cantarell", "Fira Sans", "Droid Sans", "Helvetica Neue",
     sans-serif;
+  background-color: var(--color-canvas);
+  color: var(--color-text-main);
+}
+
+button{
+  cursor: pointer;
 }
 
 .line-clamp-2 {
@@ -51,6 +113,7 @@ body {
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
 }
+
 .btn-gradient {
   background: linear-gradient(135deg, #2186df, #02ffbb);
   border: none;
@@ -64,117 +127,12 @@ body {
   transform: translateY(-1px);
   box-shadow: 0 6px 18px rgba(79, 172, 254, 0.4);
 }
+
 .password-input {
-  font-size: 2rem; /* bigger bullets */
-  letter-spacing: 0.35rem; /* space between bullets */
-  font-weight: 900; /* bolder bullets */
-}
-
-/* =========================
-   GLOBAL DARK THEME
-========================= */
-
-.dark body {
-  background-color: #0f172a;
-  color: #e5e7eb;
-}
-
-/* Card (Auth Card) */
-.dark .card {
-  background-color: #020617;
-  color: #e5e7eb;
-}
-
-/* Text */
-.dark .text-muted {
-  color: #94a3b8 !important;
-}
-
-/* Inputs */
-.dark .form-control {
-  background-color: #020617;
-  color: #e5e7eb;
-  border-color: #334155;
-}
-
-.dark .form-control::placeholder {
-  color: #94a3b8;
-}
-
-/* Focus */
-.dark .form-control:focus {
-  background-color: #020617;
-  color: #e5e7eb;
-  border-color: #6366f1;
-  box-shadow: none;
-}
-
-/* Buttons (optional polish) */
-.dark .btn {
-  color: #e5e7eb;
-}
-
-/* Auth layout background */
-.dark .container-fluid {
-  background-color: #020617;
-}
-
-/* =========================
-   DASHBOARD DARK MODE
-========================= */
-
-.dark .navbar {
-  background-color: #020617 !important;
-  color: #e5e7eb;
-}
-
-.dark .navbar .nav-link,
-.dark .navbar-brand {
-  color: #e5e7eb !important;
-}
-
-.dark .card {
-  background-color: #020617;
-  color: #e5e7eb;
-}
-
-.dark .table {
-  color: #e5e7eb;
-}
-
-.dark .table thead {
-  background-color: #020617;
-}
-
-.dark .table tbody tr {
-  border-color: #334155;
-}
-
-.dark .list-group-item {
-  background-color: #020617;
-  color: #e5e7eb;
-  border-color: #334155;
-}
-
-.dark .dropdown-menu {
-  background-color: #020617;
-  color: #e5e7eb;
-}
-
-.dark .dropdown-item {
-  color: #e5e7eb;
-}
-
-.dark .dropdown-item:hover {
-  background-color: #1e293b;
-}
-
-.dark .modal-content {
-  background-color: #020617;
-  color: #e5e7eb;
-}
-
-.dark .btn-outline-secondary {
-  color: #e5e7eb;
-  border-color: #475569;
+  font-size: 2rem;
+  /* bigger bullets */
+  letter-spacing: 0.35rem;
+  /* space between bullets */
+  font-weight: 900;
+  /* bolder bullets */
 }

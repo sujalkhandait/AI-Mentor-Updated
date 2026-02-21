@@ -90,14 +90,21 @@ const CoursesPage = () => {
 
   if (!user) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        Please login to access courses
+      <div className="min-h-screen bg-canvas-alt flex items-center justify-center">
+        <div className="text-center">
+          <h1 className="text-2xl font-bold text-main mb-4">
+            Please Login
+          </h1>
+          <p className="text-muted">
+            You need to be logged in to access the courses page.
+          </p>
+        </div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-[#F8FAFC] flex flex-col">
+    <div className="min-h-screen bg-canvas-alt flex flex-col">
       <Header sidebarOpen={sidebarOpen} setSidebarOpen={setSidebarOpen} />
 
       <Sidebar
@@ -117,22 +124,22 @@ const CoursesPage = () => {
           <div className="max-w-7xl mx-auto space-y-10">
             {/* HEADER */}
             <div>
-              <h1 className="text-3xl font-bold text-slate-900">
+              <h1 className="text-3xl font-bold text-main">
                 Learning Hub
               </h1>
-              <p className="text-slate-500 mt-1">
+              <p className="text-muted mt-1">
                 Discover and continue your learning journey
               </p>
             </div>
 
-            {/* TABS */}
-            <div className="bg-white rounded-xl p-2 inline-flex border">
+            {/* Tabs */}
+            <div className="bg-card rounded-xl p-2 inline-flex border border-border shadow-sm">
               <button
                 onClick={() => setActiveTab("my-courses")}
                 className={`px-6 py-2 rounded-lg font-semibold ${
                   activeTab === "my-courses"
-                    ? "bg-[#2DD4BF] text-white"
-                    : "text-slate-500"
+                    ? "bg-[#2DD4BF] text-white shadow"
+                    : "text-muted"
                 }`}
               >
                 My Courses
@@ -141,8 +148,8 @@ const CoursesPage = () => {
                 onClick={() => setActiveTab("explore")}
                 className={`px-6 py-2 rounded-lg font-semibold ${
                   activeTab === "explore"
-                    ? "bg-[#2DD4BF] text-white"
-                    : "text-slate-500"
+                    ? "bg-[#2DD4BF] text-white shadow"
+                    : "text-muted"
                 }`}
               >
                 Explore Courses
@@ -161,7 +168,7 @@ const CoursesPage = () => {
                 {myCourses.map((course) => (
                   <div
                     key={course.id}
-                    className="bg-white rounded-3xl border border-slate-100 shadow-sm overflow-hidden"
+                    className="bg-card rounded-3xl border border-border overflow-hidden shadow-sm"
                   >
                     <img
                       src={course.image}
@@ -170,7 +177,7 @@ const CoursesPage = () => {
                     />
 
                     <div className="p-6 space-y-4">
-                      <h3 className="font-semibold text-slate-900">
+                      <h3 className="text-lg font-semibold text-main">
                         {course.title}
                       </h3>
 
@@ -198,7 +205,7 @@ const CoursesPage = () => {
                   .map((course) => (
                     <div
                       key={course.id}
-                      className="bg-white rounded-2xl border shadow-sm overflow-hidden"
+                      className="bg-card rounded-3xl border border-border overflow-hidden shadow-sm"
                     >
                       <div className="relative h-40">
                         <img
@@ -217,14 +224,14 @@ const CoursesPage = () => {
                           {course.title}
                         </h3>
 
-                        <p className="text-xs text-slate-400">
-                          {course.lessons} • {course.level}
-                        </p>
+                      <p className="text-xs text-muted">
+                        {course.lessons} lessons • {course.level}
+                      </p>
 
                         <div className="flex justify-between items-center">
                           <div>
                             <span className="line-through text-sm text-slate-400 mr-2">
-                              ₹{course.price}
+                              {course.price}
                             </span>
                             <span className="font-bold text-green-600">₹0</span>
                           </div>
@@ -273,7 +280,7 @@ const CoursesPage = () => {
 
             <div className="flex justify-between items-center mt-4">
               <span className="line-through text-slate-400">
-                ₹{selectedCourse.price}
+                {selectedCourse.price}
               </span>
               <span className="text-lg font-bold text-green-600">₹0</span>
             </div>

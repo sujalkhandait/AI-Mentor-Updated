@@ -1,5 +1,6 @@
 import { useState, useRef, useEffect } from "react";
 import Header from "../components/Header";
+import Sidebar from "../components/Sidebar";
 import { useNavigate, useParams } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import { getAIVideo } from "../service/aiService";
@@ -8,19 +9,27 @@ import AITranscript from "../components/video/AITranscript";
 
 import {
   ChevronLeft,
-  Pause,
-  Play,
-  Volume2,
-  VolumeX,
-  Maximize,
-  Minimize,
   ChevronRight,
   ChevronDown,
   Check,
   Circle,
   FileText,
-  CloudCog,
+  Search,
+  Home,
+  BookOpen,
+  MessageSquare,
+  BarChart3,
+  Settings,
+  Eye,
+  User,
+  X,
+  Sparkles,
 } from "lucide-react";
+
+// Sanitize filename to match backend logic: remove [\\/:*?"<>|], replace spaces with _
+function sanitizeFilename(name) {
+  return name.replace(/[\\/:*?"<>|]/g, "").replace(/\s+/g, "_");
+}
 
 const getYouTubeVideoId = (url) => {
   const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|&v=)([^#&?]*).*/;
@@ -29,14 +38,21 @@ const getYouTubeVideoId = (url) => {
 };
 
 export default function Learning() {
+
+
+  const [playOriginalCelebrityVideo, setPlayOriginalCelebrityVideo] =
+    useState(false);
   const navigate = useNavigate();
   const { id: courseId } = useParams();
   const { user, updateUser } = useAuth();
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [learningData, setLearningData] = useState(null);
-  const [expandedModule, setExpandedModule] = useState("module-1");
+  const [expandedModule, setExpandedModule] = useState(null);
   const [searchQuery, setSearchQuery] = useState("");
   const [celebritySearch, setCelebritySearch] = useState("");
+  const [activeTab, setActiveTab] = useState("transcript");
+  const [isCelebrityModalOpen, setIsCelebrityModalOpen] = useState(false);
 
   // Captions state
   const [captions, setCaptions] = useState([]);
@@ -52,10 +68,6 @@ export default function Learning() {
 
   const [selectedCelebrity, setSelectedCelebrity] = useState(null);
 
-  // When user requested single-word subtitles for the Reactjs paragraph,
-  // we'll split into words and compute word-by-word cues when video duration is known.
-  // const Reactjs_PARAGRAPH = `Reactjs is a high-level, object-oriented programming language that was originally developed by Sun Microsystems in 1995 and is now owned by Oracle Corporation. It is designed to be platform-independent, meaning that Reactjs code can run on any device that has a Reactjs Virtual Machine (JVM), making it highly versatile for developing cross-platform applications. Reactjs emphasizes object-oriented principles, such as encapsulation, inheritance and polymorphism, which allow developers to create modular, reusable and maintainable code. It has a strong memory management system, including automatic garbage collection, which reduces the likelihood of memory leaks.`;
-
   const [isPlaying, setIsPlaying] = useState(false);
   const [volume, setVolume] = useState(1);
   const [isMuted, setIsMuted] = useState(false);
@@ -67,11 +79,71 @@ export default function Learning() {
   const [aiVideoUrl, setAiVideoUrl] = useState(null);
   const [aiTranscript, setAiTranscript] = useState(null);
   const [isAIVideoLoading, setIsAIVideoLoading] = useState(false);
+  const [generatedTextContent, setGeneratedTextContent] = useState("");
 
   const videoRef = useRef(null);
   const playerContainerRef = useRef(null);
+  const transcriptContainerRef = useRef(null);
+  const activeCaptionRef = useRef(null);
+  const modalRef = useRef(null);
+  const lastLessonIdRef = useRef(null);
+  const lastCelebrityRef = useRef(null);
+  const hasRestoredProgressRef = useRef(false);
 
+  // Auto-scroll transcript to keep active caption visible
+  useEffect(() => {
+    if (activeCaptionRef.current && transcriptContainerRef.current) {
+      const container = transcriptContainerRef.current;
+      const activeElement = activeCaptionRef.current;
 
+      const containerRect = container.getBoundingClientRect();
+      const elementRect = activeElement.getBoundingClientRect();
+
+      const elementTopRelative = elementRect.top - containerRect.top + container.scrollTop;
+      const targetScrollTop = elementTopRelative - container.clientHeight / 2 + activeElement.clientHeight / 2;
+
+      const containerTop = container.scrollTop;
+      const containerBottom = containerTop + container.clientHeight;
+      const elementTop = elementRect.top - containerRect.top + container.scrollTop;
+      const elementBottom = elementTop + activeElement.clientHeight;
+
+      // Scroll if element is not fully visible
+      if (elementTop < containerTop || elementBottom > containerBottom) {
+        container.scrollTo({
+          top: Math.max(0, targetScrollTop),
+          behavior: 'smooth',
+        });
+      }
+    }
+  }, [currentTime]);
+
+  // Close modal when clicking outside
+  useEffect(() => {
+    function handleClickOutside(event) {
+      if (modalRef.current && !modalRef.current.contains(event.target)) {
+        setIsCelebrityModalOpen(false);
+      }
+    }
+
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, []);
+
+  // Close modal on escape key
+  useEffect(() => {
+    function handleEscapeKey(event) {
+      if (event.key === "Escape") {
+        setIsCelebrityModalOpen(false);
+      }
+    }
+
+    document.addEventListener("keydown", handleEscapeKey);
+    return () => {
+      document.removeEventListener("keydown", handleEscapeKey);
+    };
+  }, []);
 
   useEffect(() => {
     // Check if user has purchased this course
@@ -89,10 +161,10 @@ export default function Learning() {
             Authorization: `Bearer ${token}`,
           },
         });
-
         if (response.ok) {
           const courseData = await response.json();
-          
+          setLearningData(courseData);
+          // Load user's progress for this course
           // Hydrate the currentLesson: find its full details in the modules list
           // This ensures we get the 'type' property even if the initial object is partial
           const findFullLesson = (id) => {
@@ -109,7 +181,7 @@ export default function Learning() {
 
           if (userProgress?.currentLesson?.lessonId) {
             initialLesson = findFullLesson(userProgress.currentLesson.lessonId);
-          } 
+          }
           
           // If no progress or lesson not found, fallback to the course's default currentLesson 
           // or the very first lesson of the first module
@@ -125,203 +197,131 @@ export default function Learning() {
           setLearningData(courseData);
 
           if (userProgress) {
-            setExpandedModule(userProgress.currentLesson?.moduleTitle || "module-1");
+            // Do NOT setExpandedModule here; dropdown should be closed by default
+            // Set current lesson based on progress
+            const currentLesson = userProgress.currentLesson;
+            if (currentLesson && !hasRestoredProgressRef.current) {
+              // Find and set the current lesson
+              const lesson = courseData.modules
+                .flatMap((module) => module.lessons)
+                .find((l) => l.id === currentLesson.lessonId);
+              
+              if (lesson) {
+                hasRestoredProgressRef.current = true;
+                // Restore saved AI content if it exists
+                const savedData = userProgress.lessonData?.[lesson.id];
+                if (savedData?.generatedTextContent) {
+                  setGeneratedTextContent(savedData.generatedTextContent);
+                  if (savedData.aiVideoUrl) {
+                    setAiVideoUrl(savedData.aiVideoUrl);
+                  }
+                }
+
+                setLearningData((prev) => ({
+                  ...prev,
+                  currentLesson: lesson,
+                }));
+              }
+            }
           }
         } else {
-          console.error(
-            "Failed to fetch course learning data, using local fallback"
-          );
-          // Fallback local data so the learning page works without backend
-          const fallback = {
-            course: {
-              id: parseInt(courseId),
-            },
-            modules: [
-              {
-                id: "module-1",
-                title: "Module 1",
-                lessons: [
-                  {
-                    id: 1,
-                    title: "Introduction to React",
-                    type: "video",
-                    duration: "0:10",
-                    youtubeUrl: "https://www.youtube.com/watch?v=Ke90Tje7VS0",
-                    content: {
-                      introduction:
-                        "React is a JavaScript library for building user interfaces. It was developed by Facebook and is now maintained by Meta and the open-source community. React allows developers to create reusable UI components and manage the state of their applications efficiently.",
-                      keyConcepts: [],
-                    },
-                  },
-                  {
-                    id: 2,
-                    title: "React: Advanced Concepts",
-                    type: "video",
-                    duration: "0:12",
-                    youtubeUrl: "https://www.youtube.com/watch?v=4UZrsTqkcW4",
-                    content: {
-                      introduction:
-                        "Advanced React concepts including hooks, context, and performance optimization techniques.",
-                      keyConcepts: [],
-                    },
-                  },
-                ],
-              },
-            ],
-            currentLesson: {
-              id: 1,
-              title: "Introduction to React",
-              type: "video",
-              duration: "0:10",
-              youtubeUrl: "https://www.youtube.com/watch?v=Ke90Tje7VS0",
-              content: {
-                introduction: "React is a JavaScript library for building user interfaces...",
-                keyConcepts: [],
-              },
-            },
-          };
-
-          // If we have user progress, try to set the exact lesson from fallback
-          const userProgress = user?.purchasedCourses?.find(
-            (course) => course.courseId === parseInt(courseId)
-          )?.progress;
-          if (userProgress && userProgress.currentLesson) {
-            const lesson = fallback.modules
-              .flatMap((m) => m.lessons)
-              .find((l) => l.id === userProgress.currentLesson.lessonId);
-            if (lesson) {
-              setLearningData({ ...fallback, currentLesson: lesson });
-            } else {
-              setLearningData(fallback);
-            }
-          } else {
-            setLearningData(fallback);
-          }
+          setLearningData(null);
         }
       } catch (error) {
-        console.error(
-          "Error fetching learning data, using local fallback:",
-          error
-        );
-        // Use the same fallback as above
-        const fallback = {
-          course: {
-            id: parseInt(courseId),
-          },
-          modules: [
-            {
-              id: "module-1",
-              title: "Module 1",
-              lessons: [
-                {
-                  id: 1,
-                  title: "Introduction to React",
-                  type: "video",
-                  duration: "0:10",
-                  youtubeUrl: "https://www.youtube.com/watch?v=Ke90Tje7VS0",
-                  content: {
-                    introduction:
-                      "React is a JavaScript library for building user interfaces. It was developed by Facebook and is now maintained by Meta and the open-source community. React allows developers to create reusable UI components and manage the state of their applications efficiently.",
-                    keyConcepts: [],
-                  },
-                },
-                {
-                  id: 2,
-                  title: "React: Advanced Concepts",
-                  type: "video",
-                  duration: "0:12",
-                  youtubeUrl: "https://www.youtube.com/watch?v=4UZrsTqkcW4",
-                  content: {
-                    introduction:
-                      "Advanced React concepts including hooks, context, and performance optimization techniques.",
-                    keyConcepts: [],
-                  },
-                },
-              ],
-            },
-          ],
-          currentLesson: {
-            id: 1,
-            title: "Introduction to React",
-            type: "video",
-            duration: "0:10",
-            youtubeUrl: "https://www.youtube.com/watch?v=Ke90Tje7VS0",
-            content: {
-              introduction:
-                "React is a JavaScript library for building user interfaces. It was developed by Facebook and is now maintained by Meta and the open-source community. React allows developers to create reusable UI components and manage the state of their applications efficiently.",
-              keyConcepts: [],
-            },
-          },
-        };
-
-        // If we have user progress, try to set the exact lesson from fallback
-        const userProgress = user?.purchasedCourses?.find(
-          (course) => course.courseId === parseInt(courseId)
-        )?.progress;
-        if (userProgress && userProgress.currentLesson) {
-          const lesson = fallback.modules
-            .flatMap((m) => m.lessons)
-            .find((l) => l.id === userProgress.currentLesson.lessonId);
-          if (lesson) {
-            setLearningData({ ...fallback, currentLesson: lesson });
-          } else {
-            setLearningData(fallback);
-          }
-        } else {
-          setLearningData(fallback);
-        }
+        setLearningData(null);
       }
     };
     fetchLearningData();
-  }, [courseId, user, navigate]);
+  }, [courseId]);
 
-  // Load and parse VTT captions (simple parser) when selectedCelebrity changes
+  // Reset restore flag when course changes
+  useEffect(() => {
+    hasRestoredProgressRef.current = false;
+  }, [courseId]);
+
+  // Load and parse VTT captions (simple parser) when selectedCelebrity or generatedTextContent changes
   useEffect(() => {
     const loadCaptions = async () => {
+      console.log("🔍 Loading captions for celebrity:", selectedCelebrity);
       try {
-        const vttPath =
-          (selectedCelebrity &&
-            celebrityVideoMap[selectedCelebrity] &&
-            celebrityVideoMap[selectedCelebrity].vtt) ||
-          "/vdo_subtitles.vtt";
-        const res = await fetch(vttPath);
-        if (!res.ok) {
-          setCaptions([]);
+        const v = videoRef.current;
+        const duration = v?.duration;
+
+        // Prioritize AI-generated text if available
+        if (generatedTextContent && duration) {
+          console.log("🤖 Generating captions from AI text, duration:", duration);
+          const sentences = generatedTextContent
+            .split(/[.!?]+/)
+            .map(s => s.trim())
+            .filter(Boolean);
+
+          const videoDuration = duration;
+          const timePerSentence = videoDuration / sentences.length;
+
+          const generatedCaptions = sentences.map((sentence, index) => ({
+            start: index * timePerSentence,
+            end: (index + 1) * timePerSentence,
+            text: sentence,
+          }));
+
+          console.log(`✅ Generated ${generatedCaptions.length} captions from AI text`);
+          setCaptions(generatedCaptions);
           return;
         }
-        const text = await res.text();
-        const blocks = text.replace(/\r\n/g, "\n").split(/\n\n+/).slice(1); // skip WEBVTT header
-        const cues = blocks
-          .map((block) => {
-            const lines = block
-              .split("\n")
-              .map((l) => l.trim())
+
+        // Fallback to VTT file if AI text not available
+        const vttPath =
+          selectedCelebrity &&
+          celebrityVideoMap[selectedCelebrity] &&
+          celebrityVideoMap[selectedCelebrity].vtt;
+
+        if (vttPath) {
+          console.log("📄 Trying to load VTT from:", vttPath);
+          const res = await fetch(vttPath);
+          if (res.ok) {
+            console.log("✅ VTT file loaded successfully");
+            const text = await res.text();
+            const blocks = text.replace(/\r\n/g, "\n").split(/\n\n+/).slice(1); // skip WEBVTT header
+            const cues = blocks
+              .map((block) => {
+                const lines = block
+                  .split("\n")
+                  .map((l) => l.trim())
+                  .filter(Boolean);
+                if (lines.length < 2) return null;
+                const timeLine = lines[0];
+                const textLines = lines.slice(1).join(" ");
+                const match = timeLine.match(
+                  /(\d{2}:\d{2}:\d{2}\.\d{3})\s*-->\s*(\d{2}:\d{2}:\d{2}\.\d{3})/
+                );
+                if (!match) return null;
+                const toSeconds = (s) => {
+                  const [hh, mm, rest] = s.split(":");
+                  const [ss, ms] = rest.split(".");
+                  return (
+                    parseInt(hh) * 3600 +
+                    parseInt(mm) * 60 +
+                    parseInt(ss) +
+                    parseFloat("0." + ms)
+                  );
+                };
+                return {
+                  start: toSeconds(match[1]),
+                  end: toSeconds(match[2]),
+                  text: textLines,
+                };
+              })
               .filter(Boolean);
-            if (lines.length < 2) return null;
-            const timeLine = lines[0];
-            const textLines = lines.slice(1).join(" ");
-            const match = timeLine.match(
-              /(\d{2}:\d{2}:\d{2}\.\d{3})\s*-->\s*(\d{2}:\d{2}:\d{2}\.\d{3})/
-            );
-            if (!match) return null;
-            const toSeconds = (s) => {
-              const [hh, mm, rest] = s.split(":");
-              const [ss, ms] = rest.split(".");
-              return (
-                parseInt(hh) * 3600 +
-                parseInt(mm) * 60 +
-                parseInt(ss) +
-                parseFloat("0." + ms)
-              );
-            };
-            return {
-              start: toSeconds(match[1]),
-              end: toSeconds(match[2]),
-              text: textLines,
-            };
-          })
-          .filter(Boolean);
-        setCaptions(cues);
+            console.log(`✅ Parsed ${cues.length} captions from VTT`);
+            setCaptions(cues);
+            return;
+          } else {
+            console.log("⚠️ VTT file not found");
+          }
+        }
+
+        console.log("❌ No captions available - no AI text and no VTT");
+        setCaptions([]);
       } catch (err) {
         console.warn("Could not load captions:", err);
         setCaptions([]);
@@ -329,17 +329,41 @@ export default function Learning() {
     };
 
     loadCaptions();
-  }, [selectedCelebrity]);
+  }, [selectedCelebrity, generatedTextContent, duration]);
 
 // Ensure when currentLesson changes we load its video into the player
 useEffect(() => {
   const v = videoRef.current;
   if (!v || !learningData?.currentLesson) return;
+  // Prevent redundant calls when user state updates but lesson/celebrity haven't changed
+    const lessonChanged = lastLessonIdRef.current !== learningData.currentLesson.id;
+    const celebrityChanged = lastCelebrityRef.current !== selectedCelebrity;
+
+    if (!lessonChanged && !celebrityChanged && v.src) {
+      return;
+    }
+
+    lastLessonIdRef.current = learningData.currentLesson.id;
+    lastCelebrityRef.current = selectedCelebrity;
 
   const loadVideo = async () => {
+    // Clear existing captions only when changing lesson/celebrity
+      setCaptions([]);
+      setActiveCaption("");
     if (selectedCelebrity) {
-      setIsAIVideoLoading(true);
+      // Check if we already have saved content for this lesson and celebrity
+        const savedData = user?.purchasedCourses
+          ?.find(c => c.courseId === parseInt(courseId))
+          ?.progress?.lessonData?.[learningData.currentLesson.id];
 
+          if (savedData?.generatedTextContent && savedData?.celebrity === selectedCelebrity) {
+            console.log("♻️ Using saved AI content for this lesson");
+            setGeneratedTextContent(savedData.generatedTextContent);
+            setAiVideoUrl(savedData.aiVideoUrl);
+            return;
+          }
+      setIsAIVideoLoading(true);
+      setGeneratedTextContent("");
       try {
         const payload = {
           courseId: parseInt(courseId),
@@ -352,7 +376,8 @@ useEffect(() => {
           if (data && data.videoUrl) {
             // Just use direct URL (no blob, no fetch)
             setAiVideoUrl(data.videoUrl);
-            
+            setGeneratedTextContent(data.textContent || "");
+                        
             // If transcript is available, fetch its content
             if (data.transcriptName) {
               try {
@@ -367,55 +392,62 @@ useEffect(() => {
                 console.error("Error fetching transcript:", trErr);
               }
             }
+            if (v.src !== data.videoUrl) {
+              v.pause();
+              v.src = data.videoUrl;
+              v.load();
+              const p = v.play();
+              if (p && typeof p.then === "function") {
+                p.then(() => setIsPlaying(true)).catch(() => setIsPlaying(false));
+              } else {
+                setIsPlaying(true);
+              }
+            }
 
+            // Save the generated content to the backend
+            saveLessonData(learningData.currentLesson.id, {
+              generatedTextContent: data.textContent || "",
+              aiVideoUrl: data.videoUrl,
+              celebrity: selectedCelebrity
+            });
+          }
+        } catch (error) {
+          console.error("Error generating AI video on lesson change:", error);
+          setGeneratedTextContent("");
+          const src =
+            celebrityVideoMap[selectedCelebrity]?.video ||
+            learningData.currentLesson.videoUrl;
+          if (src && v.src !== src) {
             v.pause();
-            v.src = data.videoUrl;
+            v.src = src;
             v.load();
-
-          const p = v.play();
-          if (p && typeof p.then === "function") {
-            p.then(() => setIsPlaying(true)).catch(() => setIsPlaying(false));
-          } else {
-            setIsPlaying(true);
+            const p = v.play();
+            if (p && typeof p.then === "function") {
+              p.then(() => setIsPlaying(true)).catch(() => setIsPlaying(false));
+            } else {
+              setIsPlaying(true);
+            }
           }
+        } finally {
+          setIsAIVideoLoading(false);
         }
-      } catch (error) {
-        console.error("Error generating AI video:", error);
-
-        const fallbackSrc =
-          celebrityVideoMap[selectedCelebrity]?.video ||
-          learningData.currentLesson.videoUrl;
-
-        if (fallbackSrc) {
-          v.pause();
-          v.src = fallbackSrc;
-          v.load();
-
-          const p = v.play();
-          if (p && typeof p.then === "function") {
-            p.then(() => setIsPlaying(true)).catch(() => setIsPlaying(false));
-          } else {
-            setIsPlaying(true);
-          }
-        }
-      } finally {
+      } else {
         setIsAIVideoLoading(false);
+        setGeneratedTextContent("");
+        const src = learningData.currentLesson.videoUrl;
+        if (src && v.src !== src) {
+          v.pause();
+          v.src = src;
+          v.load();
+          setIsPlaying(false); // Lessons don't autoplay by default unless celebrity is selected
+        }
       }
-    } else {
-      setIsAIVideoLoading(false);
+    };
 
-      const src = learningData.currentLesson.videoUrl;
-      if (src) {
-        v.pause();
-        v.src = src;
-        v.load();
-        setIsPlaying(false);
-      }
-    }
-  };
+    loadVideo();
+  }, [learningData?.currentLesson, selectedCelebrity]);
 
-  loadVideo();
-}, [learningData?.currentLesson, selectedCelebrity]);
+
 
 
   // If selectedCelebrity is Salman Khan and the user wants the Reactjs paragraph
@@ -455,7 +487,14 @@ useEffect(() => {
   const { modules, currentLesson } = learningData || {};
 
   if (!learningData) {
-    return <div>Loading...</div>;
+    return (
+      <div className="min-h-screen bg-canvas-alt flex items-center justify-center">
+        <div className="text-center">
+          <div className="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+          <p className="mt-4 text-muted">Loading...</p>
+        </div>
+      </div>
+    );
   }
 
   // Flatten modules into a single lessons list and compute current index
@@ -463,6 +502,39 @@ useEffect(() => {
   const currentLessonIndex = allLessons.findIndex(
     (lesson) => lesson.id === currentLesson?.id
   );
+
+  const saveLessonData = async (lessonId, data) => {
+    try {
+      const token = localStorage.getItem("token");
+      const res = await fetch("/api/users/course-progress", {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({
+          courseId: parseInt(courseId),
+          lessonData: {
+            lessonId,
+            data
+          },
+          currentLesson: {
+            lessonId,
+            moduleTitle: expandedModule || ""
+          }
+        }),
+      });
+      if (res.ok) {
+        const result = await res.json();
+        // Update user context to reflect changes
+        if (updateUser && result.purchasedCourses) {
+          updateUser({ purchasedCourses: result.purchasedCourses });
+        }
+      }
+    } catch (error) {
+      console.error("Error saving lesson data:", error);
+    }
+  };
 
   const completeLesson = async (lessonId) => {
     // Check if lesson is already completed
@@ -480,7 +552,7 @@ useEffect(() => {
 
     try {
       const token = localStorage.getItem("token");
-      await fetch("/api/users/course-progress", {
+      const res = await fetch("/api/users/course-progress", {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",
@@ -489,29 +561,19 @@ useEffect(() => {
         body: JSON.stringify({
           courseId: parseInt(courseId),
           completedLesson: { lessonId },
-        }),
-      });
-    } catch (error) {
-      console.error("Error marking lesson completed:", error);
-    }
-
-    // Also update current lesson pointer
-    try {
-      const token = localStorage.getItem("token");
-      await fetch("/api/users/course-progress", {
-        method: "PUT",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify({
-          courseId: parseInt(courseId),
           currentLesson: {
             lessonId,
             moduleTitle: expandedModule,
           },
         }),
       });
+
+      if (res.ok) {
+        const result = await res.json();
+        if (updateUser && result.purchasedCourses) {
+          updateUser({ purchasedCourses: result.purchasedCourses });
+        }
+      }
     } catch (error) {
       console.error("Error updating progress:", error);
     }
@@ -533,6 +595,10 @@ useEffect(() => {
       handleLessonClick(prevLesson);
     }
   };
+
+  const handleCourseComplete = async () =>{
+    
+  }
 
   const handleNext = async () => {
     if (currentLessonIndex >= allLessons.length - 1) return;
@@ -586,17 +652,26 @@ useEffect(() => {
 
   const handleProgress = () => {
     if (videoRef.current) {
-      const duration = videoRef.current.duration;
-      const currentTime = videoRef.current.currentTime;
-      setDuration(duration);
-      setCurrentTime(currentTime);
-      setProgress((currentTime / duration) * 100);
+      const vidDuration = videoRef.current.duration;
+      const vidCurrentTime = videoRef.current.currentTime;
+
+      // Only update duration if it's a valid number and has changed
+      if (isFinite(vidDuration) && vidDuration > 0 && Math.abs(duration - vidDuration) > 0.1) {
+        setDuration(vidDuration);
+      }
+
+      setCurrentTime(vidCurrentTime);
+      setProgress(vidDuration > 0 ? (vidCurrentTime / vidDuration) * 100 : 0);
+
       // update visible caption overlay
       if (captions.length > 0) {
         const cue = captions.find(
-          (c) => currentTime >= c.start && currentTime <= c.end
+          (c) => vidCurrentTime >= c.start && vidCurrentTime <= c.end
         );
-        setActiveCaption(cue ? cue.text : "");
+        const targetText = cue ? cue.text : "";
+        if (activeCaption !== targetText) {
+          setActiveCaption(targetText);
+        }
       }
     }
   };
@@ -624,107 +699,324 @@ useEffect(() => {
   };
 
   const formatTime = (time) => {
+    if (!time || !isFinite(time)) return "0:00";
     const minutes = Math.floor(time / 60);
     const seconds = Math.floor(time % 60);
     return `${minutes}:${seconds.toString().padStart(2, "0")}`;
   };
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-canvas-alt flex flex-col">
       <Header sidebarOpen={sidebarOpen} setSidebarOpen={setSidebarOpen} />
 
-      {/* Sidebar */}
-      <div className="fixed left-0 top-16 bottom-0 w-80 text-main bg-card border-r border-border overflow-y-auto z-10">
-        <div className="p-6 h-full overflow-y-auto">
-          <div className="flex items-center justify-between mb-6">
-            <h2 className="text-xl font-bold text-main">
-              {learningData?.course?.title || learningData?.title || "Course"}
-            </h2>
+      <Sidebar
+        sidebarOpen={sidebarOpen}
+        setSidebarOpen={setSidebarOpen}
+        sidebarCollapsed={sidebarCollapsed}
+        setSidebarCollapsed={setSidebarCollapsed}
+        activePage="courses"
+      />
+
+      {/* Main Content */}
+      <div
+        className={`flex-1 flex flex-col overflow-hidden transition-all duration-300 ${sidebarCollapsed ? "lg:ml-20" : "lg:ml-80"
+          }`}
+      >
+        {/* Breadcrumb */}
+        <div className="bg-card border-b border-border px-6 py-3 mt-20 grid grid-flow-col-dense">
+          <div className="flex items-center gap-2 text-sm text-muted mt-2">
+            <button
+              onClick={() => navigate("/")}
+              className="hover:text-blue-600 transition-colors"
+            >
+              <Home className="w-4 h-4" />
+            </button>
+            <ChevronRight className="w-4 h-4 text-muted" />
             <button
               onClick={() => navigate("/courses")}
-              className="text-muted hover:text-main"
+              className="hover:text-blue-600 transition-colors"
             >
-              <ChevronLeft className="w-5 h-5" />
+              My Course
             </button>
+            <ChevronRight className="w-4 h-4 text-muted" />
+            {/* Show current module name instead of course title */}
+            <button
+              className="hover:text-blue-600 transition-colors"
+              disabled
+              style={{ cursor: 'default', opacity: 1, fontWeight: 600 }}
+            >
+              {(() => {
+                if (modules && currentLesson) {
+                  const mod = modules.find(m => m.lessons?.some(l => l.id === currentLesson.id));
+                  return mod?.title || 'Module';
+                }
+                return 'Module';
+              })()}
+            </button>
+            <ChevronRight className="w-4 h-4 text-muted" />
+            <span className="text-main font-medium">
+              {currentLesson?.title}
+            </span>
           </div>
 
-          <div className="mb-4">
-            <h3 className="text-sm font-semibold text-main mb-3">
-              Celebrities
-            </h3>
-            <div className="mb-3">
-              <input
-                type="search"
-                placeholder="Search celebrities..."
-                value={celebritySearch}
-                onChange={(e) => setCelebritySearch(e.target.value)}
-                className="w-full px-3 py-2 border border-border bg-input rounded-lg focus:outline-none focus:ring-2 focus:ring-primary text-main placeholder-muted"
-              />
-            </div>
-            <div className="flex flex-col gap-2">
-              {celebrities
-                .filter((c) =>
-                  c.toLowerCase().includes(celebritySearch.trim().toLowerCase())
-                )
-                .map((c) => (
-                  <button
-                    key={c}
-                    onClick={() => {
-                      if (selectedCelebrity === c) {
-                        // Toggle off if same celebrity clicked again
-                        setSelectedCelebrity(null);
-                        setAiVideoUrl(null);
-                        setAiTranscript(null);
+
+        </div>
+
+        {/* Content Selector with AI Button */}
+        <div className="bg-card border-b border-border px-6 py-3">
+          <div className="flex items-center justify-between">
+            {/* Custom Dropdown for Modules and Lessons */}
+            <div className="relative min-w-95 max-w-125 flex items-center">
+              <span className="text-main font-semibold mr-3">Contents</span>
+              <div className="relative w-full">
+                <div
+                  className="bg-canvas-alt border border-border rounded-2xl px-6 py-2 pr-12 text-base text-main cursor-pointer flex items-center justify-between select-none min-h-12"
+                  tabIndex={0}
+                  onClick={() => {
+                    if (expandedModule) {
+                      setExpandedModule(null);
+                    } else {
+                      // Find the module containing the current lesson
+                      if (modules && currentLesson) {
+                        const mod = modules.find(m => m.lessons?.some(l => l.id === currentLesson.id));
+                        setExpandedModule(mod?.id || null);
                       } else {
-                        setAiTranscript(null);
-                        setSelectedCelebrity(c);
+                        setExpandedModule(null);
                       }
-                    }}
-                    className={`w-full text-left px-4 py-3 rounded-lg border border-border ${
-                      selectedCelebrity === c
-                        ? "bg-primary text-white"
-                        : "bg-input text-main"
-                    }`}
-                  >
-                    {c}
-                  </button>
-                ))}
+                    }
+                  }}
+                  style={{ fontWeight: 600 }}
+                >
+                  {(() => {
+                    // Show current lesson title or placeholder
+                    if (currentLesson) {
+                      return <span>{currentLesson.title}</span>;
+                    }
+                    return <span className="text-muted">Select Lesson</span>;
+                  })()}
+                  <ChevronDown className="w-5 h-5 text-muted ml-2" />
+                </div>
+                {/* Dropdown Panel */}
+                <div className="absolute left-0 mt-2 w-full bg-white dark:bg-gray-900 border border-border rounded-2xl shadow-xl z-50 max-h-96 overflow-y-auto min-w-95" style={{ display: expandedModule ? 'block' : 'none' }}>
+                  {modules && modules.map((module, mIdx) => (
+                    <div key={module.id || `module-${mIdx + 1}`}
+                      className="border-b border-border last:border-b-0"
+                    >
+                      <button
+                        className="w-full flex items-center justify-between px-5 py-2 text-left hover:bg-blue-50 hover:text-white dark:hover:bg-blue-950 font-semibold text-main focus:outline-none text-base"
+                        onClick={e => {
+                          e.stopPropagation();
+                          toggleModule(module.id || `module-${mIdx + 1}`);
+                        }}
+                      >
+                        <span>{module.title || `Module ${mIdx + 1}`}</span>
+                        <ChevronDown className={`w-4 h-4 ml-2 transition-transform ${expandedModule === (module.id || `module-${mIdx + 1}`) ? 'rotate-180' : ''}`} />
+                      </button>
+                      {/* Lessons List */}
+                      <div className={`transition-all ${expandedModule === (module.id || `module-${mIdx + 1}`) ? 'max-h-96' : 'max-h-0 overflow-hidden'}`}>
+                        {module.lessons && module.lessons.map((lesson) => (
+                          <button
+                            key={lesson.id}
+                            className={`w-full text-left px-10 py-2 text-sm flex items-center gap-2 hover:bg-blue-100 hover:text-white dark:hover:bg-blue-900 transition-colors ${currentLesson?.id === lesson.id ? 'bg-blue-600 text-white font-semibold' : 'text-main'}`}
+                            onClick={e => {
+                              e.stopPropagation();
+                              handleLessonClick(lesson);
+                              setExpandedModule(null);
+                            }}
+                          >
+                            {lesson.type === 'document' ? <FileText className="w-4 h-4" /> : <Circle className="w-3 h-3" />}
+                            <span>{lesson.title}</span>
+                            {currentLesson?.id === lesson.id && <Check className="w-4 h-4 ml-auto" />}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+
+            {/* Course Progress Bar */}
+            <div className="w-full">
+              {(() => {
+                const completedCount =
+                  user?.purchasedCourses?.find(
+                    (course) => course.courseId === parseInt(courseId)
+                  )?.progress?.completedLessons?.length || 0;
+                const totalCount = allLessons.length;
+                const progressPercent = Math.min(
+                  (completedCount / totalCount) * 100,
+                  100
+                );
+                console.log("Progress calculation:", {
+                  completedCount,
+                  totalCount,
+                  progressPercent,
+                });
+                return (
+                  <div className="w-2/4 mt-0 mb-0 ml-auto mr-auto">
+                    <div className="w-full bg-border rounded-full h-2 ">
+                      <div
+                        className="bg-primary h-2 rounded-full"
+                        style={{ width: `${progressPercent}%` }}
+                      ></div>
+                    </div>
+                    <p className="text-sm text-muted mt-2">
+                      {Math.round(progressPercent)}% Complete
+                    </p>
+                  </div>
+                );
+              })()}
+            </div>
+
+            <div className="flex items-center gap-3">
+              {/* AI Celebrity Button */}
+              <button
+                onClick={() => setIsCelebrityModalOpen(true)}
+                className="flex items-center gap-2 px-4 py-2 bg-linear-to-r from-purple-600 to-blue-600 text-white rounded-lg hover:from-purple-700 hover:to-blue-700 transition-all shadow-sm hover:shadow-md"
+              >
+                <Sparkles className="w-4 h-4" />
+                <span className="text-sm font-medium">Select AI Voiceover</span>
+                {selectedCelebrity && (
+                  <span className="ml-1 px-1.5 py-0.5 bg-white/20 rounded-full text-xs">
+                    {selectedCelebrity.split(' ')[0]}
+                  </span>
+                )}
+              </button>
+
+
             </div>
           </div>
         </div>
-      </div>
 
-      <div className="ml-80 p-6">
-        <div className="mb-6">
-          {(() => {
-            const completedCount =
-              user?.purchasedCourses?.find(
-                (course) => course.courseId === parseInt(courseId)
-              )?.progress?.completedLessons?.length || 0;
-            const totalCount = allLessons.length;
-            const progressPercent = Math.min(
-              (completedCount / totalCount) * 100,
-              100
-            );
-            return (
-              <>
-                <div className="w-full bg-border rounded-full h-2">
-                  <div
-                    className="bg-primary h-2 rounded-full"
-                    style={{ width: `${progressPercent}%` }}
-                  ></div>
+        {/* AI Celebrity Modal */}
+        {isCelebrityModalOpen && (
+          <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+            <div
+              ref={modalRef}
+              className="bg-white dark:bg-gray-900 rounded-xl shadow-2xl max-w-md w-full max-h-[90vh] overflow-y-auto border border-border"
+            >
+              {/* Modal Header */}
+              <div className="flex items-center justify-between p-6 border-b border-border">
+                <div className="flex items-center gap-2">
+                  <div className="p-2 bg-linear-to-r from-purple-100 to-blue-100 dark:from-purple-950 dark:to-blue-950 rounded-lg">
+                    <Sparkles className="w-5 h-5 text-purple-600 dark:text-purple-400" />
+                  </div>
+                  <div>
+                    <h2 className="text-lg font-semibold text-main">AI Celebrity Voiceover</h2>
+                    <p className="text-xs text-muted mt-0.5">Generate AI voice for this video</p>
+                  </div>
                 </div>
-                <p className="text-sm text-muted mt-2">
-                  {Math.round(progressPercent)}% Complete
-                </p>
-              </>
-            );
-          })()}
-        </div>
+                <button
+                  onClick={() => setIsCelebrityModalOpen(false)}
+                  className="p-2 hover:bg-canvas-alt rounded-lg transition-colors"
+                >
+                  <X className="w-5 h-5 text-muted" />
+                </button>
+              </div>
 
-          {/* Main Content Grid */}
-          <div className="grid grid-cols-1 xl:grid-cols-3 gap-6">
-            {currentLesson?.type === "video" || !currentLesson?.type ? (
+              {/* Modal Body */}
+              <div className="p-6">
+                {/* Search */}
+                <div className="relative mb-4">
+                  <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-muted" />
+                  <input
+                    type="search"
+                    placeholder="Search celebrities..."
+                    value={celebritySearch}
+                    onChange={(e) => setCelebritySearch(e.target.value)}
+                    className="w-full pl-9 pr-4 py-2 bg-canvas-alt border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm text-main placeholder-muted"
+                    autoFocus
+                  />
+                </div>
+
+                {/* Celebrity List */}
+                <div className="space-y-2 max-h-64 overflow-y-auto pr-1">
+                  {celebrities
+                    .filter((c) =>
+                      c.toLowerCase().includes(celebritySearch.trim().toLowerCase())
+                    )
+                    .map((c) => (
+                      <button
+                        key={c}
+                        onClick={() => {
+                          if (selectedCelebrity === c) {
+                            setSelectedCelebrity(null);
+                            setAiVideoUrl(null);
+                          } else {
+                            setSelectedCelebrity(c);
+                          }
+                          setIsCelebrityModalOpen(false);
+                        }}
+                        className={`w-full flex items-center justify-between p-3 rounded-lg transition-all ${selectedCelebrity === c
+                          ? "bg-blue-600 text-white"
+                          : "hover:bg-canvas-alt text-main border border-border"
+                          }`}
+                      >
+                        <div className="flex items-center gap-3">
+                          <div className={`w-8 h-8 rounded-full flex items-center justify-center ${selectedCelebrity === c
+                            ? "bg-white/20"
+                            : "bg-blue-100 dark:bg-blue-900"
+                            }`}>
+                            <User className={`w-4 h-4 ${selectedCelebrity === c
+                              ? "text-white"
+                              : "text-blue-600 dark:text-blue-400"
+                              }`} />
+                          </div>
+                          <span className="font-medium">{c}</span>
+                        </div>
+                        {selectedCelebrity === c && (
+                          <Check className="w-4 h-4" />
+                        )}
+                      </button>
+                    ))}
+                </div>
+
+                {/* Current Selection Info */}
+                {selectedCelebrity && (
+                  <div className="mt-6 p-4 bg-blue-50 dark:bg-blue-950 border border-blue-200 dark:border-blue-800 rounded-lg">
+                    <div className="flex items-start gap-3">
+                      <div className="p-1.5 bg-blue-100 dark:bg-blue-900 rounded-full">
+                        <Check className="w-4 h-4 text-blue-600 dark:text-blue-400" />
+                      </div>
+                      <div>
+                        <p className="text-sm font-medium text-blue-800 dark:text-blue-300">
+                          AI Voiceover Active
+                        </p>
+                        <p className="text-xs text-blue-600 dark:text-blue-400 mt-1">
+                          Currently using <span className="font-semibold">{selectedCelebrity}</span>'s voice for this video
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                )}
+              </div>
+
+              {/* Modal Footer */}
+              <div className="flex justify-end gap-3 p-6 border-t border-border">
+                <button
+                  onClick={() => setIsCelebrityModalOpen(false)}
+                  className="px-4 py-2 text-sm text-muted hover:text-main hover:bg-canvas-alt rounded-lg transition-colors"
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={() => setIsCelebrityModalOpen(false)}
+                  className="px-4 py-2 text-sm bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+                >
+                  Done
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Video and Transcript Grid */}
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-0 min-h-[calc(100vh-180px)]">
+          {/* Video Section - Takes 2 columns */}
+          <div className="lg:col-span-2 bg-canvas-alt p-6 overflow-y-auto">
+            <div className="max-w-2xl mx-auto">
+              {/* Video Player */}
               <VideoPlayer
                 currentLesson={currentLesson}
                 aiVideoUrl={aiVideoUrl}
@@ -734,233 +1026,105 @@ useEffect(() => {
                 playerContainerRef={playerContainerRef}
                 videoRef={videoRef}
                 handleProgress={handleProgress}
-                getYouTubeVideoId={getYouTubeVideoId}
-                isAIVideoLoading={isAIVideoLoading}
+                isPlaying={isPlaying}
+                volume={volume}
+                isMuted={isMuted}
+                progress={progress}
+                isFullscreen={isFullscreen}
+                duration={duration}
+                currentTime={currentTime}
+                togglePlay={togglePlay}
+                handleVolumeChange={handleVolumeChange}
+                toggleMute={toggleMute}
+                handleSeek={handleSeek}
+                toggleFullscreen={toggleFullscreen}
+                formatTime={formatTime}
               />
-            ) : (
-              <div className="xl:col-span-2 bg-white rounded-xl shadow-sm border border-gray-100 p-8">
-                <div className="flex items-center gap-3 mb-6 text-blue-600">
-                  <FileText className="w-6 h-6" />
-                  <span className="font-semibold uppercase tracking-wider text-sm">Document Lesson</span>
-                </div>
-                <h2 className="text-3xl font-bold text-gray-900 mb-6">{currentLesson?.title}</h2>
-                {currentLesson?.content?.introduction && (
-                  <div className="max-w-none">
-                    <p className="text-gray-700 text-lg leading-relaxed">
-                      {currentLesson.content.introduction}
+
+              {/* Navigation Buttons */}
+              <div className="flex justify-between items-center mb-6">
+                <button
+                  onClick={handlePrevious}
+                  disabled={currentLessonIndex <= 0}
+                  className="flex items-center gap-2 px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-blue-600 transition-all hover:shadow-md disabled:hover:shadow-none"
+                >
+                  <ChevronLeft className="w-5 h-5" />
+                  Previous
+                </button>
+                <button
+                  onClick={handleNext}
+                  disabled={
+                    currentLessonIndex >= allLessons.length - 1 || isNavigating
+                  }
+                  className="flex items-center gap-2 px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-blue-600 transition-all hover:shadow-md disabled:hover:shadow-none"
+                >
+                  {isNavigating ? "Loading..." : "Next"}
+                  <ChevronRight className="w-5 h-5" />
+                </button>
+              </div>
+
+              {/* Lesson Content */}
+              <div className="bg-card rounded-lg p-8 shadow-sm border border-border">
+                <h1 className="text-3xl font-semibold text-main mb-6 leading-tight">
+                  <span className="text-blue-600">{currentLesson?.title}</span>
+                </h1>
+                {(generatedTextContent || currentLesson?.content?.introduction) && (
+                  <div className="prose prose-lg max-w-none">
+                    <p className="text-muted leading-relaxed">
+                      {generatedTextContent || currentLesson.content.introduction}
                     </p>
                   </div>
                 )}
-                {currentLesson?.content?.keyConcepts && currentLesson.content.keyConcepts.length > 0 && (
-                  <div className="mt-8">
-                    <h3 className="text-xl font-bold text-gray-900 mb-4">Key Concepts</h3>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                      {currentLesson.content.keyConcepts.map((concept, idx) => (
-                        <div key={idx} className={`p-4 rounded-lg border ${concept.borderColor || 'border-gray-200'} ${concept.bgColor || 'bg-gray-50'}`}>
-                          <h4 className={`font-bold mb-2 ${concept.textColor || 'text-gray-900'}`}>{concept.title}</h4>
-                          <p className={`text-sm ${concept.descriptionColor || 'text-gray-600'}`}>{concept.description}</p>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                )}
-              </div>
-            )}
-
-            {/* Lesson Content */}
-            <div className="xl:col-span-1 space-y-6">
-              <div className="bg-white rounded-lg p-6 shadow-sm">
-                <h3 className="text-lg font-semibold text-gray-900 mb-4">
-                  {currentLesson?.title || "Select a Lesson"}
-                </h3>
-                {/* Only show intro here if it's a video lesson, otherwise it's in the main area */}
-                {(currentLesson?.type === "video" || !currentLesson?.type) && (
-                  <AITranscript 
-                    aiTranscript={aiTranscript} 
-                    selectedCelebrity={selectedCelebrity} 
-                    introduction={currentLesson?.content?.introduction}
-                  />
-                )}
-              </div>
-
-              {/* Custom Controls - Only for Video */}
-              {(currentLesson?.type === "video" || !currentLesson?.type) && (
-                <div className="bg-white rounded-lg p-6 shadow-sm">
-                  <div className="flex items-center justify-between mb-4">
-                    <button
-                      onClick={togglePlay}
-                      className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
-                    >
-                      {isPlaying ? (
-                        <Pause className="w-4 h-4" />
-                      ) : (
-                        <Play className="w-4 h-4" />
-                      )}
-                      {isPlaying ? "Pause" : "Play"}
-                    </button>
-                    <button
-                      onClick={toggleFullscreen}
-                      className="flex items-center gap-2 px-4 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700"
-                    >
-                      {isFullscreen ? (
-                        <Minimize className="w-4 h-4" />
-                      ) : (
-                        <Maximize className="w-4 h-4" />
-                      )}
-                    </button>
-                  </div>
-
-                  {/* Progress Bar */}
-                  <div className="mb-4">
-                    <div
-                      className="w-full bg-gray-200 rounded-full h-2 cursor-pointer"
-                      onClick={handleSeek}
-                    >
-                      <div
-                        className="bg-blue-600 h-2 rounded-full"
-                        style={{ width: `${progress}%` }}
-                      ></div>
-                    </div>
-                    <div className="flex justify-between text-xs text-gray-500 mt-1">
-                      <span>{formatTime(currentTime)}</span>
-                      <span>{formatTime(duration)}</span>
-                    </div>
-                  </div>
-
-                  {/* Volume Control */}
-                  <div className="flex items-center gap-2">
-                    <button onClick={toggleMute} className="text-gray-600">
-                      {isMuted || volume === 0 ? (
-                        <VolumeX className="w-4 h-4" />
-                      ) : (
-                        <Volume2 className="w-4 h-4" />
-                      )}
-                    </button>
-                    <input
-                      type="range"
-                      min="0"
-                      max="1"
-                      step="0.1"
-                      value={volume}
-                      onChange={handleVolumeChange}
-                      className="flex-1"
-                    />
-                  </div>
-                </div>
-              )}
-
-              {/* Navigation */}
-              <div className="bg-white rounded-lg p-6 shadow-sm">
-                <div className="flex justify-between">
-                  <button
-                    onClick={handlePrevious}
-                    disabled={currentLessonIndex <= 0}
-                    className="flex items-center gap-2 px-4 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700 disabled:opacity-50 disabled:cursor-not-allowed"
-                  >
-                    <ChevronLeft className="w-4 h-4" />
-                    Previous
-                  </button>
-                  <button
-                    onClick={handleNext}
-                    disabled={currentLessonIndex >= allLessons.length - 1}
-                    className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed"
-                  >
-                    Next
-                    <ChevronRight className="w-4 h-4" />
-                  </button>
-                </div>
               </div>
             </div>
           </div>
 
-          <div className="space-y-2">
-            {(() => {
-              const q = searchQuery.trim().toLowerCase();
-              const filteredModules = (modules || [])
-                .map((module) => ({
-                  ...module,
-                  lessons: module.lessons.filter((lesson) =>
-                    lesson.title.toLowerCase().includes(q)
-                  ),
-                }))
-                .filter((m) => m.lessons.length > 0);
+          {/* Transcript Section - Takes 1 column */}
+          <div className="lg:col-span-1 bg-card border-l border-border overflow-y-auto max-h-[calc(100vh-180px)]">
+            <div className="sticky top-0 bg-card border-b border-border px-6 py-4 z-10">
+              <h2 className="text-lg font-semibold text-main">
+                Transcript
+              </h2>
+            </div>
+            <div
+              className="px-6 py-4 space-y-4 scroll-smooth"
+            >
 
-              if (q && filteredModules.length === 0) {
-                return (
-                  <p className="text-sm text-muted">
-                    No results for "{searchQuery}"
-                  </p>
-                );
-              }
-
-              return (
-                <div>
-                  {(filteredModules.length > 0 ? filteredModules : modules || []).map((module) => (
+              {captions.length > 0 ? (
+                captions.map((caption, index) => {
+                  const isActive = currentTime >= caption.start && currentTime <= caption.end;
+                  return (
                     <div
-                      key={module.id}
-                      className="border border-gray-200 rounded-lg"
+                      key={index}
+                      ref={isActive ? activeCaptionRef : null}
+                      className={`py-3 border-l-4 pl-4 rounded-r cursor-pointer transition-all ${isActive
+                        ? "border-blue-500 bg-transcript-bg border-border"
+                        : "border-transparent bg-card hover:bg-color-transcript-bg hover:border-border"
+                        }`}
+                      onClick={() => {
+                        if (videoRef.current) {
+                          videoRef.current.currentTime = caption.start;
+                        }
+                      }}
                     >
-                      <button
-                        onClick={() => toggleModule(module.id)}
-                        className="w-full flex items-center justify-between p-4 text-left hover:bg-gray-50"
-                      >
-                        <span className="font-medium text-gray-900">
-                          {module.title}
-                        </span>
-                        <ChevronDown
-                          className={`w-4 h-4 transition-transform ${
-                            expandedModule === module.id ? "rotate-180" : ""
-                          }`}
-                        />
-                      </button>
-
-                      {expandedModule === module.id && (
-                        <div className="px-4 pb-4 space-y-2">
-                          {module.lessons.map((lesson) => (
-                            <button
-                              key={lesson.id}
-                              onClick={() => handleLessonClick(lesson)}
-                              className={`w-full flex items-center gap-3 p-3 rounded-lg text-left hover:bg-gray-50 ${
-                                currentLesson?.id === lesson.id
-                                  ? "bg-blue-50 border border-blue-200"
-                                  : ""
-                              }`}
-                            >
-                              {lesson.type === "video" ? (
-                                <Play className="w-4 h-4 text-gray-400" />
-                              ) : (
-                                <FileText className="w-4 h-4 text-gray-400" />
-                              )}
-                              <div className="flex-1">
-                                <p className="text-sm font-medium text-gray-900">
-                                  {lesson.title}
-                                </p>
-                                <p className="text-xs text-gray-500">
-                                  {lesson.duration}
-                                </p>
-                              </div>
-                              {user?.purchasedCourses
-                                ?.find(
-                                  (course) => course.courseId === parseInt(courseId)
-                                )
-                                ?.progress?.completedLessons?.some(
-                                  (cl) => cl.lessonId === lesson.id
-                                ) ? (
-                                <Check className="w-4 h-4 text-green-500" />
-                              ) : (
-                                <Circle className="w-4 h-4 text-gray-300" />
-                              )}
-                            </button>
-                          ))}
-                        </div>
-                      )}
+                      <div className={`text-xs font-medium mb-1 text-muted`}>
+                        {formatTime(caption.start)}
+                      </div>
+                      <div className={`text-sm leading-relaxed text-muted`}>
+                        {caption.text}
+                      </div>
                     </div>
-                  ))}
+                  );
+                })
+              ) : (
+                <div className="text-sm text-muted text-center py-8">
+                  No transcript available for this lesson.
                 </div>
-              );
-            })()}
+              )}
+            </div>
           </div>
         </div>
       </div>
-   );
- }
+    </div>
+  );
+}

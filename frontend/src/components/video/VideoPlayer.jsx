@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { Play, Pause, Volume2, VolumeX, Maximize, Minimize, Subtitles } from "lucide-react";
 
 const VideoPlayer = ({
   currentLesson,
@@ -11,12 +12,28 @@ const VideoPlayer = ({
   handleProgress,
   getYouTubeVideoId,
   isAIVideoLoading,
+  isPlaying,
+  volume,
+  isMuted,
+  progress,
+  isFullscreen,
+  duration,
+  currentTime,
+  togglePlay,
+  handleVolumeChange,
+  toggleMute,
+  handleSeek,
+  toggleFullscreen,
+  formatTime,
 }) => {
 
 
   const [isBuffering, setIsBuffering] = useState(false);
 
-  // Handle native video loading states
+  const [showCaptions, setShowCaptions] = useState(true);
+  const [showControls, setShowControls] = useState(true);
+
+
   useEffect(() => {
     const v = videoRef?.current;
     if (!v) return;
@@ -40,42 +57,27 @@ const VideoPlayer = ({
   const showLoading = isAIVideoLoading || isBuffering;
 
   return (
-    <div className="xl:col-span-2">
-      <div
-        ref={playerContainerRef}
-        className="relative bg-black rounded-lg overflow-hidden group"
-        style={{ aspectRatio: "16/9" }}
-      >
-        {/* ===== KEEP YOUR EXISTING VIDEO / IFRAME CODE INSIDE ===== */}
-
-        {currentLesson?.youtubeUrl ? (
-          <iframe
-            key={currentLesson.id}
-            src={`https://www.youtube.com/embed/${getYouTubeVideoId(
-              currentLesson.youtubeUrl
-            )}`}
-            className="w-full h-full"
-            frameBorder="0"
-            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-            allowFullScreen
-            title={currentLesson.title}
-          />
-        ) : (
-          <video
-            ref={videoRef}
-            src={
-              aiVideoUrl ||
-              (selectedCelebrity &&
-                celebrityVideoMap[selectedCelebrity]?.video) ||
-              currentLesson?.videoUrl
-            }
-            className="w-full h-full object-contain bg-black"
-            onTimeUpdate={handleProgress}
-            onLoadedMetadata={handleProgress}
-            controls={false}
-            playsInline
-          />
-        )}
+    <div
+      ref={playerContainerRef}
+      className="relative bg-black rounded-lg overflow-hidden shadow-lg mb-6 aspect-video"
+      onMouseMove={resetControlsTimeout}
+      onMouseLeave={() => isPlaying && setShowControls(false)}
+    >
+      {/* Video */}
+      <video
+        ref={videoRef}
+        src={
+          aiVideoUrl ||
+          (selectedCelebrity && celebrityVideoMap[selectedCelebrity]?.video) ||
+          currentLesson?.videoUrl
+        }
+        className="w-full h-full object-contain"
+        onTimeUpdate={handleProgress}
+        onLoadedMetadata={handleProgress}
+        controls={false}
+        playsInline
+        onClick={togglePlay}
+      />
 
         {/* Loading Overlay (Original Style) */}
         {showLoading && (
@@ -87,12 +89,90 @@ const VideoPlayer = ({
           </div>
         )}
 
-        {/* Caption Overlay */}
-        {activeCaption && (
-          <div className="absolute bottom-16 left-1/2 -translate-x-1/2 bg-black/70 text-white px-4 py-2 rounded-md text-sm">
+      {/* Caption Overlay */}
+      {activeCaption && showCaptions && (
+        <div className="absolute bottom-20 left-0 right-0 flex justify-center px-4">
+          <div className="bg-black bg-opacity-80 text-white px-4 py-2 rounded-lg text-center max-w-3xl text-sm leading-snug shadow-xl">
             {activeCaption}
           </div>
-        )}
+        </div>
+      )}
+
+      {/* Custom Video Controls */}
+      <div className={`absolute bottom-0 left-0 right-0 bg-linear-to-t from-black/90 to-transparent p-4 transition-opacity duration-300 ${showControls ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}>
+        {/* Progress Bar */}
+        <div
+          className="w-full bg-gray-600 rounded-full h-1.5 cursor-pointer mb-3 hover:h-2 transition-all"
+          onClick={handleSeek}
+        >
+          <div
+            className="bg-blue-600 h-full rounded-full transition-all"
+            style={{ width: `${progress}%` }}
+          ></div>
+        </div>
+
+        {/* Controls */}
+        <div className="flex items-center justify-between text-white">
+          <div className="flex items-center gap-4">
+            <button
+              onClick={togglePlay}
+              className="hover:text-blue-400 transition-colors"
+            >
+              {isPlaying ? (
+                <Pause className="w-6 h-6" />
+              ) : (
+                <Play className="w-6 h-6" />
+              )}
+            </button>
+
+            <div className="flex items-center gap-2">
+              <button
+                onClick={toggleMute}
+                className="hover:text-blue-400 transition-colors"
+              >
+                {isMuted || volume === 0 ? (
+                  <VolumeX className="w-5 h-5" />
+                ) : (
+                  <Volume2 className="w-5 h-5" />
+                )}
+              </button>
+              <input
+                type="range"
+                min="0"
+                max="1"
+                step="0.1"
+                value={volume}
+                onChange={handleVolumeChange}
+                className="w-20 h-1 bg-gray-600 rounded-lg appearance-none cursor-pointer accent-blue-600"
+              />
+            </div>
+
+            <div className="text-sm">
+              {formatTime(currentTime)} / {formatTime(duration)}
+            </div>
+          </div>
+
+          <div className="flex items-center gap-4">
+            <button
+              onClick={() => setShowCaptions(prev => !prev)}
+              className={`transition-colors ${showCaptions ? 'text-blue-400' : 'text-gray-400 hover:text-white'}`}
+              title={showCaptions ? 'Hide captions' : 'Show captions'}
+            >
+              <Subtitles className="w-6 h-6" />
+            </button>
+
+            <button
+              onClick={toggleFullscreen}
+              className="hover:text-blue-400 transition-colors"
+            >
+              {isFullscreen ? (
+                <Minimize className="w-5 h-5" />
+              ) : (
+                <Maximize className="w-5 h-5" />
+              )}
+            </button>
+          </div>
+        </div>
       </div>
     </div>
   );
