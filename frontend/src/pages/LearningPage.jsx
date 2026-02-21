@@ -1,5 +1,6 @@
 import { useState, useRef, useEffect } from "react";
 import Header from "../components/Header";
+import Sidebar from "../components/Sidebar";
 import { useNavigate, useParams } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import { getAIVideo } from "../service/aiService";
@@ -12,9 +13,22 @@ import {
   Check,
   Circle,
   FileText,
-  CloudCog,
-  Play,
+  Search,
+  Home,
+  BookOpen,
+  MessageSquare,
+  BarChart3,
+  Settings,
+  Eye,
+  User,
+  X,
+  Sparkles,
 } from "lucide-react";
+
+// Sanitize filename to match backend logic: remove [\\/:*?"<>|], replace spaces with _
+function sanitizeFilename(name) {
+  return name.replace(/[\\/:*?"<>|]/g, "").replace(/\s+/g, "_");
+}
 
 const getYouTubeVideoId = (url) => {
   const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|&v=)([^#&?]*).*/;
@@ -23,14 +37,21 @@ const getYouTubeVideoId = (url) => {
 };
 
 export default function Learning() {
+
+
+  const [playOriginalCelebrityVideo, setPlayOriginalCelebrityVideo] =
+    useState(false);
   const navigate = useNavigate();
   const { id: courseId } = useParams();
   const { user, updateUser } = useAuth();
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [learningData, setLearningData] = useState(null);
-  const [expandedModule, setExpandedModule] = useState("module-1");
+  const [expandedModule, setExpandedModule] = useState(null);
   const [searchQuery, setSearchQuery] = useState("");
   const [celebritySearch, setCelebritySearch] = useState("");
+  const [activeTab, setActiveTab] = useState("transcript");
+  const [isCelebrityModalOpen, setIsCelebrityModalOpen] = useState(false);
 
   // Captions state
   const [captions, setCaptions] = useState([]);
@@ -45,10 +66,6 @@ export default function Learning() {
   };
 
   const [selectedCelebrity, setSelectedCelebrity] = useState(null);
-
-  // When user requested single-word subtitles for the Reactjs paragraph,
-  // we'll split into words and compute word-by-word cues when video duration is known.
-  // const Reactjs_PARAGRAPH = `Reactjs is a high-level, object-oriented programming language that was originally developed by Sun Microsystems in 1995 and is now owned by Oracle Corporation. It is designed to be platform-independent, meaning that Reactjs code can run on any device that has a Reactjs Virtual Machine (JVM), making it highly versatile for developing cross-platform applications. Reactjs emphasizes object-oriented principles, such as encapsulation, inheritance and polymorphism, which allow developers to create modular, reusable and maintainable code. It has a strong memory management system, including automatic garbage collection, which reduces the likelihood of memory leaks.`;
 
   const [isPlaying, setIsPlaying] = useState(false);
   const [volume, setVolume] = useState(1);
@@ -66,6 +83,7 @@ export default function Learning() {
   const playerContainerRef = useRef(null);
   const transcriptContainerRef = useRef(null);
   const activeCaptionRef = useRef(null);
+  const modalRef = useRef(null);
 
   // Auto-scroll transcript to keep active caption visible
   useEffect(() => {
@@ -73,18 +91,54 @@ export default function Learning() {
       const container = transcriptContainerRef.current;
       const activeElement = activeCaptionRef.current;
 
+      const containerRect = container.getBoundingClientRect();
+      const elementRect = activeElement.getBoundingClientRect();
+
+      const elementTopRelative = elementRect.top - containerRect.top + container.scrollTop;
+      const targetScrollTop = elementTopRelative - container.clientHeight / 2 + activeElement.clientHeight / 2;
+
       const containerTop = container.scrollTop;
       const containerBottom = containerTop + container.clientHeight;
-      const elementTop = activeElement.offsetTop - container.offsetTop;
+      const elementTop = elementRect.top - containerRect.top + container.scrollTop;
       const elementBottom = elementTop + activeElement.clientHeight;
 
       // Scroll if element is not fully visible
       if (elementTop < containerTop || elementBottom > containerBottom) {
-        activeElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        container.scrollTo({
+          top: Math.max(0, targetScrollTop),
+          behavior: 'smooth',
+        });
       }
     }
   }, [currentTime]);
 
+  // Close modal when clicking outside
+  useEffect(() => {
+    function handleClickOutside(event) {
+      if (modalRef.current && !modalRef.current.contains(event.target)) {
+        setIsCelebrityModalOpen(false);
+      }
+    }
+
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, []);
+
+  // Close modal on escape key
+  useEffect(() => {
+    function handleEscapeKey(event) {
+      if (event.key === "Escape") {
+        setIsCelebrityModalOpen(false);
+      }
+    }
+
+    document.addEventListener("keydown", handleEscapeKey);
+    return () => {
+      document.removeEventListener("keydown", handleEscapeKey);
+    };
+  }, []);
 
   useEffect(() => {
     // Check if user has purchased this course
@@ -102,19 +156,15 @@ export default function Learning() {
             Authorization: `Bearer ${token}`,
           },
         });
-
         if (response.ok) {
           const courseData = await response.json();
-          console.log(courseData);
           setLearningData(courseData);
           // Load user's progress for this course
           const userProgress = user?.purchasedCourses?.find(
             (course) => course.courseId === parseInt(courseId)
           )?.progress;
           if (userProgress) {
-            setExpandedModule(
-              userProgress.currentLesson?.moduleTitle || "module-1"
-            );
+            // Do NOT setExpandedModule here; dropdown should be closed by default
             // Set current lesson based on progress
             const currentLesson = userProgress.currentLesson;
             if (currentLesson) {
@@ -131,140 +181,10 @@ export default function Learning() {
             }
           }
         } else {
-          console.error(
-            "Failed to fetch course learning data, using local fallback"
-          );
-          // Fallback local data so the learning page works without backend
-          const fallback = {
-            course: {
-              id: parseInt(courseId),
-            },
-            modules: [
-              {
-                id: "module-1",
-                title: "Module 1",
-                lessons: [
-                  {
-                    id: 1,
-                    title: "Introduction to React",
-                    type: "video",
-                    duration: "0:10",
-                    youtubeUrl: "https://www.youtube.com/watch?v=Ke90Tje7VS0",
-                    content: {
-                      introduction:
-                        "React is a JavaScript library for building user interfaces. It was developed by Facebook and is now maintained by Meta and the open-source community. React allows developers to create reusable UI components and manage the state of their applications efficiently.",
-                      keyConcepts: [],
-                    },
-                  },
-                  {
-                    id: 2,
-                    title: "React: Advanced Concepts",
-                    type: "video",
-                    duration: "0:12",
-                    youtubeUrl: "https://www.youtube.com/watch?v=4UZrsTqkcW4",
-                    content: {
-                      introduction:
-                        "Advanced React concepts including hooks, context, and performance optimization techniques.",
-                      keyConcepts: [],
-                    },
-                  },
-                ],
-              },
-            ],
-            currentLesson: {
-              id: 1,
-            },
-          };
-
-          // If we have user progress, try to set the exact lesson from fallback
-          const userProgress = user?.purchasedCourses?.find(
-            (course) => course.courseId === parseInt(courseId)
-          )?.progress;
-          if (userProgress && userProgress.currentLesson) {
-            const lesson = fallback.modules
-              .flatMap((m) => m.lessons)
-              .find((l) => l.id === userProgress.currentLesson.lessonId);
-            if (lesson) {
-              setLearningData({ ...fallback, currentLesson: lesson });
-            } else {
-              setLearningData(fallback);
-            }
-          } else {
-            setLearningData(fallback);
-          }
+          setLearningData(null);
         }
       } catch (error) {
-        console.error(
-          "Error fetching learning data, using local fallback:",
-          error
-        );
-        // Use the same fallback as above
-        const fallback = {
-          course: {
-            id: parseInt(courseId),
-          },
-          modules: [
-            {
-              id: "module-1",
-              title: "Module 1",
-              lessons: [
-                {
-                  id: 1,
-                  title: "Introduction to React",
-                  type: "video",
-                  duration: "0:10",
-                  youtubeUrl: "https://www.youtube.com/watch?v=Ke90Tje7VS0",
-                  content: {
-                    introduction:
-                      "React is a JavaScript library for building user interfaces. It was developed by Facebook and is now maintained by Meta and the open-source community. React allows developers to create reusable UI components and manage the state of their applications efficiently.",
-                    keyConcepts: [],
-                  },
-                },
-                {
-                  id: 2,
-                  title: "React: Advanced Concepts",
-                  type: "video",
-                  duration: "0:12",
-                  youtubeUrl: "https://www.youtube.com/watch?v=4UZrsTqkcW4",
-                  content: {
-                    introduction:
-                      "Advanced React concepts including hooks, context, and performance optimization techniques.",
-                    keyConcepts: [],
-                  },
-                },
-              ],
-            },
-          ],
-          currentLesson: {
-            id: 1,
-            title: "Introduction to React",
-            type: "video",
-            duration: "0:10",
-            youtubeUrl: "https://www.youtube.com/watch?v=Ke90Tje7VS0",
-            content: {
-              introduction:
-                "React is a JavaScript library for building user interfaces. It was developed by Facebook and is now maintained by Meta and the open-source community. React allows developers to create reusable UI components and manage the state of their applications efficiently.",
-              keyConcepts: [],
-            },
-          },
-        };
-
-        // If we have user progress, try to set the exact lesson from fallback
-        const userProgress = user?.purchasedCourses?.find(
-          (course) => course.courseId === parseInt(courseId)
-        )?.progress;
-        if (userProgress && userProgress.currentLesson) {
-          const lesson = fallback.modules
-            .flatMap((m) => m.lessons)
-            .find((l) => l.id === userProgress.currentLesson.lessonId);
-          if (lesson) {
-            setLearningData({ ...fallback, currentLesson: lesson });
-          } else {
-            setLearningData(fallback);
-          }
-        } else {
-          setLearningData(fallback);
-        }
+        setLearningData(null);
       }
     };
     fetchLearningData();
@@ -351,7 +271,7 @@ export default function Learning() {
         console.log("❌ No captions available - no AI text and no VTT");
         setCaptions([]);
       } catch (err) {
-        console.warn("❌ Could not load captions:", err);
+        console.warn("Could not load captions:", err);
         setCaptions([]);
       }
     };
@@ -422,7 +342,7 @@ export default function Learning() {
     };
 
     loadVideo();
-  }, [learningData?.currentLesson, selectedCelebrity]);
+    }, [learningData?.currentLesson, selectedCelebrity]);
 
   // Generate captions when video metadata loads
   useEffect(() => {
@@ -499,7 +419,14 @@ export default function Learning() {
   const { modules, currentLesson } = learningData || {};
 
   if (!learningData) {
-    return <div>Loading...</div>;
+    return (
+      <div className="min-h-screen bg-canvas-alt flex items-center justify-center">
+        <div className="text-center">
+          <div className="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+          <p className="mt-4 text-muted">Loading...</p>
+        </div>
+      </div>
+    );
   }
 
   // Flatten modules into a single lessons list and compute current index
@@ -667,276 +594,395 @@ export default function Learning() {
   };
 
   const formatTime = (time) => {
+    if (!time || !isFinite(time)) return "0:00";
     const minutes = Math.floor(time / 60);
     const seconds = Math.floor(time % 60);
     return `${minutes}:${seconds.toString().padStart(2, "0")}`;
   };
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-canvas-alt flex flex-col">
       <Header sidebarOpen={sidebarOpen} setSidebarOpen={setSidebarOpen} />
 
-      {/* Sidebar */}
-      <div className="fixed left-0 top-16 bottom-0 w-80 bg-white border-r border-gray-200 overflow-y-auto z-10">
-        <div className="p-6 h-full overflow-y-auto">
-          <div className="flex items-center justify-between mb-6">
-            <h2 className="text-xl font-bold text-gray-900">
-              {learningData?.course?.title || learningData?.title || "Course"}
-            </h2>
+      <Sidebar
+        sidebarOpen={sidebarOpen}
+        setSidebarOpen={setSidebarOpen}
+        sidebarCollapsed={sidebarCollapsed}
+        setSidebarCollapsed={setSidebarCollapsed}
+        activePage="courses"
+      />
+
+      {/* Main Content */}
+      <div
+        className={`flex-1 flex flex-col overflow-hidden transition-all duration-300 ${sidebarCollapsed ? "lg:ml-20" : "lg:ml-80"
+          }`}
+      >
+        {/* Breadcrumb */}
+        <div className="bg-card border-b border-border px-6 py-3 mt-20">
+          <div className="flex items-center gap-2 text-sm text-muted mt-2">
+            <button
+              onClick={() => navigate("/")}
+              className="hover:text-blue-600 transition-colors"
+            >
+              <Home className="w-4 h-4" />
+            </button>
+            <ChevronRight className="w-4 h-4 text-muted" />
             <button
               onClick={() => navigate("/courses")}
-              className="text-gray-400 hover:text-gray-600"
+              className="hover:text-blue-600 transition-colors"
             >
-              <ChevronLeft className="w-5 h-5" />
+              My Course
             </button>
-          </div>
-
-          <div className="mb-4">
-            <h3 className="text-sm font-semibold text-gray-700 mb-3">
-              Celebrities
-            </h3>
-            <div className="mb-3">
-              <input
-                type="search"
-                placeholder="Search celebrities..."
-                value={celebritySearch}
-                onChange={(e) => setCelebritySearch(e.target.value)}
-                className="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500"
-              />
-            </div>
-            <div className="flex flex-col gap-2">
-              {celebrities
-                .filter((c) =>
-                  c.toLowerCase().includes(celebritySearch.trim().toLowerCase())
-                )
-                .map((c) => (
-                  <button
-                    key={c}
-                    onClick={() => {
-                      if (selectedCelebrity === c) {
-                        // Toggle off if same celebrity clicked again
-                        setSelectedCelebrity(null);
-                        setAiVideoUrl(null);
-                      } else {
-                        setSelectedCelebrity(c);
-                      }
-                    }}
-                    className={`w-full text-left px-4 py-3 rounded-lg border ${selectedCelebrity === c
-                      ? "bg-blue-600 text-white"
-                      : "bg-white text-gray-900"
-                      }`}
-                  >
-                    {c}
-                  </button>
-                ))}
-            </div>
+            <ChevronRight className="w-4 h-4 text-muted" />
+            {/* Show current module name instead of course title */}
+            <button
+              className="hover:text-blue-600 transition-colors"
+              disabled
+              style={{ cursor: 'default', opacity: 1, fontWeight: 600 }}
+            >
+              {(() => {
+                if (modules && currentLesson) {
+                  const mod = modules.find(m => m.lessons?.some(l => l.id === currentLesson.id));
+                  return mod?.title || 'Module';
+                }
+                return 'Module';
+              })()}
+            </button>
+            <ChevronRight className="w-4 h-4 text-muted" />
+            <span className="text-main font-medium">
+              {currentLesson?.title}
+            </span>
           </div>
         </div>
-      </div>
 
-      <div className="ml-80 p-6">
-        <div className="mb-6">
-          {(() => {
-            const completedCount =
-              user?.purchasedCourses?.find(
-                (course) => course.courseId === parseInt(courseId)
-              )?.progress?.completedLessons?.length || 0;
-            const totalCount = allLessons.length;
-            const progressPercent = Math.min(
-              (completedCount / totalCount) * 100,
-              100
-            );
-            console.log("Progress calculation:", {
-              completedCount,
-              totalCount,
-              progressPercent,
-            });
-            return (
-              <>
-                <div className="w-full bg-gray-200 rounded-full h-2">
-                  <div
-                    className="bg-blue-600 h-2 rounded-full"
-                    style={{ width: `${progressPercent}%` }}
-                  ></div>
-                </div>
-                <p className="text-sm text-gray-600 mt-2">
-                  {Math.round(progressPercent)}% Complete
-                </p>
-              </>
-            );
-          })()}
-        </div>
-
-        {/* Main Content Grid */}
-        <div className="grid grid-cols-1 xl:grid-cols-5 gap-6">
-          {/* Video Player */}
-          <div className="xl:col-span-3 space-y-4 mt-3">
-            <VideoPlayer
-              currentLesson={currentLesson}
-              aiVideoUrl={aiVideoUrl}
-              selectedCelebrity={selectedCelebrity}
-              celebrityVideoMap={celebrityVideoMap}
-              activeCaption={activeCaption}
-              playerContainerRef={playerContainerRef}
-              videoRef={videoRef}
-              handleProgress={handleProgress}
-              getYouTubeVideoId={getYouTubeVideoId}
-              isPlaying={isPlaying}
-              volume={volume}
-              isMuted={isMuted}
-              progress={progress}
-              isFullscreen={isFullscreen}
-              duration={duration}
-              currentTime={currentTime}
-              togglePlay={togglePlay}
-              handleVolumeChange={handleVolumeChange}
-              toggleMute={toggleMute}
-              handleSeek={handleSeek}
-              toggleFullscreen={toggleFullscreen}
-              formatTime={formatTime}
-              handlePrevious={handlePrevious}
-              handleNext={handleNext}
-              currentLessonIndex={currentLessonIndex}
-              allLessonsLength={allLessons.length}
-            />
-          </div>
-
-          {/* Lesson Content */}
-          <div className="xl:col-span-2 space-y-6">
-            <div className="bg-white rounded-lg p-6 shadow-sm mt-3">
-              <h3 className="text-lg font-semibold text-gray-900 mb-0">
-                {currentLesson?.title || "Select a Lesson"}
-              </h3>
-            </div>
-            {/* Transcript Section */}
-            {captions.length > 0 && !currentLesson?.youtubeUrl && (
-              <div className="bg-white rounded-lg p-6 shadow-sm">
-                <h3 className="text-lg font-semibold text-gray-900 mb-4">
-                  Transcript
-                </h3>
+        {/* Content Selector with AI Button */}
+        <div className="bg-card border-b border-border px-6 py-3">
+          <div className="flex items-center justify-between">
+            {/* Custom Dropdown for Modules and Lessons */}
+            <div className="relative min-w-95 max-w-125 flex items-center">
+              <span className="text-main font-semibold mr-3">Contents</span>
+              <div className="relative w-full">
                 <div
-                  ref={transcriptContainerRef}
-                  className="max-h-80 overflow-y-auto space-y-2 pr-2 scroll-smooth"
+                  className="bg-canvas-alt border border-border rounded-2xl px-6 py-2 pr-12 text-base text-main cursor-pointer flex items-center justify-between select-none min-h-12"
+                  tabIndex={0}
+                  onClick={() => {
+                    if (expandedModule) {
+                      setExpandedModule(null);
+                    } else {
+                      // Find the module containing the current lesson
+                      if (modules && currentLesson) {
+                        const mod = modules.find(m => m.lessons?.some(l => l.id === currentLesson.id));
+                        setExpandedModule(mod?.id || null);
+                      } else {
+                        setExpandedModule(null);
+                      }
+                    }
+                  }}
+                  style={{ fontWeight: 600 }}
                 >
-                  {captions.map((caption, index) => {
-                    const isActive = currentTime >= caption.start && currentTime <= caption.end;
-                    return (
-                      <div
-                        key={index}
-                        ref={isActive ? activeCaptionRef : null}
-                        className={`p-3 rounded-lg cursor-pointer transition-all ${isActive
-                            ? 'bg-blue-50 border-l-4 border-blue-600'
-                            : 'hover:bg-gray-50'
-                          }`}
-                        onClick={() => {
-                          if (videoRef.current) {
-                            videoRef.current.currentTime = caption.start;
-                          }
+                  {(() => {
+                    // Show current lesson title or placeholder
+                    if (currentLesson) {
+                      return <span>{currentLesson.title}</span>;
+                    }
+                    return <span className="text-muted">Select Lesson</span>;
+                  })()}
+                  <ChevronDown className="w-5 h-5 text-muted ml-2" />
+                </div>
+                {/* Dropdown Panel */}
+                <div className="absolute left-0 mt-2 w-full bg-white dark:bg-gray-900 border border-border rounded-2xl shadow-xl z-50 max-h-96 overflow-y-auto min-w-95" style={{ display: expandedModule ? 'block' : 'none' }}>
+                  {modules && modules.map((module, mIdx) => (
+                    <div key={module.id || `module-${mIdx + 1}`}
+                      className="border-b border-border last:border-b-0"
+                    >
+                      <button
+                        className="w-full flex items-center justify-between px-5 py-2 text-left hover:bg-blue-50 hover:text-white dark:hover:bg-blue-950 font-semibold text-main focus:outline-none text-base"
+                        onClick={e => {
+                          e.stopPropagation();
+                          toggleModule(module.id || `module-${mIdx + 1}`);
                         }}
                       >
-                        <div className="flex gap-3">
-                          <span className={`text-xs font-mono ${isActive ? 'text-blue-600 font-semibold' : 'text-gray-500'
-                            }`}>
-                            {formatTime(caption.start)}
-                          </span>
-                          <p className={`text-sm flex-1 ${isActive ? 'text-gray-900 font-medium' : 'text-gray-700'
-                            }`}>
-                            {caption.text}
-                          </p>
-                        </div>
-                      </div>
-                    );
-                  })}
-                </div>
-              </div>
-            )}
-          </div>
-        </div>
-
-        <div className="space-y-2">
-          {(() => {
-            const q = searchQuery.trim().toLowerCase();
-            const filteredModules = (modules || [])
-              .map((module) => ({
-                ...module,
-                lessons: module.lessons.filter((lesson) =>
-                  lesson.title.toLowerCase().includes(q)
-                ),
-              }))
-              .filter((m) => m.lessons.length > 0);
-
-            if (q && filteredModules.length === 0) {
-              return (
-                <p className="text-sm text-gray-500">
-                  No results for "{searchQuery}"
-                </p>
-              );
-            }
-
-            return (
-              <div>
-                {(filteredModules.length > 0 ? filteredModules : modules || []).map((module) => (
-                  <div
-                    key={module.id}
-                    className="border border-gray-200 rounded-lg"
-                  >
-                    <button
-                      onClick={() => toggleModule(module.id)}
-                      className="w-full flex items-center justify-between p-4 text-left hover:bg-gray-50"
-                    >
-                      <span className="font-medium text-gray-900">
-                        {module.title}
-                      </span>
-                      <ChevronDown
-                        className={`w-4 h-4 transition-transform ${expandedModule === module.id ? "rotate-180" : ""
-                          }`}
-                      />
-                    </button>
-
-                    {expandedModule === module.id && (
-                      <div className="px-4 pb-4 space-y-2">
-                        {module.lessons.map((lesson) => (
+                        <span>{module.title || `Module ${mIdx + 1}`}</span>
+                        <ChevronDown className={`w-4 h-4 ml-2 transition-transform ${expandedModule === (module.id || `module-${mIdx + 1}`) ? 'rotate-180' : ''}`} />
+                      </button>
+                      {/* Lessons List */}
+                      <div className={`transition-all ${expandedModule === (module.id || `module-${mIdx + 1}`) ? 'max-h-96' : 'max-h-0 overflow-hidden'}`}>
+                        {module.lessons && module.lessons.map((lesson) => (
                           <button
                             key={lesson.id}
-                            onClick={() => handleLessonClick(lesson)}
-                            className={`w-full flex items-center gap-3 p-3 rounded-lg text-left hover:bg-gray-50 ${currentLesson?.id === lesson.id
-                              ? "bg-blue-50 border border-blue-200"
-                              : ""
-                              }`}
+                            className={`w-full text-left px-10 py-2 text-sm flex items-center gap-2 hover:bg-blue-100 hover:text-white dark:hover:bg-blue-900 transition-colors ${currentLesson?.id === lesson.id ? 'bg-blue-600 text-white font-semibold' : 'text-main'}`}
+                            onClick={e => {
+                              e.stopPropagation();
+                              handleLessonClick(lesson);
+                              setExpandedModule(null);
+                            }}
                           >
-                            {lesson.type === "video" ? (
-                              <Play className="w-4 h-4 text-gray-400" />
-                            ) : (
-                              <FileText className="w-4 h-4 text-gray-400" />
-                            )}
-                            <div className="flex-1">
-                              <p className="text-sm font-medium text-gray-900">
-                                {lesson.title}
-                              </p>
-                              <p className="text-xs text-gray-500">
-                                {lesson.duration}
-                              </p>
-                            </div>
-                            {user?.purchasedCourses
-                              ?.find(
-                                (course) => course.courseId === parseInt(courseId)
-                              )
-                              ?.progress?.completedLessons?.some(
-                                (cl) => cl.lessonId === lesson.id
-                              ) ? (
-                              <Check className="w-4 h-4 text-green-500" />
-                            ) : (
-                              <Circle className="w-4 h-4 text-gray-300" />
-                            )}
+                            {lesson.type === 'document' ? <FileText className="w-4 h-4" /> : <Circle className="w-3 h-3" />}
+                            <span>{lesson.title}</span>
+                            {currentLesson?.id === lesson.id && <Check className="w-4 h-4 ml-auto" />}
                           </button>
                         ))}
                       </div>
-                    )}
-                  </div>
-                ))}
+                    </div>
+                  ))}
+                </div>
               </div>
-            );
-          })()}
+            </div>
+
+            <div className="flex items-center gap-3">
+              {/* AI Celebrity Button */}
+              <button
+                onClick={() => setIsCelebrityModalOpen(true)}
+                className="flex items-center gap-2 px-4 py-2 bg-linear-to-r from-purple-600 to-blue-600 text-white rounded-lg hover:from-purple-700 hover:to-blue-700 transition-all shadow-sm hover:shadow-md"
+              >
+                <Sparkles className="w-4 h-4" />
+                <span className="text-sm font-medium">Select AI Voiceover</span>
+                {selectedCelebrity && (
+                  <span className="ml-1 px-1.5 py-0.5 bg-white/20 rounded-full text-xs">
+                    {selectedCelebrity.split(' ')[0]}
+                  </span>
+                )}
+              </button>
+
+
+            </div>
+          </div>
+        </div>
+
+        {/* AI Celebrity Modal */}
+        {isCelebrityModalOpen && (
+          <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+            <div
+              ref={modalRef}
+              className="bg-white dark:bg-gray-900 rounded-xl shadow-2xl max-w-md w-full max-h-[90vh] overflow-y-auto border border-border"
+            >
+              {/* Modal Header */}
+              <div className="flex items-center justify-between p-6 border-b border-border">
+                <div className="flex items-center gap-2">
+                  <div className="p-2 bg-linear-to-r from-purple-100 to-blue-100 dark:from-purple-950 dark:to-blue-950 rounded-lg">
+                    <Sparkles className="w-5 h-5 text-purple-600 dark:text-purple-400" />
+                  </div>
+                  <div>
+                    <h2 className="text-lg font-semibold text-main">AI Celebrity Voiceover</h2>
+                    <p className="text-xs text-muted mt-0.5">Generate AI voice for this video</p>
+                  </div>
+                </div>
+                <button
+                  onClick={() => setIsCelebrityModalOpen(false)}
+                  className="p-2 hover:bg-canvas-alt rounded-lg transition-colors"
+                >
+                  <X className="w-5 h-5 text-muted" />
+                </button>
+              </div>
+
+              {/* Modal Body */}
+              <div className="p-6">
+                {/* Search */}
+                <div className="relative mb-4">
+                  <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-muted" />
+                  <input
+                    type="search"
+                    placeholder="Search celebrities..."
+                    value={celebritySearch}
+                    onChange={(e) => setCelebritySearch(e.target.value)}
+                    className="w-full pl-9 pr-4 py-2 bg-canvas-alt border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm text-main placeholder-muted"
+                    autoFocus
+                  />
+                </div>
+
+                {/* Celebrity List */}
+                <div className="space-y-2 max-h-64 overflow-y-auto pr-1">
+                  {celebrities
+                    .filter((c) =>
+                      c.toLowerCase().includes(celebritySearch.trim().toLowerCase())
+                    )
+                    .map((c) => (
+                      <button
+                        key={c}
+                        onClick={() => {
+                          if (selectedCelebrity === c) {
+                            setSelectedCelebrity(null);
+                            setAiVideoUrl(null);
+                          } else {
+                            setSelectedCelebrity(c);
+                          }
+                          setIsCelebrityModalOpen(false);
+                        }}
+                        className={`w-full flex items-center justify-between p-3 rounded-lg transition-all ${selectedCelebrity === c
+                          ? "bg-blue-600 text-white"
+                          : "hover:bg-canvas-alt text-main border border-border"
+                          }`}
+                      >
+                        <div className="flex items-center gap-3">
+                          <div className={`w-8 h-8 rounded-full flex items-center justify-center ${selectedCelebrity === c
+                            ? "bg-white/20"
+                            : "bg-blue-100 dark:bg-blue-900"
+                            }`}>
+                            <User className={`w-4 h-4 ${selectedCelebrity === c
+                              ? "text-white"
+                              : "text-blue-600 dark:text-blue-400"
+                              }`} />
+                          </div>
+                          <span className="font-medium">{c}</span>
+                        </div>
+                        {selectedCelebrity === c && (
+                          <Check className="w-4 h-4" />
+                        )}
+                      </button>
+                    ))}
+                </div>
+
+                {/* Current Selection Info */}
+                {selectedCelebrity && (
+                  <div className="mt-6 p-4 bg-blue-50 dark:bg-blue-950 border border-blue-200 dark:border-blue-800 rounded-lg">
+                    <div className="flex items-start gap-3">
+                      <div className="p-1.5 bg-blue-100 dark:bg-blue-900 rounded-full">
+                        <Check className="w-4 h-4 text-blue-600 dark:text-blue-400" />
+                      </div>
+                      <div>
+                        <p className="text-sm font-medium text-blue-800 dark:text-blue-300">
+                          AI Voiceover Active
+                        </p>
+                        <p className="text-xs text-blue-600 dark:text-blue-400 mt-1">
+                          Currently using <span className="font-semibold">{selectedCelebrity}</span>'s voice for this video
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                )}
+              </div>
+
+              {/* Modal Footer */}
+              <div className="flex justify-end gap-3 p-6 border-t border-border">
+                <button
+                  onClick={() => setIsCelebrityModalOpen(false)}
+                  className="px-4 py-2 text-sm text-muted hover:text-main hover:bg-canvas-alt rounded-lg transition-colors"
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={() => setIsCelebrityModalOpen(false)}
+                  className="px-4 py-2 text-sm bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+                >
+                  Done
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Video and Transcript Grid */}
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-0 min-h-[calc(100vh-180px)]">
+          {/* Video Section - Takes 2 columns */}
+          <div className="lg:col-span-2 bg-canvas-alt p-6 overflow-y-auto">
+            <div className="max-w-2xl mx-auto">
+              {/* Video Player */}
+              <VideoPlayer
+                currentLesson={currentLesson}
+                aiVideoUrl={aiVideoUrl}
+                selectedCelebrity={selectedCelebrity}
+                celebrityVideoMap={celebrityVideoMap}
+                activeCaption={activeCaption}
+                playerContainerRef={playerContainerRef}
+                videoRef={videoRef}
+                handleProgress={handleProgress}
+                isPlaying={isPlaying}
+                volume={volume}
+                isMuted={isMuted}
+                progress={progress}
+                isFullscreen={isFullscreen}
+                duration={duration}
+                currentTime={currentTime}
+                togglePlay={togglePlay}
+                handleVolumeChange={handleVolumeChange}
+                toggleMute={toggleMute}
+                handleSeek={handleSeek}
+                toggleFullscreen={toggleFullscreen}
+                formatTime={formatTime}
+              />
+
+              {/* Navigation Buttons */}
+              <div className="flex justify-between items-center mb-6">
+                <button
+                  onClick={handlePrevious}
+                  disabled={currentLessonIndex <= 0}
+                  className="flex items-center gap-2 px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-blue-600 transition-all hover:shadow-md disabled:hover:shadow-none"
+                >
+                  <ChevronLeft className="w-5 h-5" />
+                  Previous
+                </button>
+                <button
+                  onClick={handleNext}
+                  disabled={
+                    currentLessonIndex >= allLessons.length - 1 || isNavigating
+                  }
+                  className="flex items-center gap-2 px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-blue-600 transition-all hover:shadow-md disabled:hover:shadow-none"
+                >
+                  {isNavigating ? "Loading..." : "Next"}
+                  <ChevronRight className="w-5 h-5" />
+                </button>
+              </div>
+
+              {/* Lesson Content */}
+              <div className="bg-card rounded-lg p-8 shadow-sm border border-border">
+                <h1 className="text-3xl font-semibold text-main mb-6 leading-tight">
+                  <span className="text-blue-600">{currentLesson?.title}</span>
+                </h1>
+                {(generatedTextContent || currentLesson?.content?.introduction) && (
+                  <div className="prose prose-lg max-w-none">
+                    <p className="text-muted leading-relaxed">
+                      {generatedTextContent || currentLesson.content.introduction}
+                    </p>
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+
+          {/* Transcript Section - Takes 1 column */}
+          <div ref={transcriptContainerRef} className="lg:col-span-1 bg-card border-l border-border overflow-y-auto max-h-[calc(100vh-180px)]">
+            <div className="sticky top-0 bg-white dark:bg-gray-900 border-b border-border px-6 py-4 z-20">
+              <h2 className="text-lg font-semibold text-main">
+                Transcript
+              </h2>
+            </div>
+            <div
+              className="px-6 py-4 space-y-4 scroll-smooth"
+            >
+              {captions.length > 0 ? (
+                captions.map((caption, index) => {
+                  const isActive = currentTime >= caption.start && currentTime <= caption.end;
+                  return (
+                    <div
+                      key={index}
+                      ref={isActive ? activeCaptionRef : null}
+                      className={`py-3 border-l-4 pl-4 rounded-r cursor-pointer transition-all ${
+                        isActive
+                          ? "border-blue-600 bg-blue-600 dark:bg-blue-950"
+                          : "border-transparent hover:bg-canvas-alt hover:border-border"
+                      }`}
+                      onClick={() => {
+                        if (videoRef.current) {
+                          videoRef.current.currentTime = caption.start;
+                        }
+                      }}
+                    >
+                      <div className={`text-xs font-medium mb-1 ${isActive ? "text-white" : "text-muted"}`}>
+                        {formatTime(caption.start)}
+                      </div>
+                      <div className={`text-sm leading-relaxed ${isActive ? "text-white font-medium" : "text-muted"}`}>
+                        {caption.text}
+                      </div>
+                    </div>
+                  );
+                })
+              ) : (
+                <div className="text-sm text-muted text-center py-8">
+                  No transcript available for this lesson.
+                </div>
+              )}
+            </div>
+          </div>
         </div>
       </div>
     </div>
