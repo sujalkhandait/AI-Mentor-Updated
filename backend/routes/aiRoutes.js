@@ -1,9 +1,9 @@
 import express from "express";
 import fs from "fs";
 import path from "path";
-import dotenv from "dotenv";
 import { protect } from "../middleware/authMiddleware.js";
 import { getCourseAndLessonTitles } from "../controllers/courseController.js";
+import dotenv from "dotenv";
 dotenv.config();
 import { fileURLToPath } from "url";
 
@@ -84,6 +84,7 @@ router.get("/transcript/:filename", async (req, res) => {
 
     const data = await response.json();
     res.json(data);
+
   } catch (error) {
     console.error("❌ Transcript Proxy Error:", error.message);
     res.status(500).json({ error: "Failed to load transcript" });
@@ -108,11 +109,16 @@ router.get("/video/:courseId/:filename", async (req, res) => {
       });
     }
 
-    const arrayBuffer = await response.arrayBuffer();
-    const videoBuffer = Buffer.from(arrayBuffer);
-
     res.setHeader("Content-Type", "video/mp4");
-    res.send(videoBuffer);
+    // Streams the response body directly to the client
+    const reader = response.body.getReader();
+
+    while (true) {
+      const { done, value } = await reader.read();
+      if (done) break;
+      res.write(value);
+    }
+    res.end();
 
   } catch (error) {
     console.error("❌ Proxy Error:", error.message);

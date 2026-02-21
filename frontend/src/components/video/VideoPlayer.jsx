@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Play, Pause, Volume2, VolumeX, Maximize, Minimize, Subtitles } from "lucide-react";
 
 const VideoPlayer = ({
@@ -10,7 +10,6 @@ const VideoPlayer = ({
   playerContainerRef,
   videoRef,
   handleProgress,
-  getYouTubeVideoId,
   isAIVideoLoading,
   isPlaying,
   volume,
@@ -29,10 +28,9 @@ const VideoPlayer = ({
 
 
   const [isBuffering, setIsBuffering] = useState(false);
-
   const [showCaptions, setShowCaptions] = useState(true);
   const [showControls, setShowControls] = useState(true);
-
+  const controlsTimeoutRef = useRef(null);
 
   useEffect(() => {
     const v = videoRef?.current;
@@ -53,8 +51,37 @@ const VideoPlayer = ({
     };
   }, [videoRef]);
 
+  // Sync isPlaying state with actual video element
+  useEffect(() => {
+    const v = videoRef?.current;
+    if (!v) return;
+
+    if (isPlaying) {
+      const p = v.play();
+      if (p && typeof p.then === "function") {
+        p.catch(err => console.warn("Auto-play blocked:", err));
+      }
+    } else {
+      v.pause();
+    }
+  }, [isPlaying, videoRef, aiVideoUrl]);
+
   // Unified loading state: either AI is being generated OR the video is buffering bytes
   const showLoading = isAIVideoLoading || isBuffering;
+
+  const resetControlsTimeout = () => {
+    setShowControls(true);
+    if (controlsTimeoutRef.current) clearTimeout(controlsTimeoutRef.current);
+    controlsTimeoutRef.current = setTimeout(() => {
+      if (isPlaying) setShowControls(false);
+    }, 3000);
+  };
+
+  useEffect(() => {
+    return () => {
+      if (controlsTimeoutRef.current) clearTimeout(controlsTimeoutRef.current);
+    };
+  }, []);
 
   return (
     <div
@@ -79,15 +106,15 @@ const VideoPlayer = ({
         onClick={togglePlay}
       />
 
-        {/* Loading Overlay (Original Style) */}
-        {showLoading && (
-          <div className="absolute inset-0 bg-black/50 flex items-center justify-center z-10">
-            <div className="flex flex-col items-center">
-              <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-white"></div>
-              <p className="text-white mt-2 text-sm">Loading video...</p>
-            </div>
+      {/* Loading Overlay (Original Style) */}
+      {showLoading && (
+        <div className="absolute inset-0 bg-black/50 flex items-center justify-center z-10">
+          <div className="flex flex-col items-center">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-white"></div>
+            <p className="text-white mt-2 text-sm">Loading video...</p>
           </div>
-        )}
+        </div>
+      )}
 
       {/* Caption Overlay */}
       {activeCaption && showCaptions && (

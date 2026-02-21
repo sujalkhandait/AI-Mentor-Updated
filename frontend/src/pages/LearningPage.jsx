@@ -40,8 +40,6 @@ const getYouTubeVideoId = (url) => {
 export default function Learning() {
 
 
-  const [playOriginalCelebrityVideo, setPlayOriginalCelebrityVideo] =
-    useState(false);
   const navigate = useNavigate();
   const { id: courseId } = useParams();
   const { user, updateUser } = useAuth();
@@ -61,9 +59,9 @@ export default function Learning() {
 
   // map celebrities to videos and vtt files
   const celebrityVideoMap = {
-    "Salman Khan": { video: "http://localhost:5000/videos/salman.mp4", vtt: "http://localhost:5000/videos/salman.vtt" },
-    "Modi ji": { video: "http://localhost:5000/videos/modi.mp4", vtt: "http://localhost:5000/videos/modi.vtt" },
-    SRK: { video: "http://localhost:5000/videos/srk.mp4", vtt: "http://localhost:5000/videos/srk.vtt" },
+    "Salman Khan": { video: "/videos/salman.mp4", vtt: "/videos/salman.vtt" },
+    "Modi ji": { video: "/videos/modi.mp4", vtt: "/videos/modi.vtt" },
+    SRK: { video: "/videos/srk.mp4", vtt: "/videos/srk.vtt" },
   };
 
   const [selectedCelebrity, setSelectedCelebrity] = useState(null);
@@ -182,12 +180,12 @@ export default function Learning() {
           if (userProgress?.currentLesson?.lessonId) {
             initialLesson = findFullLesson(userProgress.currentLesson.lessonId);
           }
-          
+
           // If no progress or lesson not found, fallback to the course's default currentLesson 
           // or the very first lesson of the first module
           if (!initialLesson) {
-             const defaultId = courseData.currentLesson?.id || courseData.modules?.[0]?.lessons?.[0]?.id;
-             initialLesson = findFullLesson(defaultId);
+            const defaultId = courseData.currentLesson?.id || courseData.modules?.[0]?.lessons?.[0]?.id;
+            initialLesson = findFullLesson(defaultId);
           }
 
           if (initialLesson) {
@@ -205,7 +203,7 @@ export default function Learning() {
               const lesson = courseData.modules
                 .flatMap((module) => module.lessons)
                 .find((l) => l.id === currentLesson.lessonId);
-              
+
               if (lesson) {
                 hasRestoredProgressRef.current = true;
                 // Restore saved AI content if it exists
@@ -242,21 +240,17 @@ export default function Learning() {
   // Load and parse VTT captions (simple parser) when selectedCelebrity or generatedTextContent changes
   useEffect(() => {
     const loadCaptions = async () => {
-      console.log("🔍 Loading captions for celebrity:", selectedCelebrity);
+      console.log("🔍 Loading captions. Celebrity:", selectedCelebrity, "Duration:", duration);
       try {
-        const v = videoRef.current;
-        const duration = v?.duration;
-
-        // Prioritize AI-generated text if available
-        if (generatedTextContent && duration) {
+        // Prioritize AI-generated text if available and we have a valid duration
+        if (generatedTextContent && duration > 0) {
           console.log("🤖 Generating captions from AI text, duration:", duration);
           const sentences = generatedTextContent
             .split(/[.!?]+/)
             .map(s => s.trim())
             .filter(Boolean);
 
-          const videoDuration = duration;
-          const timePerSentence = videoDuration / sentences.length;
+          const timePerSentence = duration / sentences.length;
 
           const generatedCaptions = sentences.map((sentence, index) => ({
             start: index * timePerSentence,
@@ -331,11 +325,11 @@ export default function Learning() {
     loadCaptions();
   }, [selectedCelebrity, generatedTextContent, duration]);
 
-// Ensure when currentLesson changes we load its video into the player
-useEffect(() => {
-  const v = videoRef.current;
-  if (!v || !learningData?.currentLesson) return;
-  // Prevent redundant calls when user state updates but lesson/celebrity haven't changed
+  // Ensure when currentLesson changes we load its video into the player
+  useEffect(() => {
+    const v = videoRef.current;
+    if (!v || !learningData?.currentLesson) return;
+    // Prevent redundant calls when user state updates but lesson/celebrity haven't changed
     const lessonChanged = lastLessonIdRef.current !== learningData.currentLesson.id;
     const celebrityChanged = lastCelebrityRef.current !== selectedCelebrity;
 
@@ -346,38 +340,67 @@ useEffect(() => {
     lastLessonIdRef.current = learningData.currentLesson.id;
     lastCelebrityRef.current = selectedCelebrity;
 
-  const loadVideo = async () => {
-    // Clear existing captions only when changing lesson/celebrity
+    const loadVideo = async () => {
+      // Clear existing captions only when changing lesson/celebrity
       setCaptions([]);
       setActiveCaption("");
-    if (selectedCelebrity) {
-      // Check if we already have saved content for this lesson and celebrity
+      if (selectedCelebrity) {
+        // Check if we already have saved content for this lesson and celebrity
         const savedData = user?.purchasedCourses
           ?.find(c => c.courseId === parseInt(courseId))
           ?.progress?.lessonData?.[learningData.currentLesson.id];
 
-          if (savedData?.generatedTextContent && savedData?.celebrity === selectedCelebrity) {
-            console.log("♻️ Using saved AI content for this lesson");
-            setGeneratedTextContent(savedData.generatedTextContent);
-            setAiVideoUrl(savedData.aiVideoUrl);
-            return;
-          }
-      setIsAIVideoLoading(true);
-      setGeneratedTextContent("");
-      try {
-        const payload = {
-          courseId: parseInt(courseId),
-          lessonId: currentLesson?.id,
-          celebrity: selectedCelebrity.split(" ")[0].toLowerCase(),
-        };
+        if (savedData?.generatedTextContent && savedData?.celebrity === selectedCelebrity) {
+          console.log("♻️ Using saved AI content for this lesson");
+          setGeneratedTextContent(savedData.generatedTextContent);
+          setAiVideoUrl(savedData.aiVideoUrl);
+          return;
+        }
+        setIsAIVideoLoading(true);
+        setGeneratedTextContent("");
+        try {
+          const payload = {
+            courseId: parseInt(courseId),
+            lessonId: learningData.currentLesson.id,
+            celebrity: selectedCelebrity.split(" ")[0].toLowerCase(),
+          };
 
-        const data = await getAIVideo(payload);
+          const data = await getAIVideo(payload);
 
           if (data && data.videoUrl) {
-            // Just use direct URL (no blob, no fetch)
+            // Now poll for video availability because generation is asynchronous
+            let isReady = false;
+            let attempts = 0;
+            const maxAttempts = 30; // 30 seconds max
+
+            while (!isReady && attempts < maxAttempts) {
+              try {
+                const checkRes = await fetch(data.videoUrl, { method: 'HEAD' });
+                if (checkRes.ok) {
+                  isReady = true;
+                  break;
+                }
+              } catch (e) {
+                // Ignore fetch errors during polling
+              }
+              attempts++;
+              await new Promise(r => setTimeout(r, 1000));
+            }
+
+            if (!isReady) {
+              console.warn("AI Video generation timed out or failed to become available");
+              throw new Error("Video generation taking too long. Please try again later.");
+            }
+
+            // Check if the user has navigated away while polling
+            if (lastLessonIdRef.current !== learningData.currentLesson.id ||
+              lastCelebrityRef.current !== selectedCelebrity) {
+              console.log("🚫 Polling finished but context changed. Skipping update.");
+              return;
+            }
+
             setAiVideoUrl(data.videoUrl);
-            setGeneratedTextContent(data.textContent || "");
-                        
+
             // If transcript is available, fetch its content
             if (data.transcriptName) {
               try {
@@ -386,23 +409,14 @@ useEffect(() => {
                 });
                 if (trRes.ok) {
                   const trData = await trRes.json();
-                  setAiTranscript(trData.content);
+                  setGeneratedTextContent(trData.content);
                 }
               } catch (trErr) {
                 console.error("Error fetching transcript:", trErr);
               }
             }
-            if (v.src !== data.videoUrl) {
-              v.pause();
-              v.src = data.videoUrl;
-              v.load();
-              const p = v.play();
-              if (p && typeof p.then === "function") {
-                p.then(() => setIsPlaying(true)).catch(() => setIsPlaying(false));
-              } else {
-                setIsPlaying(true);
-              }
-            }
+
+            setIsPlaying(true);
 
             // Save the generated content to the backend
             saveLessonData(learningData.currentLesson.id, {
@@ -417,16 +431,9 @@ useEffect(() => {
           const src =
             celebrityVideoMap[selectedCelebrity]?.video ||
             learningData.currentLesson.videoUrl;
-          if (src && v.src !== src) {
-            v.pause();
-            v.src = src;
-            v.load();
-            const p = v.play();
-            if (p && typeof p.then === "function") {
-              p.then(() => setIsPlaying(true)).catch(() => setIsPlaying(false));
-            } else {
-              setIsPlaying(true);
-            }
+          if (src) {
+            setAiVideoUrl(null); // Fallback to original
+            setIsPlaying(true);
           }
         } finally {
           setIsAIVideoLoading(false);
@@ -446,6 +453,42 @@ useEffect(() => {
 
     loadVideo();
   }, [learningData?.currentLesson, selectedCelebrity]);
+
+  useEffect(() => {
+    const handleFullscreenChange = () => {
+      const isFull = !!(
+        document.fullscreenElement ||
+        document.webkitFullscreenElement ||
+        document.mozFullScreenElement ||
+        document.msFullscreenElement
+      );
+      setIsFullscreen(isFull);
+    };
+
+    const events = [
+      "fullscreenchange",
+      "webkitfullscreenchange",
+      "mozfullscreenchange",
+      "MSFullscreenChange"
+    ];
+
+    events.forEach(event => document.addEventListener(event, handleFullscreenChange));
+
+    // Support for iOS video element specifically
+    const video = videoRef.current;
+    if (video) {
+      video.addEventListener('webkitbeginfullscreen', () => setIsFullscreen(true));
+      video.addEventListener('webkitendfullscreen', () => setIsFullscreen(false));
+    }
+
+    return () => {
+      events.forEach(event => document.removeEventListener(event, handleFullscreenChange));
+      if (video) {
+        video.removeEventListener('webkitbeginfullscreen', () => setIsFullscreen(true));
+        video.removeEventListener('webkitendfullscreen', () => setIsFullscreen(false));
+      }
+    };
+  }, [videoRef]);
 
 
 
@@ -520,7 +563,7 @@ useEffect(() => {
           },
           currentLesson: {
             lessonId,
-            moduleTitle: expandedModule || ""
+            moduleTitle: modules.find(m => m.id === expandedModule)?.title || ""
           }
         }),
       });
@@ -563,7 +606,7 @@ useEffect(() => {
           completedLesson: { lessonId },
           currentLesson: {
             lessonId,
-            moduleTitle: expandedModule,
+            moduleTitle: modules.find(m => m.id === expandedModule)?.title || expandedModule || "",
           },
         }),
       });
@@ -585,7 +628,8 @@ useEffect(() => {
 
   const handleLessonClick = (lesson) => {
     // update current lesson locally and let useEffect handle video loading
-    setAiTranscript(null);
+    setGeneratedTextContent(null);
+    setAiVideoUrl(null);
     setLearningData((prev) => ({ ...prev, currentLesson: lesson }));
   };
 
@@ -595,10 +639,6 @@ useEffect(() => {
       handleLessonClick(prevLesson);
     }
   };
-
-  const handleCourseComplete = async () =>{
-    
-  }
 
   const handleNext = async () => {
     if (currentLessonIndex >= allLessons.length - 1) return;
@@ -677,10 +717,10 @@ useEffect(() => {
   };
 
   const handleSeek = (e) => {
-    if (videoRef.current) {
-      const rect = e.target.getBoundingClientRect();
+    if (videoRef.current && duration > 0) {
+      const rect = e.currentTarget.getBoundingClientRect();
       const clickX = e.clientX - rect.left;
-      const percentage = clickX / rect.width;
+      const percentage = Math.max(0, Math.min(1, clickX / rect.width));
       const newTime = percentage * duration;
       videoRef.current.currentTime = newTime;
       setCurrentTime(newTime);
@@ -688,20 +728,60 @@ useEffect(() => {
     }
   };
 
+  const handleTranscriptClick = (startTime) => {
+    if (videoRef.current) {
+      videoRef.current.currentTime = startTime;
+      setCurrentTime(startTime);
+      if (duration > 0) {
+        setProgress((startTime / duration) * 100);
+      }
+      if (!isPlaying) {
+        togglePlay();
+      }
+    }
+  };
+
+
   const toggleFullscreen = () => {
-    if (!document.fullscreenElement) {
-      playerContainerRef.current?.requestFullscreen();
-      setIsFullscreen(true);
+    const container = playerContainerRef.current;
+    if (!container) return;
+
+    const isFull = !!(
+      document.fullscreenElement ||
+      document.webkitFullscreenElement ||
+      document.mozFullScreenElement ||
+      document.msFullscreenElement
+    );
+
+    if (!isFull) {
+      const requestMethod =
+        container.requestFullscreen ||
+        container.webkitRequestFullscreen ||
+        container.mozRequestFullScreen ||
+        container.msRequestFullscreen;
+
+      if (requestMethod) {
+        requestMethod.call(container).catch(err => {
+          console.error(`Error attempting to enable full-screen mode: ${err.message}`);
+        });
+      }
     } else {
-      document.exitFullscreen();
-      setIsFullscreen(false);
+      const exitMethod =
+        document.exitFullscreen ||
+        document.webkitExitFullscreen ||
+        document.mozCancelFullScreen ||
+        document.msExitFullscreen;
+
+      if (exitMethod) {
+        exitMethod.call(document);
+      }
     }
   };
 
   const formatTime = (time) => {
-    if (!time || !isFinite(time)) return "0:00";
-    const minutes = Math.floor(time / 60);
-    const seconds = Math.floor(time % 60);
+    if (time === undefined || time === null || Object.is(time, NaN) || !isFinite(time)) return "0:00";
+    const minutes = Math.floor(Math.abs(time) / 60);
+    const seconds = Math.floor(Math.abs(time) % 60);
     return `${minutes}:${seconds.toString().padStart(2, "0")}`;
   };
 
@@ -1026,6 +1106,7 @@ useEffect(() => {
                 playerContainerRef={playerContainerRef}
                 videoRef={videoRef}
                 handleProgress={handleProgress}
+                isAIVideoLoading={isAIVideoLoading}
                 isPlaying={isPlaying}
                 volume={volume}
                 isMuted={isMuted}
@@ -1079,50 +1160,14 @@ useEffect(() => {
             </div>
           </div>
 
-          {/* Transcript Section - Takes 1 column */}
-          <div className="lg:col-span-1 bg-card border-l border-border overflow-y-auto max-h-[calc(100vh-180px)]">
-            <div className="sticky top-0 bg-card border-b border-border px-6 py-4 z-10">
-              <h2 className="text-lg font-semibold text-main">
-                Transcript
-              </h2>
-            </div>
-            <div
-              className="px-6 py-4 space-y-4 scroll-smooth"
-            >
-
-              {captions.length > 0 ? (
-                captions.map((caption, index) => {
-                  const isActive = currentTime >= caption.start && currentTime <= caption.end;
-                  return (
-                    <div
-                      key={index}
-                      ref={isActive ? activeCaptionRef : null}
-                      className={`py-3 border-l-4 pl-4 rounded-r cursor-pointer transition-all ${isActive
-                        ? "border-blue-500 bg-transcript-bg border-border"
-                        : "border-transparent bg-card hover:bg-color-transcript-bg hover:border-border"
-                        }`}
-                      onClick={() => {
-                        if (videoRef.current) {
-                          videoRef.current.currentTime = caption.start;
-                        }
-                      }}
-                    >
-                      <div className={`text-xs font-medium mb-1 text-muted`}>
-                        {formatTime(caption.start)}
-                      </div>
-                      <div className={`text-sm leading-relaxed text-muted`}>
-                        {caption.text}
-                      </div>
-                    </div>
-                  );
-                })
-              ) : (
-                <div className="text-sm text-muted text-center py-8">
-                  No transcript available for this lesson.
-                </div>
-              )}
-            </div>
-          </div>
+          <AITranscript
+            captions={captions}
+            currentTime={currentTime}
+            activeCaptionRef={activeCaptionRef}
+            containerRef={transcriptContainerRef}
+            onTranscriptClick={handleTranscriptClick}
+            formatTime={formatTime}
+          />
         </div>
       </div>
     </div>

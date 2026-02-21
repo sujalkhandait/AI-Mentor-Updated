@@ -104,9 +104,10 @@ def generate_lesson(data: LessonRequest, background_tasks: BackgroundTasks):
     base_filename = f"{topic_clean}_{timestamp}"
     
     # Run as a background task to avoid timeout issues
-    process_lesson(data, base_filename)
+    background_tasks.add_task(process_lesson, data, base_filename)
+    
     return {
-        "status": "Completed",
+        "status": "Processing",
         "filename": f"{base_filename}.mp4",
         "text_file": f"{base_filename}.txt",
         "audio_file": f"{base_filename}.mp3"
@@ -115,7 +116,6 @@ def generate_lesson(data: LessonRequest, background_tasks: BackgroundTasks):
 # --------------------------
 # Background Task Logic
 # --------------------------
-def process_lesson(data: LessonRequest, base_filename: str):
 def process_lesson(data: LessonRequest, base_filename: str):
     try:
         print(f"\n🚀 Starting generation for: {data.topic} ({data.celebrity})")
@@ -203,7 +203,5 @@ def process_lesson(data: LessonRequest, base_filename: str):
 
     except Exception as e:
         print(f"❌ Error generating lesson: {e}")
-        import traceback
-        traceback.print_exc()
         import traceback
         traceback.print_exc()
