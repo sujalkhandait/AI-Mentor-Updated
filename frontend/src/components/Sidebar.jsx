@@ -57,14 +57,14 @@ const Sidebar = ({
     <>
       {sidebarOpen && (
         <div
-          className="fixed inset-0 bg-black bg-opacity-50 z-40 lg:hidden"
+          className="fixed inset-0 bg-black/50 backdrop-blur-sm z-40 lg:hidden"
           onClick={() => setSidebarOpen(false)}
         />
       )}
 
       <div
         className={`
-        fixed lg:fixed top-16 left-0 z-50 bg-white border-r border-gray-200
+        fixed lg:fixed top-18.5 left-0 z-50 bg-card border-r border-border
         transform transition-all duration-300 ease-in-out lg:translate-x-0
         ${sidebarOpen ? "translate-x-0" : "-translate-x-full lg:translate-x-0"}
         ${sidebarCollapsed ? "lg:w-20" : "lg:w-80"}
@@ -72,11 +72,11 @@ const Sidebar = ({
       `}
       >
         <button
-          className="hidden lg:block absolute -right-5 top-10 w-10 h-10 bg-white border border-gray-200 rounded-full flex items-center justify-center hover:bg-gray-50 z-10"
+          className="hidden lg:block absolute -right-5 -top-5 w-10 h-10 bg-card border border-border rounded-full hover:bg-canvas-alt z-10"
           onClick={() => setSidebarCollapsed(!sidebarCollapsed)}
         >
           <ChevronRight
-            className={`w-5 h-5 text-gray-600 transition-transform duration-300 ${
+            className={`w-5 h-5 text-muted transition-transform duration-300 ${
               sidebarCollapsed ? "rotate-180" : ""
             }`}
           />
@@ -99,7 +99,7 @@ const Sidebar = ({
                     ${
                       isActive
                         ? "bg-teal-50 text-teal-600"
-                        : "text-gray-600 hover:bg-gray-50"
+                        : "text-muted hover:bg-canvas-alt"
                     }
                   `}
                 >
@@ -126,7 +126,7 @@ const Sidebar = ({
 
         {!sidebarCollapsed ? (
           <div className="absolute bottom-4 left-4 right-4">
-            <div className="bg-gradient-to-r from-purple-50 to-blue-50 rounded-xl p-4 border border-purple-100">
+            <div className="bg-gradient-to-r from-purple-50 to-blue-50 dark:from-slate-800 dark:to-slate-900 rounded-xl p-4 border border-purple-100 dark:border-slate-700">
               <div className="flex items-center">
                 <img
                   src={`https://api.dicebear.com/8.x/initials/svg?seed=${
@@ -136,10 +136,10 @@ const Sidebar = ({
                   className="w-8 h-8 rounded-full"
                 />
                 <div className="ml-3 flex-1">
-                  <div className="text-sm font-medium text-gray-900">
+                  <div className="text-sm font-medium text-main">
                     {user?.name}
                   </div>
-                  <div className="text-xs text-gray-500">{user?.email}</div>
+                  <div className="text-xs text-muted">{user?.email}</div>
                 </div>
                 <button
                   onClick={handleLogout}
