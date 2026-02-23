@@ -2,10 +2,10 @@ import React, { useState, useEffect } from 'react'
 import Header from '../components/Header' // Assuming Header is correctly imported
 import Sidebar from '../components/Sidebar'
 import { useAuth } from '../context/AuthContext'
+import { useSidebar } from '../context/SidebarContext'
 
 const Analytics = () => {
-  const [sidebarOpen, setSidebarOpen] = useState(false)
-  const [sidebarCollapsed, setSidebarCollapsed] = useState(false)
+  const { sidebarOpen, setSidebarOpen, sidebarCollapsed, setSidebarCollapsed } = useSidebar();
   const [analyticsData, setAnalyticsData] = useState(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
@@ -69,7 +69,7 @@ const Analytics = () => {
         }
 
         const [analyticsRes, coursesRes] = await Promise.all([
-          fetch('http://localhost:5000/api/analytics', { headers }),
+          fetch('/api/analytics', { headers }),
           fetch('/api/courses', { headers })
         ])
 
@@ -176,15 +176,9 @@ const Analytics = () => {
 
   return (
     <div className="min-h-screen bg-canvas-alt flex flex-col">
-      <Header sidebarOpen={sidebarOpen} setSidebarOpen={setSidebarOpen} />
+      <Header />
 
-      <Sidebar
-        sidebarOpen={sidebarOpen}
-        setSidebarOpen={setSidebarOpen}
-        sidebarCollapsed={sidebarCollapsed}
-        setSidebarCollapsed={setSidebarCollapsed}
-        activePage="analytics"
-      />
+      <Sidebar activePage="analytics" />
 
       {/* Main Content */}
       <div className={`flex-1 flex flex-col overflow-hidden transition-all duration-300 ${sidebarCollapsed ? 'lg:ml-20' : 'lg:ml-80'

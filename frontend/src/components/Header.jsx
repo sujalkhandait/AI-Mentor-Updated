@@ -3,8 +3,10 @@ import { Search, Bell, Menu, X } from "lucide-react";
 import { useAuth } from "../context/AuthContext";
 import { useNavigate } from "react-router-dom";
 import ThemeToggle from "../components/common/ThemeToggle"; // ✅ ADDITION
+import { useSidebar } from "../context/SidebarContext";
 
-const Header = ({ sidebarOpen, setSidebarOpen }) => {
+const Header = () => {
+  const { sidebarOpen, setSidebarOpen } = useSidebar();
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const { user, logout } = useAuth();
   const navigate = useNavigate();
@@ -30,7 +32,7 @@ const Header = ({ sidebarOpen, setSidebarOpen }) => {
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
-const displayName = user?.name || user?.email?.split('@')[0] || "User";
+  const displayName = user?.name || user?.email?.split('@')[0] || "User";
 
   return (
     <header className="bg-card border-b border-border px-6 py-4 fixed top-0 left-0 right-0 z-50">

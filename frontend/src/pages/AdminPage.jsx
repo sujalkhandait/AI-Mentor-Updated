@@ -1,10 +1,8 @@
-import React, { useState, useEffect } from 'react';
-import Header from '../components/Header';
-import Sidebar from '../components/Sidebar';
+import Sidebar from "../components/Sidebar";
+import { useSidebar } from "../context/SidebarContext";
 
 const AdminPage = () => {
-  const [sidebarOpen, setSidebarOpen] = useState(false);
-  const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
+  const { sidebarOpen, setSidebarOpen, sidebarCollapsed, setSidebarCollapsed } = useSidebar();
   const [courses, setCourses] = useState([]);
   const [selectedCourse, setSelectedCourse] = useState(null);
   const [activeTab, setActiveTab] = useState('courses');
@@ -200,10 +198,10 @@ const AdminPage = () => {
       if (!response.ok) {
         throw new Error('Failed to add lessons');
       }
-                            alert('Lessons added successfully!');
-                            setNewLessons([{ id: '', title: '', duration: '', completed: false, playing: false, type: 'video' }]);
-                            setSelectedModule('');
-                            await handleManageCourse(selectedCourse.id); // Refresh course data to include new lessons
+      alert('Lessons added successfully!');
+      setNewLessons([{ id: '', title: '', duration: '', completed: false, playing: false, type: 'video' }]);
+      setSelectedModule('');
+      await handleManageCourse(selectedCourse.id); // Refresh course data to include new lessons
     } catch (error) {
       console.error('Error adding lessons:', error);
       alert(`Error: ${error.message}`);
@@ -212,14 +210,8 @@ const AdminPage = () => {
 
   return (
     <div className="min-h-screen bg-canvas-alt flex flex-col">
-      <Header sidebarOpen={sidebarOpen} setSidebarOpen={setSidebarOpen} />
-      <Sidebar
-        sidebarOpen={sidebarOpen}
-        setSidebarOpen={setSidebarOpen}
-        sidebarCollapsed={sidebarCollapsed}
-        setSidebarCollapsed={setSidebarCollapsed}
-        activePage="admin"
-      />
+      <Header />
+      <Sidebar activePage="admin" />
       <div className={`flex-1 flex flex-col overflow-hidden transition-all duration-300 ${sidebarCollapsed ? 'lg:ml-20' : 'lg:ml-80'}`}>
         <main className="flex-1 mt-16 overflow-x-hidden overflow-y-auto bg-canvas-alt p-8">
           <div className="max-w-7xl mx-auto space-y-8">

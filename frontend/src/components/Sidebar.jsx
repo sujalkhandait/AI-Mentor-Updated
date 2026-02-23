@@ -4,13 +4,17 @@ import { useAuth } from "../context/AuthContext";
 import { ChevronRight } from "lucide-react";
 import API_BASE_URL from "../lib/api";
 
+import { useSidebar } from "../context/SidebarContext";
+
 const Sidebar = ({
-  sidebarOpen,
-  setSidebarOpen,
-  sidebarCollapsed,
-  setSidebarCollapsed,
   activePage = "dashboard",
 }) => {
+  const {
+    sidebarOpen,
+    setSidebarOpen,
+    sidebarCollapsed,
+    setSidebarCollapsed
+  } = useSidebar();
   const { user, logout } = useAuth();
   const navigate = useNavigate();
   const [navigationItems, setNavigationItems] = useState([]);
@@ -69,6 +73,7 @@ const Sidebar = ({
         ${sidebarOpen ? "translate-x-0" : "-translate-x-full lg:translate-x-0"}
         ${sidebarCollapsed ? "lg:w-20" : "lg:w-80"}
         w-80 h-[calc(100vh-4rem)]
+        overflow-visible
       `}
       >
         <button
@@ -76,13 +81,13 @@ const Sidebar = ({
           onClick={() => setSidebarCollapsed(!sidebarCollapsed)}
         >
           <ChevronRight
-            className={`mx-auto w-5 h-5 text-muted transition-transform duration-300 ${
-              sidebarCollapsed ? "rotate-180" : ""
-            }`}
+            className={`mx-auto w-5 h-5 text-muted transition-transform duration-300 ${sidebarCollapsed ? "rotate-180" : ""
+              }`}
           />
         </button>
 
-        <nav className="mt-8 px-4 overflow-y-auto h-[calc(100vh-4rem-110px)] scrollbar-hide">
+        <nav className={`mt-8 px-4 h-[calc(100vh-4rem-110px)] scrollbar-hide ${sidebarCollapsed ? "overflow-visible" : "overflow-y-auto"
+          }`}>
           <div className="space-y-2">
             {navigationItems.map((item) => {
               const isActive = activePage === item.id;
@@ -96,10 +101,9 @@ const Sidebar = ({
                   onKeyDown={(e) => e.key === "Enter" && navigate(item.path)}
                   className={`cursor-pointer flex items-center px-3 py-3 rounded-xl group relative
                     ${sidebarCollapsed ? "justify-center" : ""}
-                    ${
-                      isActive
-                        ? "bg-teal-50 text-teal-600"
-                        : "text-muted hover:bg-canvas-alt"
+                    ${isActive
+                      ? "bg-teal-50 text-teal-600"
+                      : "text-muted hover:bg-canvas-alt"
                     }
                   `}
                 >
@@ -114,7 +118,7 @@ const Sidebar = ({
                     </span>
                   )}
                   {sidebarCollapsed && (
-                    <div className="absolute left-full ml-2 px-2 py-1 bg-gray-900 text-white text-sm rounded-md opacity-0 group-hover:opacity-100 pointer-events-none">
+                    <div className="absolute left-full ml-4 px-3 py-2 bg-gray-900 text-white text-xs font-medium rounded-lg opacity-0 group-hover:opacity-100 pointer-events-none transition-all duration-200 whitespace-nowrap shadow-xl z-50">
                       {item.label}
                     </div>
                   )}
@@ -129,9 +133,8 @@ const Sidebar = ({
             <div className="bg-gradient-to-r from-purple-50 to-blue-50 dark:from-slate-800 dark:to-slate-900 rounded-xl p-4 border border-purple-100 dark:border-slate-700">
               <div className="flex items-center">
                 <img
-                  src={`https://api.dicebear.com/8.x/initials/svg?seed=${
-                    user?.firstName || "Eliza"
-                  }%20${user?.lastName || "Chris"}`}
+                  src={`https://api.dicebear.com/8.x/initials/svg?seed=${user?.firstName || "Eliza"
+                    }%20${user?.lastName || "Chris"}`}
                   alt={user?.name || "User"}
                   className="w-8 h-8 rounded-full"
                 />
@@ -153,9 +156,8 @@ const Sidebar = ({
         ) : (
           <div className="absolute bottom-4 left-4 right-4 flex justify-center">
             <img
-              src={`https://api.dicebear.com/8.x/initials/svg?seed=${
-                user?.firstName || "Eliza"
-              }%20${user?.lastName || "Chris"}`}
+              src={`https://api.dicebear.com/8.x/initials/svg?seed=${user?.firstName || "Eliza"
+                }%20${user?.lastName || "Chris"}`}
               alt={user?.name || "User"}
               className="w-10 h-10 rounded-full border-2 border-purple-200"
             />

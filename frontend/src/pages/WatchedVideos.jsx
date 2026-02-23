@@ -1,4 +1,7 @@
 import React, { useState, useEffect } from "react";
+import Sidebar from "../components/Sidebar";
+import Header from "../components/Header";
+import { useSidebar } from "../context/SidebarContext";
 import {
   Search,
   Bell,
@@ -10,14 +13,11 @@ import {
   MoreVertical,
   ChevronDown,
 } from "lucide-react";
-import Sidebar from "../components/Sidebar";
-import Header from "../components/Header";
 import API_BASE_URL from "../lib/api";
 
 const WatchedVideos = () => {
+  const { sidebarOpen, setSidebarOpen, sidebarCollapsed, setSidebarCollapsed } = useSidebar();
   const [searchQuery, setSearchQuery] = useState("");
-  const [sidebarOpen, setSidebarOpen] = useState(false);
-  const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [courseFilter, setCourseFilter] = useState("All Courses");
   const [statusFilter, setStatusFilter] = useState("All Status");
   const [sortBy, setSortBy] = useState("Most Recent");
@@ -66,17 +66,10 @@ const WatchedVideos = () => {
   if (loading) {
     return (
       <div className="min-h-screen bg-canvas-alt flex">
-        <Sidebar
-          sidebarOpen={sidebarOpen}
-          setSidebarOpen={setSidebarOpen}
-          sidebarCollapsed={sidebarCollapsed}
-          setSidebarCollapsed={setSidebarCollapsed}
-          activePage="watched"
-        />
+        <Sidebar activePage="watched" />
         <div
-          className={`flex-1 flex flex-col transition-all duration-300 ${
-            sidebarCollapsed ? "lg:ml-20" : "lg:ml-80"
-          }`}
+          className={`flex-1 flex flex-col transition-all duration-300 ${sidebarCollapsed ? "lg:ml-20" : "lg:ml-80"
+            }`}
         >
           <Header />
           <main className="flex-1 p-4 md:p-6 lg:p-8 flex items-center justify-center">
@@ -100,9 +93,8 @@ const WatchedVideos = () => {
     if (diffDays === 1) return "1 day ago";
     if (diffDays < 7) return `${diffDays} days ago`;
     if (diffDays < 30)
-      return `${Math.floor(diffDays / 7)} week${
-        Math.floor(diffDays / 7) > 1 ? "s" : ""
-      } ago`;
+      return `${Math.floor(diffDays / 7)} week${Math.floor(diffDays / 7) > 1 ? "s" : ""
+        } ago`;
     return date.toLocaleDateString();
   };
 
@@ -276,13 +268,12 @@ const WatchedVideos = () => {
         {/* Progress Bar */}
         <div className="absolute bottom-0 left-0 w-full h-1 bg-gray-300 dark:bg-gray-700">
           <div
-            className={`h-full ${
-              video.status === "completed"
+            className={`h-full ${video.status === "completed"
                 ? "bg-green-500"
                 : video.status === "in-progress"
-                ? "bg-orange-500"
-                : "bg-gray-400"
-            }`}
+                  ? "bg-orange-500"
+                  : "bg-gray-400"
+              }`}
             style={{ width: `${video.progress}%` }}
           ></div>
         </div>
@@ -311,11 +302,10 @@ const WatchedVideos = () => {
         {/* Action Buttons */}
         <div className="flex gap-2">
           <button
-            className={`flex-1 h-10 rounded-lg text-sm font-medium ${
-              video.status === "completed"
+            className={`flex-1 h-10 rounded-lg text-sm font-medium ${video.status === "completed"
                 ? "bg-canvas text-main hover:bg-canvas-alt"
                 : "bg-orange-500 text-white"
-            }`}
+              }`}
             onClick={() =>
               console.log(
                 video.status === "completed" ? "Rewatching" : "Resuming",
@@ -339,22 +329,15 @@ const WatchedVideos = () => {
   return (
     <div className="min-h-screen bg-canvas-alt flex">
       {/* Header */}
-      <Header sidebarOpen={sidebarOpen} setSidebarOpen={setSidebarOpen}/>
+      <Header />
 
       {/* Sidebar */}
-      <Sidebar
-        sidebarOpen={sidebarOpen}
-        setSidebarOpen={setSidebarOpen}
-        sidebarCollapsed={sidebarCollapsed}
-        setSidebarCollapsed={setSidebarCollapsed}
-        activePage="watched"
-      />
+      <Sidebar activePage="watched" />
 
       {/* Main Content */}
       <div
-        className={`flex-1 flex flex-col transition-all duration-300 ${
-          sidebarCollapsed ? "lg:ml-20" : "lg:ml-80"
-        }`}
+        className={`flex-1 flex flex-col transition-all duration-300 ${sidebarCollapsed ? "lg:ml-20" : "lg:ml-80"
+          }`}
       >
 
         {/* Main Dashboard Content */}

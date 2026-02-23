@@ -24,6 +24,7 @@ const VideoPlayer = ({
   handleSeek,
   toggleFullscreen,
   formatTime,
+  onEnded,
 }) => {
 
 
@@ -104,6 +105,7 @@ const VideoPlayer = ({
         controls={false}
         playsInline
         onClick={togglePlay}
+        onEnded={onEnded}
       />
 
       {/* Loading Overlay (Original Style) */}

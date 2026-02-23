@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from "react";
 import Header from "../components/Header";
 import Sidebar from "../components/Sidebar";
 import { useAuth } from "../context/AuthContext";
+import { useSidebar } from "../context/SidebarContext";
 import {
   Heart,
   Reply,
@@ -14,8 +15,7 @@ import {
 
 const DiscussionsPage = () => {
   const { user } = useAuth();
-  const [sidebarOpen, setSidebarOpen] = useState(false);
-  const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
+  const { sidebarOpen, setSidebarOpen, sidebarCollapsed, setSidebarCollapsed } = useSidebar();
   const [activeTab, setActiveTab] = useState("Recent");
   const [questionTitle, setQuestionTitle] = useState("");
   const [questionDescription, setQuestionDescription] = useState("");
@@ -261,15 +261,9 @@ const DiscussionsPage = () => {
 
   return (
     <div className="min-h-screen bg-canvas-alt flex flex-col">
-      <Header sidebarOpen={sidebarOpen} setSidebarOpen={setSidebarOpen} />
+      <Header />
 
-      <Sidebar
-        sidebarOpen={sidebarOpen}
-        setSidebarOpen={setSidebarOpen}
-        sidebarCollapsed={sidebarCollapsed}
-        setSidebarCollapsed={setSidebarCollapsed}
-        activePage="discussions"
-      />
+      <Sidebar activePage="discussions" />
 
       {/* Main Content */}
       <div

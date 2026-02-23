@@ -3,6 +3,7 @@ import { Link } from "react-router-dom";
 import Header from "../components/Header";
 import Sidebar from "../components/Sidebar";
 import { useAuth } from "../context/AuthContext";
+import { useSidebar } from "../context/SidebarContext";
 import {
   Search,
   Bell,
@@ -24,8 +25,7 @@ import {
 } from "lucide-react";
 
 const Dashboard = () => {
-  const [sidebarOpen, setSidebarOpen] = useState(false);
-  const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
+  const { sidebarOpen, setSidebarOpen, sidebarCollapsed, setSidebarCollapsed } = useSidebar();
   const [coursesData, setCoursesData] = useState({
     statsCards: [],
     allCourses: [],
@@ -300,14 +300,8 @@ const Dashboard = () => {
   if (loading) {
     return (
       <div className="min-h-screen bg-canvas-alt flex flex-col">
-        <Header sidebarOpen={sidebarOpen} setSidebarOpen={setSidebarOpen} />
-        <Sidebar
-          sidebarOpen={sidebarOpen}
-          setSidebarOpen={setSidebarOpen}
-          sidebarCollapsed={sidebarCollapsed}
-          setSidebarCollapsed={setSidebarCollapsed}
-          activePage="dashboard"
-        />
+        <Header />
+        <Sidebar activePage="dashboard" />
         <div
           className={`flex-1 flex flex-col overflow-hidden transition-all duration-300 ${sidebarCollapsed ? "lg:ml-20" : "lg:ml-80"
             }`}
@@ -324,15 +318,9 @@ const Dashboard = () => {
 
   return (
     <div className="min-h-screen bg-canvas-alt flex flex-col">
-      <Header sidebarOpen={sidebarOpen} setSidebarOpen={setSidebarOpen} />
+      <Header />
 
-      <Sidebar
-        sidebarOpen={sidebarOpen}
-        setSidebarOpen={setSidebarOpen}
-        sidebarCollapsed={sidebarCollapsed}
-        setSidebarCollapsed={setSidebarCollapsed}
-        activePage="dashboard"
-      />
+      <Sidebar activePage="dashboard" />
 
       {/* Main Content */}
       <div

@@ -18,6 +18,7 @@ import axios from "axios";
 
 // change02 
 import { useTheme } from "../context/ThemeContext";
+import { useSidebar } from "../context/SidebarContext";
 
 
 const settingsNavItems = [
@@ -33,8 +34,7 @@ export default function Settings() {
   const { theme, setTheme } = useTheme();
 
 
-  const [sidebarOpen, setSidebarOpen] = useState(false);
-  const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
+  const { sidebarOpen, setSidebarOpen, sidebarCollapsed, setSidebarCollapsed } = useSidebar();
   const [activeSetting, setActiveSetting] = useState("Profile");
   const { user, updateUser } = useAuth();
   const [formData, setFormData] = useState({
@@ -115,20 +115,13 @@ export default function Settings() {
 
   return (
     <div className="min-h-screen bg-canvas-alt flex flex-col">
-      <Header sidebarOpen={sidebarOpen} setSidebarOpen={setSidebarOpen} />
+      <Header />
 
-      <Sidebar
-        sidebarOpen={sidebarOpen}
-        setSidebarOpen={setSidebarOpen}
-        sidebarCollapsed={sidebarCollapsed}
-        setSidebarCollapsed={setSidebarCollapsed}
-        activePage="settings"
-      />
+      <Sidebar activePage="settings" />
 
       <div
-        className={`flex-1 flex flex-col overflow-hidden transition-all duration-300 mt-3 ${
-          sidebarCollapsed ? "lg:ml-20" : "lg:ml-80"
-        }`}
+        className={`flex-1 flex flex-col overflow-hidden transition-all duration-300 mt-3 ${sidebarCollapsed ? "lg:ml-20" : "lg:ml-80"
+          }`}
       >
         <div className="flex flex-1 mt-15">
           {/* Settings Sidebar */}
@@ -141,18 +134,16 @@ export default function Settings() {
                     <button
                       onClick={() => setActiveSetting(item.label)}
                       key={item.label}
-                      className={`w-full flex items-center gap-4 px-6 py-4 rounded-2xl text-left transition-colors ${
-                        activeSetting === item.label
+                      className={`w-full flex items-center gap-4 px-6 py-4 rounded-2xl text-left transition-colors ${activeSetting === item.label
                           ? "bg-teal-50 dark:bg-teal-900/20 text-main"
                           : "text-muted hover:bg-canvas-alt"
-                      }`}
+                        }`}
                     >
                       <IconComponent
-                        className={`w-4 h-4 ${
-                          activeSetting === item.label
+                        className={`w-4 h-4 ${activeSetting === item.label
                             ? "text-[#00BEA5]"
                             : "text-[#00BEA5]"
-                        }`}
+                          }`}
                       />
                       <span className="font-medium text-[16px] font-[Inter]">
                         {item.label}
@@ -524,61 +515,61 @@ export default function Settings() {
                           <label className="absolute -top-2 left-4 bg-card px-2 text-[14px] text-muted font-medium font-[Inter]">
                             Current Password
                           </label>
-                            <input
-                              type={showCurrentPassword ? "text" : "password"}
-                              value={passwordData.currentPassword}
-                              onChange={(e) =>
-                                setPasswordData((prev) => ({
-                                  ...prev,
-                                  currentPassword: e.target.value,
-                                }))
-                              }
-                              className="w-full h-[50px] px-4 pr-12 rounded-xl border border-border text-[16px] font-[Inter] focus:ring-2 focus:ring-primary focus:border-primary bg-input text-main"
-                            />
-                            <button
-                              type="button"
-                              onClick={() =>
-                                setShowCurrentPassword(!showCurrentPassword)
-                              }
-                              className="absolute right-3 top-1/2 transform -translate-y-1/2 text-muted hover:text-main"
-                            >
-                              {showCurrentPassword ? (
-                                <EyeOff className="w-5 h-5" />
-                              ) : (
-                                <Eye className="w-5 h-5" />
-                              )}
-                            </button>
+                          <input
+                            type={showCurrentPassword ? "text" : "password"}
+                            value={passwordData.currentPassword}
+                            onChange={(e) =>
+                              setPasswordData((prev) => ({
+                                ...prev,
+                                currentPassword: e.target.value,
+                              }))
+                            }
+                            className="w-full h-[50px] px-4 pr-12 rounded-xl border border-border text-[16px] font-[Inter] focus:ring-2 focus:ring-primary focus:border-primary bg-input text-main"
+                          />
+                          <button
+                            type="button"
+                            onClick={() =>
+                              setShowCurrentPassword(!showCurrentPassword)
+                            }
+                            className="absolute right-3 top-1/2 transform -translate-y-1/2 text-muted hover:text-main"
+                          >
+                            {showCurrentPassword ? (
+                              <EyeOff className="w-5 h-5" />
+                            ) : (
+                              <Eye className="w-5 h-5" />
+                            )}
+                          </button>
                         </div>
 
                         <div className="relative">
                           <label className="absolute -top-2 left-4 bg-card px-2 text-[14px] text-muted font-medium font-[Inter]">
                             New Password
                           </label>
-                            <input
-                              type={showNewPassword ? "text" : "password"}
-                              value={passwordData.newPassword}
-                              onChange={(e) =>
-                                setPasswordData((prev) => ({
-                                  ...prev,
-                                  newPassword: e.target.value,
-                                }))
-                              }
-                              className="w-full h-[50px] px-4 pr-12 rounded-xl border border-border text-[16px] font-[Inter] focus:ring-2 focus:ring-primary focus:border-primary bg-input text-main"
-                            />
-                            <button
-                              type="button"
-                              onClick={() =>
-                                setShowNewPassword(!showNewPassword)
-                              }
-                              className="absolute right-3 top-1/2 transform -translate-y-1/2 text-muted hover:text-main"
-                            >
-                              {showNewPassword ? (
-                                <EyeOff className="w-5 h-5" />
-                              ) : (
-                                <Eye className="w-5 h-5" />
-                              )}
-                            </button>
-                          
+                          <input
+                            type={showNewPassword ? "text" : "password"}
+                            value={passwordData.newPassword}
+                            onChange={(e) =>
+                              setPasswordData((prev) => ({
+                                ...prev,
+                                newPassword: e.target.value,
+                              }))
+                            }
+                            className="w-full h-[50px] px-4 pr-12 rounded-xl border border-border text-[16px] font-[Inter] focus:ring-2 focus:ring-primary focus:border-primary bg-input text-main"
+                          />
+                          <button
+                            type="button"
+                            onClick={() =>
+                              setShowNewPassword(!showNewPassword)
+                            }
+                            className="absolute right-3 top-1/2 transform -translate-y-1/2 text-muted hover:text-main"
+                          >
+                            {showNewPassword ? (
+                              <EyeOff className="w-5 h-5" />
+                            ) : (
+                              <Eye className="w-5 h-5" />
+                            )}
+                          </button>
+
                         </div>
 
                         <div className="relative">
@@ -696,7 +687,7 @@ export default function Settings() {
 
                                 ? "border-primary bg-teal-50 dark:bg-teal-900/20 text-main"
                                 : "border-border hover:border-primary text-muted hover:text-main"
-                            }`}
+                              }`}
                           >
                             <div className="text-2xl mb-2">{theme.icon}</div>
                             <div className="text-[14px] font-medium font-[Inter]">

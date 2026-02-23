@@ -3,6 +3,7 @@ import Header from "../components/Header";
 import Sidebar from "../components/Sidebar";
 import { useNavigate, useParams } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
+import { useSidebar } from "../context/SidebarContext";
 import { getAIVideo } from "../service/aiService";
 import VideoPlayer from "../components/video/VideoPlayer";
 import AITranscript from "../components/video/AITranscript";
@@ -43,9 +44,8 @@ export default function Learning() {
   const navigate = useNavigate();
   const { id: courseId } = useParams();
   const { user, updateUser } = useAuth();
-  const [sidebarOpen, setSidebarOpen] = useState(false);
-  const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
-  const [learningData, setLearningData] = useState(null);
+  const { sidebarOpen, setSidebarOpen, sidebarCollapsed, setSidebarCollapsed } = useSidebar();
+  const [learningData, setLearningData] = useState(null)
   const [expandedModule, setExpandedModule] = useState(null);
   const [searchQuery, setSearchQuery] = useState("");
   const [celebritySearch, setCelebritySearch] = useState("");
@@ -87,6 +87,8 @@ export default function Learning() {
   const lastLessonIdRef = useRef(null);
   const lastCelebrityRef = useRef(null);
   const hasRestoredProgressRef = useRef(false);
+  const watchedTimeRef = useRef(0);
+  const lastTimeRef = useRef(0);
 
   // Auto-scroll transcript to keep active caption visible
   useEffect(() => {
@@ -622,12 +624,46 @@ export default function Learning() {
     }
   };
 
+  const syncPlaytime = async () => {
+    if (watchedTimeRef.current < 1) return; // Don't sync small intervals
+
+    try {
+      const token = localStorage.getItem("token");
+      const hoursSpent = watchedTimeRef.current / 3600;
+
+      const res = await fetch("/api/analytics/study-session", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({
+          hours: hoursSpent,
+          date: new Date()
+        }),
+      });
+
+      if (res.ok) {
+        const data = await res.json();
+        if (updateUser && data.analytics) {
+          updateUser({ analytics: data.analytics });
+        }
+      }
+
+      // Reset local counter after sync
+      watchedTimeRef.current = 0;
+    } catch (error) {
+      console.error("Error syncing playtime:", error);
+    }
+  };
+
   const toggleModule = (id) => {
     setExpandedModule((prev) => (prev === id ? null : id));
   };
 
   const handleLessonClick = (lesson) => {
     // update current lesson locally and let useEffect handle video loading
+    syncPlaytime();
     setGeneratedTextContent(null);
     setAiVideoUrl(null);
     setLearningData((prev) => ({ ...prev, currentLesson: lesson }));
@@ -655,6 +691,7 @@ export default function Learning() {
       if (isPlaying) {
         videoRef.current.pause();
         setIsPlaying(false);
+        syncPlaytime();
       } else {
         const p = videoRef.current.play();
         if (p && typeof p.then === "function") {
@@ -694,6 +731,15 @@ export default function Learning() {
     if (videoRef.current) {
       const vidDuration = videoRef.current.duration;
       const vidCurrentTime = videoRef.current.currentTime;
+
+      // Track playtime
+      if (isPlaying) {
+        const delta = vidCurrentTime - lastTimeRef.current;
+        if (delta > 0 && delta < 1) { // Avoid jumps (seeking)
+          watchedTimeRef.current += delta;
+        }
+      }
+      lastTimeRef.current = vidCurrentTime;
 
       // Only update duration if it's a valid number and has changed
       if (isFinite(vidDuration) && vidDuration > 0 && Math.abs(duration - vidDuration) > 0.1) {
@@ -787,15 +833,9 @@ export default function Learning() {
 
   return (
     <div className="min-h-screen bg-canvas-alt flex flex-col">
-      <Header sidebarOpen={sidebarOpen} setSidebarOpen={setSidebarOpen} />
+      <Header />
 
-      <Sidebar
-        sidebarOpen={sidebarOpen}
-        setSidebarOpen={setSidebarOpen}
-        sidebarCollapsed={sidebarCollapsed}
-        setSidebarCollapsed={setSidebarCollapsed}
-        activePage="courses"
-      />
+      <Sidebar activePage="courses" />
 
       {/* Main Content */}
       <div
@@ -1120,6 +1160,7 @@ export default function Learning() {
                 handleSeek={handleSeek}
                 toggleFullscreen={toggleFullscreen}
                 formatTime={formatTime}
+                onEnded={handleNext}
               />
 
               {/* Navigation Buttons */}

@@ -3,12 +3,12 @@ import Header from "../components/Header";
 import Sidebar from "../components/Sidebar";
 import { Star, Bookmark, X } from "lucide-react";
 import { useAuth } from "../context/AuthContext";
+import { useSidebar } from "../context/SidebarContext";
 import { useNavigate } from "react-router-dom";
 import API_BASE_URL from "../lib/api";
 
 const CoursesPage = () => {
-  const [sidebarOpen, setSidebarOpen] = useState(false);
-  const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
+  const { sidebarOpen, setSidebarOpen, sidebarCollapsed, setSidebarCollapsed } = useSidebar();
   const [activeTab, setActiveTab] = useState("my-courses");
   const { user } = useAuth();
   const navigate = useNavigate();
@@ -105,20 +105,13 @@ const CoursesPage = () => {
 
   return (
     <div className="min-h-screen bg-canvas-alt flex flex-col">
-      <Header sidebarOpen={sidebarOpen} setSidebarOpen={setSidebarOpen} />
+      <Header />
 
-      <Sidebar
-        sidebarOpen={sidebarOpen}
-        setSidebarOpen={setSidebarOpen}
-        sidebarCollapsed={sidebarCollapsed}
-        setSidebarCollapsed={setSidebarCollapsed}
-        activePage="courses"
-      />
+      <Sidebar activePage="courses" />
 
       <div
-        className={`flex-1 transition-all duration-300 ${
-          sidebarCollapsed ? "lg:ml-20" : "lg:ml-80"
-        }`}
+        className={`flex-1 transition-all duration-300 ${sidebarCollapsed ? "lg:ml-20" : "lg:ml-80"
+          }`}
       >
         <main className="mt-16 p-8">
           <div className="max-w-7xl mx-auto space-y-10">
@@ -136,21 +129,19 @@ const CoursesPage = () => {
             <div className="bg-card rounded-xl p-2 inline-flex border border-border shadow-sm">
               <button
                 onClick={() => setActiveTab("my-courses")}
-                className={`px-6 py-2 rounded-lg font-semibold ${
-                  activeTab === "my-courses"
+                className={`px-6 py-2 rounded-lg font-semibold ${activeTab === "my-courses"
                     ? "bg-[#2DD4BF] text-white shadow"
                     : "text-muted"
-                }`}
+                  }`}
               >
                 My Courses
               </button>
               <button
                 onClick={() => setActiveTab("explore")}
-                className={`px-6 py-2 rounded-lg font-semibold ${
-                  activeTab === "explore"
+                className={`px-6 py-2 rounded-lg font-semibold ${activeTab === "explore"
                     ? "bg-[#2DD4BF] text-white shadow"
                     : "text-muted"
-                }`}
+                  }`}
               >
                 Explore Courses
               </button>
@@ -224,9 +215,9 @@ const CoursesPage = () => {
                           {course.title}
                         </h3>
 
-                      <p className="text-xs text-muted">
-                        {course.lessons} lessons • {course.level}
-                      </p>
+                        <p className="text-xs text-muted">
+                          {course.lessons} lessons • {course.level}
+                        </p>
 
                         <div className="flex justify-between items-center">
                           <div>
