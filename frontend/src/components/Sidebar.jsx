@@ -82,7 +82,7 @@ const Sidebar = ({
           />
         </button>
 
-        <nav className="mt-8 px-4">
+        <nav className="mt-8 px-4 overflow-y-auto h-[calc(100vh-4rem-110px)] scrollbar-hide">
           <div className="space-y-2">
             {navigationItems.map((item) => {
               const isActive = activePage === item.id;

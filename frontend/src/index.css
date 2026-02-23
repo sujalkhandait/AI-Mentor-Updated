@@ -95,6 +95,15 @@ button{
   background: #a8a8a8;
 }
 
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;
+}
+
+.scrollbar-hide {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
 /* Responsive adjustments */
 @media (max-width: 1024px) {
   .w-70 {
