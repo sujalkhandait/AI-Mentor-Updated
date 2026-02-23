@@ -89,8 +89,8 @@ FastAPI comes with built-in documentation (Swagger) that makes testing very easy
     - Enter the parameters:
       ```json
       {
-        "course": "General Science",
-        "topic": "Photosynthesis",
+        "course": "ReactJS",
+        "topic": "Introduction to ReactJS",
         "celebrity": "modi"
       }
       ```
