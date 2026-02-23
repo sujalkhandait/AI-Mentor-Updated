@@ -349,7 +349,7 @@ const DiscussionsPage = () => {
                   </div>
                   <button
                     type="submit"
-                    className="w-full sm:w-auto px-6 py-2 bg-gradient-to-r from-orange-500 to-teal-500 text-white font-semibold rounded-lg hover:opacity-90 transition-opacity"
+                    className="w-full sm:w-auto px-6 py-2 bg-linear-to-r from-orange-500 to-teal-500 text-white font-semibold rounded-lg hover:opacity-90 transition-opacity"
                   >
                     Post Question
                   </button>
@@ -365,7 +365,7 @@ const DiscussionsPage = () => {
                     key={tab}
                     onClick={() => setActiveTab(tab)}
                     className={`flex-1 px-4 py-2 text-sm font-medium rounded-lg transition-colors ${activeTab === tab
-                      ? "bg-gradient-to-r from-orange-500 to-teal-500 text-white"
+                      ? "bg-linear-to-r from-orange-500 to-teal-500 text-white"
                       : "text-muted hover:text-main hover:bg-canvas-alt"
                       }`}
                   >
@@ -399,7 +399,7 @@ const DiscussionsPage = () => {
                       <img
                         src="/ui/avatar-4.png"
                         alt={discussion.user?.name || "User"}
-                        className="w-8 h-8 sm:w-10 sm:h-10 rounded-full flex-shrink-0"
+                        className="w-8 h-8 sm:w-10 sm:h-10 rounded-full shrink-0"
                       />
                       <div className="flex-1 min-w-0">
                         <div className="flex flex-col sm:flex-row sm:items-center space-y-1 sm:space-y-0 sm:space-x-2 mb-1">
@@ -446,9 +446,9 @@ const DiscussionsPage = () => {
 
                     {/* AI Suggestion */}
                     {discussion.hasAISuggestion && (
-                      <div className="bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-4 mb-4">
+                      <div className="bg-linear-to-r from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-4 mb-4">
                         <div className="flex items-start space-x-3">
-                          <div className="bg-gradient-to-r from-indigo-500 to-purple-600 rounded-full p-2">
+                          <div className="bg-linear-to-r from-indigo-500 to-purple-600 rounded-full p-2">
                             <Bot className="w-4 h-4 text-white" />
                           </div>
                           <div className="flex-1">
@@ -474,7 +474,7 @@ const DiscussionsPage = () => {
                             <img
                               src="/ui/avatar-4.png"
                               alt={reply.user?.name || "User"}
-                              className="w-6 h-6 sm:w-8 sm:h-8 rounded-full flex-shrink-0"
+                              className="w-6 h-6 sm:w-8 sm:h-8 rounded-full shrink-0"
                             />
                             <div className="flex-1 min-w-0">
                               <div className="flex flex-col sm:flex-row sm:items-center space-y-1 sm:space-y-0 sm:space-x-2 mb-1">
@@ -514,7 +514,7 @@ const DiscussionsPage = () => {
                       <img
                         src="/ui/avatar-4.png"
                         alt="Your avatar"
-                        className="w-6 h-6 sm:w-8 sm:h-8 rounded-full flex-shrink-0"
+                        className="w-6 h-6 sm:w-8 sm:h-8 rounded-full shrink-0"
                       />
                       <div className="flex-1">
                         <textarea
@@ -527,7 +527,7 @@ const DiscussionsPage = () => {
                         <div className="flex justify-end mt-2">
                           <button
                             onClick={() => handleReply(discussion.id)}
-                            className="px-4 py-2 bg-gradient-to-r from-indigo-500 to-purple-600 text-white text-sm font-medium rounded-lg hover:opacity-90 transition-opacity"
+                            className="px-4 py-2 bg-linear-to-r from-indigo-500 to-purple-600 text-white text-sm font-medium rounded-lg hover:opacity-90 transition-opacity"
                           >
                             Reply
                           </button>

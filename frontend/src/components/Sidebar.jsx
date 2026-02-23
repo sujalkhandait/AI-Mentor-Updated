@@ -24,6 +24,8 @@ const Sidebar = ({
     navigate("/login");
   };
 
+  const displayName = user?.name || user?.email?.split('@')[0] || "User";
+
   useEffect(() => {
     let isMounted = true;
 
@@ -110,7 +112,7 @@ const Sidebar = ({
                   <img
                     src={item.icon}
                     alt={item.label}
-                    className="w-5 h-5 flex-shrink-0"
+                    className="w-5 h-5 shrink-0"
                   />
                   {!sidebarCollapsed && (
                     <span className={`ml-3 ${isActive ? "font-medium" : ""}`}>
@@ -130,11 +132,12 @@ const Sidebar = ({
 
         {!sidebarCollapsed ? (
           <div className="absolute bottom-4 left-4 right-4">
-            <div className="bg-gradient-to-r from-purple-50 to-blue-50 dark:from-slate-800 dark:to-slate-900 rounded-xl p-4 border border-purple-100 dark:border-slate-700">
+            <div className="bg-linear-to-r from-purple-50 to-blue-50 dark:from-slate-800 dark:to-slate-900 rounded-xl p-4 border border-purple-100 dark:border-slate-700">
               <div className="flex items-center">
                 <img
-                  src={`https://api.dicebear.com/8.x/initials/svg?seed=${user?.firstName || "Eliza"
-                    }%20${user?.lastName || "Chris"}`}
+                  src={`https://api.dicebear.com/8.x/initials/svg?seed=${encodeURIComponent(
+                    displayName
+                  )}`}
                   alt={user?.name || "User"}
                   className="w-8 h-8 rounded-full"
                 />
@@ -156,8 +159,9 @@ const Sidebar = ({
         ) : (
           <div className="absolute bottom-4 left-4 right-4 flex justify-center">
             <img
-              src={`https://api.dicebear.com/8.x/initials/svg?seed=${user?.firstName || "Eliza"
-                }%20${user?.lastName || "Chris"}`}
+              src={`https://api.dicebear.com/8.x/initials/svg?seed=${encodeURIComponent(
+                displayName
+              )}`}
               alt={user?.name || "User"}
               className="w-10 h-10 rounded-full border-2 border-purple-200"
             />

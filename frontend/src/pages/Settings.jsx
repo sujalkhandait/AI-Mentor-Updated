@@ -135,14 +135,14 @@ export default function Settings() {
                       onClick={() => setActiveSetting(item.label)}
                       key={item.label}
                       className={`w-full flex items-center gap-4 px-6 py-4 rounded-2xl text-left transition-colors ${activeSetting === item.label
-                          ? "bg-teal-50 dark:bg-teal-900/20 text-main"
-                          : "text-muted hover:bg-canvas-alt"
+                        ? "bg-teal-50 dark:bg-teal-900/20 text-main"
+                        : "text-muted hover:bg-canvas-alt"
                         }`}
                     >
                       <IconComponent
                         className={`w-4 h-4 ${activeSetting === item.label
-                            ? "text-[#00BEA5]"
-                            : "text-[#00BEA5]"
+                          ? "text-[#00BEA5]"
+                          : "text-[#00BEA5]"
                           }`}
                       />
                       <span className="font-medium text-[16px] font-[Inter]">
@@ -266,7 +266,7 @@ export default function Settings() {
                     <button
                       onClick={handleSaveChanges}
                       disabled={loading}
-                      className="h-[50px] px-6 rounded-xl bg-gradient-to-r from-primary to-primary text-white text-[16px] font-medium font-[Inter] hover:opacity-90 disabled:opacity-50"
+                      className="h-[50px] px-6 rounded-xl bg-linear-to-r from-primary to-primary text-white text-[16px] font-medium font-[Inter] hover:opacity-90 disabled:opacity-50"
                     >
                       {loading ? "Saving..." : "Save Changes"}
                     </button>
@@ -428,7 +428,7 @@ export default function Settings() {
                         }
                       }}
                       disabled={loading}
-                      className="h-[50px] px-6 rounded-xl bg-gradient-to-r from-primary to-primary text-white text-[16px] font-medium font-[Inter] hover:opacity-90 disabled:opacity-50"
+                      className="h-[50px] px-6 rounded-xl bg-linear-to-r from-primary to-primary text-white text-[16px] font-medium font-[Inter] hover:opacity-90 disabled:opacity-50"
                     >
                       {loading ? "Saving..." : "Save Changes"}
                     </button>
@@ -630,7 +630,7 @@ export default function Settings() {
                         }
                       }}
                       disabled={loading}
-                      className="h-[50px] px-6 rounded-xl bg-gradient-to-r from-primary to-primary text-white text-[16px] font-medium font-[Inter] hover:opacity-90 disabled:opacity-50"
+                      className="h-[50px] px-6 rounded-xl bg-linear-to-r from-primary to-primary text-white text-[16px] font-medium font-[Inter] hover:opacity-90 disabled:opacity-50"
                     >
                       {loading ? "Saving..." : "Save Changes"}
                     </button>
@@ -755,7 +755,7 @@ export default function Settings() {
                         }
                       }}
                       disabled={loading}
-                      className="h-[50px] px-6 rounded-xl bg-gradient-to-r from-primary to-primary text-white text-[16px] font-medium font-[Inter] hover:opacity-90 disabled:opacity-50"
+                      className="h-[50px] px-6 rounded-xl bg-linear-to-r from-primary to-primary text-white text-[16px] font-medium font-[Inter] hover:opacity-90 disabled:opacity-50"
                     >
                       {loading ? "Saving..." : "Save Changes"}
                     </button>
@@ -837,7 +837,7 @@ export default function Settings() {
                         }
                       }}
                       disabled={loading}
-                      className="h-[50px] px-6 rounded-xl bg-gradient-to-r from-[#00BEA5] to-[#00BEA5] text-white text-[16px] font-medium font-[Inter] hover:opacity-90 disabled:opacity-50"
+                      className="h-[50px] px-6 rounded-xl bg-linear-to-r from-[#00BEA5] to-[#00BEA5] text-white text-[16px] font-medium font-[Inter] hover:opacity-90 disabled:opacity-50"
                     >
                       {loading ? "Saving..." : "Save Changes"}
                     </button>
