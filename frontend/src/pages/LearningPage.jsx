@@ -87,8 +87,6 @@ export default function Learning() {
   const lastLessonIdRef = useRef(null);
   const lastCelebrityRef = useRef(null);
   const hasRestoredProgressRef = useRef(false);
-  const watchedTimeRef = useRef(0);
-  const lastTimeRef = useRef(0);
 
   // Auto-scroll transcript to keep active caption visible
   useEffect(() => {
@@ -369,45 +367,39 @@ export default function Learning() {
 
           const data = await getAIVideo(payload);
 
-          if (data && data.videoUrl) {
-            // Now poll for video availability because generation is asynchronous
+          if (data?.videoUrl) {
+            // Poll status endpoint until ready
             let isReady = false;
             let attempts = 0;
-            const maxAttempts = 30; // 30 seconds max
 
-            while (!isReady && attempts < maxAttempts) {
-              try {
-                const checkRes = await fetch(data.videoUrl, { method: 'HEAD' });
-                if (checkRes.ok) {
-                  isReady = true;
-                  break;
-                }
-              } catch (e) {
-                // Ignore fetch errors during polling
-              }
+            while (!isReady && attempts < 60) {
+              const statusRes = await fetch(`/api/ai/status/${data.jobId}`, {
+                headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
+              });
+              const { status } = await statusRes.json();
+
+              if (status === "ready") { isReady = true; break; }
+              if (status === "failed") throw new Error("Video generation failed on server.");
+
               attempts++;
               await new Promise(r => setTimeout(r, 1000));
             }
 
-            if (!isReady) {
-              console.warn("AI Video generation timed out or failed to become available");
-              throw new Error("Video generation taking too long. Please try again later.");
-            }
+            if (!isReady) throw new Error("Video generation timed out.");
 
-            // Check if the user has navigated away while polling
+            // Guard: user may have navigated away during polling
             if (lastLessonIdRef.current !== learningData.currentLesson.id ||
               lastCelebrityRef.current !== selectedCelebrity) {
-              console.log("🚫 Polling finished but context changed. Skipping update.");
+              console.log("🚫 Context changed during polling. Skipping update.");
               return;
             }
 
             setAiVideoUrl(data.videoUrl);
 
-            // If transcript is available, fetch its content
             if (data.transcriptName) {
               try {
                 const trRes = await fetch(`/api/ai/transcript/${data.transcriptName}`, {
-                  headers: { Authorization: `Bearer ${localStorage.getItem("token")}` }
+                  headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
                 });
                 if (trRes.ok) {
                   const trData = await trRes.json();
@@ -419,12 +411,10 @@ export default function Learning() {
             }
 
             setIsPlaying(true);
-
-            // Save the generated content to the backend
             saveLessonData(learningData.currentLesson.id, {
               generatedTextContent: data.textContent || "",
               aiVideoUrl: data.videoUrl,
-              celebrity: selectedCelebrity
+              celebrity: selectedCelebrity,
             });
           }
         } catch (error) {
@@ -624,46 +614,12 @@ export default function Learning() {
     }
   };
 
-  const syncPlaytime = async () => {
-    if (watchedTimeRef.current < 1) return; // Don't sync small intervals
-
-    try {
-      const token = localStorage.getItem("token");
-      const hoursSpent = watchedTimeRef.current / 3600;
-
-      const res = await fetch("/api/analytics/study-session", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify({
-          hours: hoursSpent,
-          date: new Date()
-        }),
-      });
-
-      if (res.ok) {
-        const data = await res.json();
-        if (updateUser && data.analytics) {
-          updateUser({ analytics: data.analytics });
-        }
-      }
-
-      // Reset local counter after sync
-      watchedTimeRef.current = 0;
-    } catch (error) {
-      console.error("Error syncing playtime:", error);
-    }
-  };
-
   const toggleModule = (id) => {
     setExpandedModule((prev) => (prev === id ? null : id));
   };
 
   const handleLessonClick = (lesson) => {
     // update current lesson locally and let useEffect handle video loading
-    syncPlaytime();
     setGeneratedTextContent(null);
     setAiVideoUrl(null);
     setLearningData((prev) => ({ ...prev, currentLesson: lesson }));
@@ -691,7 +647,6 @@ export default function Learning() {
       if (isPlaying) {
         videoRef.current.pause();
         setIsPlaying(false);
-        syncPlaytime();
       } else {
         const p = videoRef.current.play();
         if (p && typeof p.then === "function") {
@@ -732,17 +687,7 @@ export default function Learning() {
       const vidDuration = videoRef.current.duration;
       const vidCurrentTime = videoRef.current.currentTime;
 
-      // Track playtime
-      if (isPlaying) {
-        const delta = vidCurrentTime - lastTimeRef.current;
-        if (delta > 0 && delta < 1) { // Avoid jumps (seeking)
-          watchedTimeRef.current += delta;
-        }
-      }
-      lastTimeRef.current = vidCurrentTime;
-
-      // Only update duration if it's a valid number and has changed
-      if (isFinite(vidDuration) && vidDuration > 0 && Math.abs(duration - vidDuration) > 0.1) {
+      if (isFinite(vidDuration) && vidDuration > 0) {
         setDuration(vidDuration);
       }
 
@@ -763,30 +708,46 @@ export default function Learning() {
   };
 
   const handleSeek = (e) => {
-    if (videoRef.current && duration > 0) {
-      const rect = e.currentTarget.getBoundingClientRect();
-      const clickX = e.clientX - rect.left;
-      const percentage = Math.max(0, Math.min(1, clickX / rect.width));
-      const newTime = percentage * duration;
-      videoRef.current.currentTime = newTime;
-      setCurrentTime(newTime);
-      setProgress(percentage * 100);
-    }
+    const v = videoRef.current;
+    if (!v) return;
+
+    const vidDuration = v.duration; // ✅ read from element directly, not state
+    if (!isFinite(vidDuration) || vidDuration <= 0) return;
+
+    const rect = e.currentTarget.getBoundingClientRect();
+    const clickX = e.clientX - rect.left;
+    const percentage = Math.max(0, Math.min(1, clickX / rect.width));
+    const newTime = percentage * vidDuration;
+
+    v.currentTime = newTime;
+    setCurrentTime(newTime);
+    setProgress(percentage * 100);
   };
 
   const handleTranscriptClick = (startTime) => {
-    if (videoRef.current) {
-      videoRef.current.currentTime = startTime;
-      setCurrentTime(startTime);
-      if (duration > 0) {
-        setProgress((startTime / duration) * 100);
-      }
-      if (!isPlaying) {
-        togglePlay();
+    const v = videoRef.current;
+    if (!v) return;
+
+    const vidDuration = v.duration; // ✅ read from element directly, not state
+
+    v.currentTime = startTime;
+    setCurrentTime(startTime);
+
+    if (isFinite(vidDuration) && vidDuration > 0) {
+      setProgress((startTime / vidDuration) * 100);
+    }
+
+    if (!isPlaying) {
+      const p = v.play();
+      if (p && typeof p.then === "function") {
+        p.then(() => setIsPlaying(true)).catch((err) => {
+          console.warn("Play blocked:", err);
+        });
+      } else {
+        setIsPlaying(true);
       }
     }
   };
-
 
   const toggleFullscreen = () => {
     const container = playerContainerRef.current;

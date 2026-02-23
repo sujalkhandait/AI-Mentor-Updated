@@ -56,11 +56,12 @@ router.post("/generate-video", protect, async (req, res) => {
       throw new Error("AI service failed");
     }
 
-    const { filename, text_file } = await aiResponse.json();
+    const { filename, text_file, jobId } = await aiResponse.json();
 
     res.json({
       videoUrl: `/api/ai/video/${courseId}/${filename}`,
-      transcriptName: text_file
+      transcriptName: text_file,
+      jobId
     });
 
   } catch (error) {
@@ -88,6 +89,23 @@ router.get("/transcript/:filename", async (req, res) => {
   } catch (error) {
     console.error("❌ Transcript Proxy Error:", error.message);
     res.status(500).json({ error: "Failed to load transcript" });
+  }
+});
+
+router.get("/status/:jobId", protect, async (req, res) => {
+  try {
+    const { jobId } = req.params;
+    const response = await fetch(`${process.env.AI_SERVICE_URL}/status/${jobId}`);
+    
+    if (!response.ok) {
+      return res.status(404).json({ status: "not_found" });
+    }
+
+    const data = await response.json();
+    res.json(data);
+  } catch (error) {
+    console.error("❌ Status Proxy Error:", error.message);
+    res.status(500).json({ status: "error" });
   }
 });
 

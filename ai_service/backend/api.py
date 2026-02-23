@@ -93,9 +93,17 @@ def get_transcript(filename: str):
         return {"content": content}
     return {"error": "Transcript not found"}
 
+@app.get("/status/{job_id}")
+def get_status(job_id: str):
+    status = job_status.get(job_id, "not_found")
+    return {"status": status}
+
 # --------------------------
 # Generate Lesson Endpoint
 # --------------------------
+
+job_status = {}
+
 @app.post("/generate")
 def generate_lesson(data: LessonRequest, background_tasks: BackgroundTasks):
     # Generate filename here so we can return it immediately
@@ -103,6 +111,8 @@ def generate_lesson(data: LessonRequest, background_tasks: BackgroundTasks):
     timestamp = datetime.datetime.now().strftime("%Y%m%d_%H%M%S")
     base_filename = f"{topic_clean}_{timestamp}"
     
+    job_status[base_filename] = "processing"
+
     # Run as a background task to avoid timeout issues
     background_tasks.add_task(process_lesson, data, base_filename)
     
@@ -110,7 +120,8 @@ def generate_lesson(data: LessonRequest, background_tasks: BackgroundTasks):
         "status": "Processing",
         "filename": f"{base_filename}.mp4",
         "text_file": f"{base_filename}.txt",
-        "audio_file": f"{base_filename}.mp3"
+        "audio_file": f"{base_filename}.mp3",
+        "jobId": base_filename
     }
 
 # --------------------------
@@ -197,11 +208,11 @@ def process_lesson(data: LessonRequest, base_filename: str):
         print(f"🎥 Running ffmpeg command...")
         os.system(ffmpeg_command)
 
-        # 7️⃣ Success Message
+        job_status[base_filename] = "ready"  # 👈 only set AFTER ffmpeg finishes
         print(f"✅ Lesson ready!")
         print(f"   Video: {final_video}")
 
     except Exception as e:
+        job_status[base_filename] = "failed"  # 👈 mark failed on error
         print(f"❌ Error generating lesson: {e}")
-        import traceback
         traceback.print_exc()

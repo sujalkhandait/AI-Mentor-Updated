@@ -135,7 +135,7 @@ const VideoPlayer = ({
           onClick={handleSeek}
         >
           <div
-            className="bg-blue-600 h-full rounded-full transition-all"
+            className="bg-blue-600 h-full rounded-full transition-all pointer-events-none"  // 👈 add pointer-events-none
             style={{ width: `${progress}%` }}
           ></div>
         </div>
