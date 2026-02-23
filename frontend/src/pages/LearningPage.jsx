@@ -883,7 +883,7 @@ export default function Learning() {
                       className="border-b border-border last:border-b-0"
                     >
                       <button
-                        className="w-full flex items-center justify-between px-5 py-2 text-left hover:bg-blue-50 hover:text-white dark:hover:bg-blue-950 font-semibold text-main focus:outline-none text-base"
+                        className="w-full flex items-center justify-between px-5 py-2 text-left hover:bg-blue-100 dark:hover:bg-blue-900 font-semibold text-main focus:outline-none text-base"
                         onClick={e => {
                           e.stopPropagation();
                           toggleModule(module.id || `module-${mIdx + 1}`);
@@ -897,7 +897,7 @@ export default function Learning() {
                         {module.lessons && module.lessons.map((lesson) => (
                           <button
                             key={lesson.id}
-                            className={`w-full text-left px-10 py-2 text-sm flex items-center gap-2 hover:bg-blue-100 hover:text-white dark:hover:bg-blue-900 transition-colors ${currentLesson?.id === lesson.id ? 'bg-blue-600 text-white font-semibold' : 'text-main'}`}
+                            className={`w-full text-left px-10 py-2 text-sm flex items-center gap-2 hover:bg-blue-100 dark:hover:bg-blue-900 transition-colors ${currentLesson?.id === lesson.id ? 'bg-blue-600 text-white font-semibold' : 'text-main'}`}
                             onClick={e => {
                               e.stopPropagation();
                               handleLessonClick(lesson);
