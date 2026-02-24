@@ -211,7 +211,7 @@ const updateCourseProgress = async (req, res) => {
     purchasedCourses[courseIndex] = course;
     user.purchasedCourses = purchasedCourses;
 
-    
+
     user.changed("purchasedCourses", true);
     await user.save();
     console.log("Updated completedLessons:", course.progress.completedLessons);

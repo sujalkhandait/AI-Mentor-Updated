@@ -1,3 +1,4 @@
+import AIVideo from "../models/AIVideo.js";
 import express from "express";
 import fs from "fs";
 import path from "path";
@@ -29,6 +30,25 @@ router.post("/generate-video", protect, async (req, res) => {
       return res.status(403).json({ message: "Course not purchased" });
     }
 
+    // 🕵️ Check Cache First
+    const cachedVideo = await AIVideo.findOne({
+      where: {
+        courseId: Number(courseId),
+        lessonId: String(lessonId),
+        celebrity: String(celebrity).toLowerCase(),
+      },
+    });
+
+    if (cachedVideo) {
+      console.log("🎯 Serving cached AI video for:", celebrity);
+      return res.json({
+        videoUrl: cachedVideo.videoUrl,
+        transcriptName: cachedVideo.transcriptName,
+        jobId: cachedVideo.jobId,
+        cached: true,
+      });
+    }
+
     // 📘 Get titles from JSON
     const titles = getCourseAndLessonTitles(courseId, lessonId);
 
@@ -39,6 +59,7 @@ router.post("/generate-video", protect, async (req, res) => {
     const { courseTitle, lessonTitle } = titles;
 
     // 🚀 Call AI service
+    console.log("🤖 Cache miss. Calling AI service for:", celebrity);
     const aiResponse = await fetch(
       `${process.env.AI_SERVICE_URL}/generate`,
       {
@@ -58,10 +79,24 @@ router.post("/generate-video", protect, async (req, res) => {
 
     const { filename, text_file, jobId } = await aiResponse.json();
 
-    res.json({
-      videoUrl: `/api/ai/video/${courseId}/${filename}`,
+    const videoUrl = `/api/ai/video/${courseId}/${filename}`;
+    const textUrl = `/api/ai/transcript/${text_file}`;
+
+    // 💾 Save to Cache
+    await AIVideo.create({
+      courseId: Number(courseId),
+      lessonId: String(lessonId),
+      celebrity: String(celebrity).toLowerCase(),
+      videoUrl,
       transcriptName: text_file,
-      jobId
+      jobId,
+    });
+
+    res.json({
+      videoUrl,
+      transcriptName: text_file,
+      jobId,
+      cached: false,
     });
 
   } catch (error) {
@@ -76,14 +111,33 @@ router.post("/generate-video", protect, async (req, res) => {
 router.get("/transcript/:filename", async (req, res) => {
   try {
     const { filename } = req.params;
-    const pythonTranscriptUrl = `${process.env.AI_SERVICE_URL}/transcript/${filename}`;
 
+    // 🕵️ Check Cache First
+    const cachedVideo = await AIVideo.findOne({
+      where: { transcriptName: filename },
+    });
+
+    if (cachedVideo && cachedVideo.transcript) {
+      console.log("🎯 Serving cached transcript for:", filename);
+      return res.json({ content: cachedVideo.transcript });
+    }
+
+    const pythonTranscriptUrl = `${process.env.AI_SERVICE_URL}/transcript/${filename}`;
     const response = await fetch(pythonTranscriptUrl);
+
     if (!response.ok) {
       return res.status(404).json({ error: "Transcript not found" });
     }
 
     const data = await response.json();
+
+    // 💾 Save to Cache if we found the record
+    if (cachedVideo) {
+      cachedVideo.transcript = data.content;
+      await cachedVideo.save();
+      console.log("💾 Transcript cached for:", filename);
+    }
+
     res.json(data);
 
   } catch (error) {
@@ -96,7 +150,7 @@ router.get("/status/:jobId", protect, async (req, res) => {
   try {
     const { jobId } = req.params;
     const response = await fetch(`${process.env.AI_SERVICE_URL}/status/${jobId}`);
-    
+
     if (!response.ok) {
       return res.status(404).json({ status: "not_found" });
     }

@@ -213,6 +213,10 @@ export default function Learning() {
                   if (savedData.aiVideoUrl) {
                     setAiVideoUrl(savedData.aiVideoUrl);
                   }
+                  if (savedData.celebrity) {
+                    setSelectedCelebrity(savedData.celebrity);
+                    lastCelebrityRef.current = savedData.celebrity;
+                  }
                 }
 
                 setLearningData((prev) => ({
@@ -237,127 +241,129 @@ export default function Learning() {
     hasRestoredProgressRef.current = false;
   }, [courseId]);
 
-  // Load and parse VTT captions (simple parser) when selectedCelebrity or generatedTextContent changes
   useEffect(() => {
-    const loadCaptions = async () => {
-      console.log("🔍 Loading captions. Celebrity:", selectedCelebrity, "Duration:", duration);
+    const video = videoRef.current;
+    if (!video) return;
+
+    const generateFromText = (d) => {
+      if (!generatedTextContent) return false;
+      const sentences = generatedTextContent
+        .split(/[.!?]+/)
+        .map(s => s.trim())
+        .filter(Boolean);
+      if (!sentences.length) return false;
+      const timePerSentence = d / sentences.length;
+      setCaptions(sentences.map((text, i) => ({
+        start: i * timePerSentence,
+        end: (i + 1) * timePerSentence,
+        text,
+      })));
+      console.log(`✅ Generated ${sentences.length} captions from AI text`);
+      return true;
+    };
+
+    const loadVTT = async () => {
+      const vttPath = selectedCelebrity ? celebrityVideoMap[selectedCelebrity]?.vtt : null;
+      if (!vttPath) { setCaptions([]); return; }
       try {
-        // Prioritize AI-generated text if available and we have a valid duration
-        if (generatedTextContent && duration > 0) {
-          console.log("🤖 Generating captions from AI text, duration:", duration);
-          const sentences = generatedTextContent
-            .split(/[.!?]+/)
-            .map(s => s.trim())
-            .filter(Boolean);
-
-          const timePerSentence = duration / sentences.length;
-
-          const generatedCaptions = sentences.map((sentence, index) => ({
-            start: index * timePerSentence,
-            end: (index + 1) * timePerSentence,
-            text: sentence,
-          }));
-
-          console.log(`✅ Generated ${generatedCaptions.length} captions from AI text`);
-          setCaptions(generatedCaptions);
-          return;
-        }
-
-        // Fallback to VTT file if AI text not available
-        const vttPath =
-          selectedCelebrity &&
-          celebrityVideoMap[selectedCelebrity] &&
-          celebrityVideoMap[selectedCelebrity].vtt;
-
-        if (vttPath) {
-          console.log("📄 Trying to load VTT from:", vttPath);
-          const res = await fetch(vttPath);
-          if (res.ok) {
-            console.log("✅ VTT file loaded successfully");
-            const text = await res.text();
-            const blocks = text.replace(/\r\n/g, "\n").split(/\n\n+/).slice(1); // skip WEBVTT header
-            const cues = blocks
-              .map((block) => {
-                const lines = block
-                  .split("\n")
-                  .map((l) => l.trim())
-                  .filter(Boolean);
-                if (lines.length < 2) return null;
-                const timeLine = lines[0];
-                const textLines = lines.slice(1).join(" ");
-                const match = timeLine.match(
-                  /(\d{2}:\d{2}:\d{2}\.\d{3})\s*-->\s*(\d{2}:\d{2}:\d{2}\.\d{3})/
-                );
-                if (!match) return null;
-                const toSeconds = (s) => {
-                  const [hh, mm, rest] = s.split(":");
-                  const [ss, ms] = rest.split(".");
-                  return (
-                    parseInt(hh) * 3600 +
-                    parseInt(mm) * 60 +
-                    parseInt(ss) +
-                    parseFloat("0." + ms)
-                  );
-                };
-                return {
-                  start: toSeconds(match[1]),
-                  end: toSeconds(match[2]),
-                  text: textLines,
-                };
-              })
-              .filter(Boolean);
-            console.log(`✅ Parsed ${cues.length} captions from VTT`);
-            setCaptions(cues);
-            return;
+        const res = await fetch(vttPath);
+        if (!res.ok) { setCaptions([]); return; }
+        const text = await res.text();
+        const blocks = text.replace(/\r\n/g, "\n").split(/\n\n+/).slice(1);
+        const toSeconds = (s) => {
+          const parts = s.split(":");
+          if (parts.length === 3) {
+            const [hh, mm, rest] = parts;
+            const [ss, ms] = rest.split(".");
+            return parseInt(hh) * 3600 + parseInt(mm) * 60 + parseInt(ss) + parseFloat("0." + (ms || "0"));
           } else {
-            console.log("⚠️ VTT file not found");
+            const [mm, rest] = parts;
+            const [ss, ms] = rest.split(".");
+            return parseInt(mm) * 60 + parseInt(ss) + parseFloat("0." + (ms || "0"));
           }
-        }
-
-        console.log("❌ No captions available - no AI text and no VTT");
-        setCaptions([]);
+        };
+        const cues = blocks.map((block) => {
+          const lines = block.split("\n").map(l => l.trim()).filter(Boolean);
+          if (lines.length < 2) return null;
+          const match = lines[0].match(
+            /(\d{1,2}:\d{2}(?::\d{2})?\.\d{3})\s*-->\s*(\d{1,2}:\d{2}(?::\d{2})?\.\d{3})/
+          );
+          if (!match) return null;
+          return { start: toSeconds(match[1]), end: toSeconds(match[2]), text: lines.slice(1).join(" ") };
+        }).filter(Boolean);
+        console.log(`✅ Parsed ${cues.length} captions from VTT`);
+        setCaptions(cues);
       } catch (err) {
-        console.warn("Could not load captions:", err);
         setCaptions([]);
       }
     };
 
-    loadCaptions();
-  }, [selectedCelebrity, generatedTextContent, duration]);
+    const tryGenerate = () => {
+      const d = video.duration;
+      if (!isFinite(d) || d <= 0) return false;
+      return generateFromText(d);
+    };
 
-  // Ensure when currentLesson changes we load its video into the player
+    // ✅ Key fix: if generatedTextContent just arrived and video is already loaded, generate now
+    if (generatedTextContent) {
+      if (tryGenerate()) return; // video already loaded, captions generated ✅
+      // Video not loaded yet — wait for it
+      const handler = () => { generateFromText(video.duration); };
+      video.addEventListener("loadedmetadata", handler, { once: true });
+      return () => video.removeEventListener("loadedmetadata", handler);
+    }
+
+    // No AI text — try VTT once video is ready
+    setCaptions([]);
+    setActiveCaption("");
+    if (video.duration && isFinite(video.duration) && video.duration > 0) {
+      loadVTT();
+    } else {
+      const handler = () => { loadVTT(); };
+      video.addEventListener("loadedmetadata", handler, { once: true });
+      return () => video.removeEventListener("loadedmetadata", handler);
+    }
+
+  }, [selectedCelebrity, generatedTextContent, learningData?.currentLesson?.id]);
+
   useEffect(() => {
     const v = videoRef.current;
     if (!v || !learningData?.currentLesson) return;
-    // Prevent redundant calls when user state updates but lesson/celebrity haven't changed
+
     const lessonChanged = lastLessonIdRef.current !== learningData.currentLesson.id;
     const celebrityChanged = lastCelebrityRef.current !== selectedCelebrity;
 
-    if (!lessonChanged && !celebrityChanged && v.src) {
-      return;
-    }
+    if (!lessonChanged && !celebrityChanged && v.src) return;
 
     lastLessonIdRef.current = learningData.currentLesson.id;
     lastCelebrityRef.current = selectedCelebrity;
 
     const loadVideo = async () => {
-      // Clear existing captions only when changing lesson/celebrity
       setCaptions([]);
       setActiveCaption("");
+
       if (selectedCelebrity) {
-        // Check if we already have saved content for this lesson and celebrity
         const savedData = user?.purchasedCourses
           ?.find(c => c.courseId === parseInt(courseId))
           ?.progress?.lessonData?.[learningData.currentLesson.id];
 
-        if (savedData?.generatedTextContent && savedData?.celebrity === selectedCelebrity) {
-          console.log("♻️ Using saved AI content for this lesson");
-          setGeneratedTextContent(savedData.generatedTextContent);
-          setAiVideoUrl(savedData.aiVideoUrl);
+        const hasSavedMatchingContent = savedData?.celebrity === selectedCelebrity && savedData?.generatedTextContent;
+
+        if (hasSavedMatchingContent) {
+          console.log("♻️ Using saved matching AI content, skipping fetch");
+          if (!aiVideoUrl) {
+            setGeneratedTextContent(savedData.generatedTextContent);
+            setAiVideoUrl(savedData.aiVideoUrl);
+          }
+          setIsPlaying(false);
           return;
         }
+
+        // Fresh fetch
         setIsAIVideoLoading(true);
         setGeneratedTextContent("");
+        setAiVideoUrl(null);
+
         try {
           const payload = {
             courseId: parseInt(courseId),
@@ -368,21 +374,23 @@ export default function Learning() {
           const data = await getAIVideo(payload);
 
           if (data?.videoUrl) {
-            // Poll status endpoint until ready
-            let isReady = false;
+            let isReady = data.cached || false;
             let attempts = 0;
 
-            while (!isReady && attempts < 60) {
-              const statusRes = await fetch(`/api/ai/status/${data.jobId}`, {
-                headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
-              });
-              const { status } = await statusRes.json();
-
-              if (status === "ready") { isReady = true; break; }
-              if (status === "failed") throw new Error("Video generation failed on server.");
-
-              attempts++;
-              await new Promise(r => setTimeout(r, 1000));
+            if (!isReady) {
+              console.log("⏳ Video not cached. Polling for status...");
+              while (!isReady && attempts < 60) {
+                const statusRes = await fetch(`/api/ai/status/${data.jobId}`, {
+                  headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
+                });
+                const { status } = await statusRes.json();
+                if (status === "ready") { isReady = true; break; }
+                if (status === "failed") throw new Error("Video generation failed on server.");
+                attempts++;
+                await new Promise(r => setTimeout(r, 1000));
+              }
+            } else {
+              console.log("⚡ Video served from cache. Skipping polling.");
             }
 
             if (!isReady) throw new Error("Video generation timed out.");
@@ -418,33 +426,25 @@ export default function Learning() {
             });
           }
         } catch (error) {
-          console.error("Error generating AI video on lesson change:", error);
+          console.error("Error generating AI video:", error);
           setGeneratedTextContent("");
-          const src =
-            celebrityVideoMap[selectedCelebrity]?.video ||
-            learningData.currentLesson.videoUrl;
-          if (src) {
-            setAiVideoUrl(null); // Fallback to original
-            setIsPlaying(true);
-          }
+          setAiVideoUrl(null);
+          setIsPlaying(false);
         } finally {
           setIsAIVideoLoading(false);
         }
+
       } else {
+        // No celebrity — let VideoPlayer handle src via its useEffect
         setIsAIVideoLoading(false);
         setGeneratedTextContent("");
-        const src = learningData.currentLesson.videoUrl;
-        if (src && v.src !== src) {
-          v.pause();
-          v.src = src;
-          v.load();
-          setIsPlaying(false); // Lessons don't autoplay by default unless celebrity is selected
-        }
+        setAiVideoUrl(null); // ✅ VideoPlayer will fall through to currentLesson.videoUrl
+        setIsPlaying(false);
       }
     };
 
     loadVideo();
-  }, [learningData?.currentLesson, selectedCelebrity]);
+  }, [learningData?.currentLesson?.id, selectedCelebrity]);
 
   useEffect(() => {
     const handleFullscreenChange = () => {
@@ -619,6 +619,9 @@ export default function Learning() {
   };
 
   const handleLessonClick = (lesson) => {
+    // If clicking the same lesson, do nothing
+    if (currentLesson?.id === lesson.id) return;
+
     // update current lesson locally and let useEffect handle video loading
     setGeneratedTextContent(null);
     setAiVideoUrl(null);
@@ -1121,7 +1124,6 @@ export default function Learning() {
                 handleSeek={handleSeek}
                 toggleFullscreen={toggleFullscreen}
                 formatTime={formatTime}
-                onEnded={handleNext}
               />
 
               {/* Navigation Buttons */}
